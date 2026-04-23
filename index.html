@@ -108,11 +108,10 @@
         .laser-active .laser-beam { height: 8px; background: var(--meat-red); animation: laserPulse 0.1s infinite; }
         @keyframes laserPulse { 0% { opacity: 0.8; transform: translate3d(0, -50%, 0) scaleY(1); } 100% { opacity: 1; transform: translate3d(0, -50%, 0) scaleY(1.3); } }
         
-        .enemy-bot { position: absolute; width: var(--cell-sz); height: var(--cell-sz); background: #111; border: 2px solid var(--meat-red); border-radius: 6px; z-index: 50; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--meat-red); transition: transform 0.15s linear; will-change: transform; }
+        .enemy-bot { position: absolute; top: 0; left: 0; width: var(--cell-sz); height: var(--cell-sz); background: #111; border: 2px solid var(--meat-red); border-radius: 6px; z-index: 50; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--meat-red); transition: transform 0.15s linear; will-change: transform; }
 
-        /* YENİ: NEMESIS (AVCI) STİLİ */
-        .nemesis-bot { position: absolute; width: var(--cell-sz); height: var(--cell-sz); background: #2b0000; border: 2px solid #ff0000; border-radius: 8px; z-index: 65; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: transform 0.2s linear; box-shadow: 0 0 15px #ff0000; animation: pulseNemesis 1s infinite; pointer-events: none; }
-        @keyframes pulseNemesis { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); box-shadow: 0 0 25px #ff0000; } }
+        .nemesis-bot { position: absolute; top: 0; left: 0; width: var(--cell-sz); height: var(--cell-sz); background: #2b0000; border: 2px solid #ff0000; border-radius: 8px; z-index: 65; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: transform 0.2s linear; box-shadow: 0 0 15px #ff0000; animation: pulseNemesis 1s infinite; pointer-events: none; }
+        @keyframes pulseNemesis { 0%, 100% { box-shadow: 0 0 10px #ff0000; } 50% { box-shadow: 0 0 25px #ff0000, inset 0 0 10px #ff0000; } }
 
         .epath-u::after { content: '⬆️'; position:absolute; top:20%; left:20%; opacity:0.4; font-size:0.8rem; pointer-events: none;}
         .epath-d::after { content: '⬇️'; position:absolute; top:20%; left:20%; opacity:0.4; font-size:0.8rem; pointer-events: none;}
@@ -176,6 +175,15 @@
         <div class="creator-box" style="text-align:center;">
             <h2 style="color:var(--orange); margin-top:0;">SES AYARLARI 🎛️</h2>
             
+            <label style="color:#f1c40f; font-weight:bold; display:block; margin-bottom:5px;">MÜZİK TÜRÜ</label>
+            <select id="music-genre" style="width:100%; padding:10px; background:#111; color:white; border:2px solid #f1c40f; border-radius:8px; margin-bottom:20px; font-weight:bold; outline:none; text-align:center; cursor:pointer;" onchange="changeMusicGenre()">
+                <option value="default">Orijinal (Aksiyon)</option>
+                <option value="asansor">Sakin Caz</option>
+                <option value="phonk">Agresif (Phonk Vibe)</option>
+                <option value="lofi">Lo-Fi (Chill)</option>
+                <option value="taverna">Taverna (Ortaçağ)</option>
+            </select>
+
             <label style="color:#00ff88; font-weight:bold; display:block; margin-bottom:5px;">MÜZİK (BGM)</label>
             <input type="range" id="bgm-slider" min="0" max="1" step="0.05" value="0.2" style="width:100%; margin-bottom:20px; accent-color:#00ff88;" oninput="updateVolumes()">
             
@@ -186,7 +194,7 @@
         </div>
     </div>
 
-    <audio id="bg-music" loop src="https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3" preload="auto"></audio>
+    <audio id="bg-music" loop preload="auto"></audio>
     <audio id="sfx-click" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3" preload="auto"></audio>
     <audio id="sfx-die" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde10a.mp3" preload="auto"></audio>
     <audio id="sfx-win" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_c6ccf3232f.mp3" preload="auto"></audio>
@@ -355,8 +363,8 @@
             <p id="detail-creator" style="color:#aaa; font-size:0.8rem; margin-top:-5px;">Mimar: Bilinmiyor</p>
             
             <div style="display:flex; justify-content:center; gap:10px; margin-bottom:15px;">
-                <span id="detail-likes" style="background:#222; padding:5px 10px; border-radius:5px; font-weight:bold;">❤️ 0</span>
-                <span id="detail-plays" style="background:#222; padding:5px 10px; border-radius:5px; font-weight:bold;">▶️ 0</span>
+                <button style="background:#e74c3c; border:none; border-radius:5px; padding:5px 10px; color:white; font-weight:bold; cursor:pointer; box-shadow:0 3px 0 #c0392b; font-size: 0.9rem;" onclick="likeCurrentLevel()">❤️ BEĞEN (<span id="detail-likes">0</span>)</button>
+                <span style="background:#222; padding:5px 10px; border-radius:5px; font-weight:bold; color:#fff; display:flex; align-items:center;">▶️ OYNANMA: <span id="detail-plays" style="margin-left:5px;">0</span></span>
             </div>
             
             <div style="background:#111; border-radius:8px; padding:10px; margin-bottom:15px;">
@@ -446,17 +454,30 @@
         const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
         firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
-        // --- SES SİSTEMİ ---
         const bgMusic = document.getElementById('bg-music');
         const sfxClick = document.getElementById('sfx-click');
         const sfxDie = document.getElementById('sfx-die');
         const sfxWin = document.getElementById('sfx-win');
         
+        const musicTracks = {
+            default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
+            asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
+            phonk: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3",  
+            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",    
+            taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
+        };
+
         let savedBgmVol = localStorage.getItem('yesilkare_bgm');
         let savedSfxVol = localStorage.getItem('yesilkare_sfx');
+        let savedGenre = localStorage.getItem('yesilkare_genre') || 'default';
+        
         let bgmVol = savedBgmVol !== null ? parseFloat(savedBgmVol) : 0.2;
         let sfxVol = savedSfxVol !== null ? parseFloat(savedSfxVol) : 0.5;        
-        if(bgMusic) bgMusic.volume = bgmVol;
+        
+        if(bgMusic) {
+            bgMusic.src = musicTracks[savedGenre];
+            bgMusic.volume = bgmVol;
+        }
 
         function updateVolumes() {
             bgmVol = parseFloat(document.getElementById('bgm-slider').value);
@@ -467,11 +488,24 @@
             playSound(sfxClick);
         }
 
+        function changeMusicGenre() {
+            playSound(sfxClick);
+            const genre = document.getElementById('music-genre').value;
+            localStorage.setItem('yesilkare_genre', genre);
+            
+            bgMusic.src = musicTracks[genre];
+            
+            if (bgmVol > 0) {
+                bgMusic.play().catch(e => console.log("Oynatma bekleniyor: ", e));
+            }
+        }
+
         function toggleAudioMenu() {
             const menu = document.getElementById('audio-menu');
             if (menu.classList.contains('hidden')) {
                 document.getElementById('bgm-slider').value = bgmVol;
                 document.getElementById('sfx-slider').value = sfxVol;
+                document.getElementById('music-genre').value = localStorage.getItem('yesilkare_genre') || 'default';
                 menu.classList.remove('hidden');
                 playSound(sfxClick);
             } else {
@@ -540,7 +574,6 @@
         let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
         let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0;
         
-        // EDITOR YENİ EKLENTİ
         let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[];
         let editorPM=[], editorPT=[], editorLaser=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], isTestMode=false, levelVerified=false;
         
@@ -749,12 +782,11 @@
                     } 
                     if(target && target.type !== 'wall' && target.type !== 'break') { en.x = nx; en.y = ny; }
                     
-                    en.el.style.transform = `translate3d(${en.x * (currentCellSize+2)}px, ${en.y * (currentCellSize+2)}px, 0)`;
+                    en.el.style.transform = `translate3d(${en.x * (currentCellSize+2) + 2}px, ${en.y * (currentCellSize+2) + 2}px, 0)`;
                     if(en.x === pos.x && en.y === pos.y) die();
                 });
             }, 120);
 
-            // YENİ: NEMESIS (AVCI) YAPAY ZEKASI
             nemesisInterval = setInterval(() => {
                 if(!gameActive || nemesisBots.length === 0) return;
                 nemesisBots.forEach(nem => {
@@ -762,14 +794,12 @@
                     let dy = Math.sign(pos.y - nem.y);
                     let moved = false;
 
-                    // Önce X'de gitmeyi dene
                     if (dx !== 0) {
                         let target = getCell(nem.x + dx, nem.y);
                         if (target && target.type !== 'wall' && target.type !== 'break') {
                             nem.x += dx; moved = true;
                         }
                     }
-                    // Eğer X'de gidemediysen Y'de gitmeyi dene
                     if (!moved && dy !== 0) {
                         let target = getCell(nem.x, nem.y + dy);
                         if (target && target.type !== 'wall' && target.type !== 'break') {
@@ -777,16 +807,15 @@
                         }
                     }
 
-                    nem.el.style.transform = `translate3d(${nem.x * (currentCellSize+2)}px, ${nem.y * (currentCellSize+2)}px, 0)`;
+                    nem.el.style.transform = `translate3d(${nem.x * (currentCellSize+2) + 2}px, ${nem.y * (currentCellSize+2) + 2}px, 0)`;
                     
-                    // Avcı her adım attığında ekranı hafif sars (Gerilim efekti)
                     const gameBox = document.getElementById('game-container');
                     gameBox.style.transform = `translate(${Math.random()*4-2}px, ${Math.random()*4-2}px)`;
                     setTimeout(()=> gameBox.style.transform = 'none', 50);
 
                     if(nem.x === pos.x && nem.y === pos.y) die();
                 });
-            }, 600); // 600ms (Dev adımları)
+            }, 300); // <--- HIZLANDIRILDI (Eskiden 600'dü)
         }
 
         window.addEventListener('keydown', e => { 
@@ -1076,22 +1105,22 @@
         
         function returnToEditor() { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); showScreen('editor-screen'); }
 
-        // YENİ: HARİTA DETAY VE LİDERLİK TABLOSU
+        // HARİTA DETAY VE LİDERLİK TABLOSU
         function openLevelDetail(lvlString, docId) {
             playSound(sfxClick);
             currentOnlineLevel = JSON.parse(decodeURIComponent(lvlString));
-            currentOnlineLevel.docId = docId; // Firebase doküman ID'sini tut
+            currentOnlineLevel.docId = docId; 
             
             document.getElementById('detail-title').innerText = currentOnlineLevel.name || "İsimsiz Harita";
             document.getElementById('detail-creator').innerText = "Mimar: " + (currentOnlineLevel.creator || "Bilinmiyor");
-            document.getElementById('detail-likes').innerText = "❤️ " + (currentOnlineLevel.likes || 0);
-            document.getElementById('detail-plays').innerText = "▶️ " + (currentOnlineLevel.plays || 0);
+            
+            // BEĞENİ VE OYNANMA SAYILARINI GÜNCELLE
+            document.getElementById('detail-likes').innerText = currentOnlineLevel.likes || 0;
+            document.getElementById('detail-plays').innerText = currentOnlineLevel.plays || 0;
 
-            // Rekorları listele
             const lbContainer = document.getElementById('detail-leaderboard');
             lbContainer.innerHTML = '';
             if (currentOnlineLevel.records && currentOnlineLevel.records.length > 0) {
-                // En iyi 3'ü göster
                 let sorted = currentOnlineLevel.records.sort((a,b) => a.time - b.time).slice(0, 3);
                 sorted.forEach((rec, i) => {
                     let medal = i===0 ? '🥇' : (i===1 ? '🥈' : '🥉');
@@ -1104,6 +1133,26 @@
             document.getElementById('level-detail-modal').classList.remove('hidden');
         }
 
+        // BEĞENİ SİSTEMİ (Anti-Spam Korumalı)
+        function likeCurrentLevel() {
+            playSound(sfxClick);
+            if (!currentOnlineLevel || !currentOnlineLevel.docId) return;
+            
+            let liked = JSON.parse(localStorage.getItem('yesilkare_likes') || "[]");
+            if(liked.includes(currentOnlineLevel.docId)) {
+                alert("Mimar, bu haritayı zaten beğendin! ❤️");
+                return;
+            }
+            
+            currentOnlineLevel.likes = (currentOnlineLevel.likes || 0) + 1;
+            document.getElementById('detail-likes').innerText = currentOnlineLevel.likes;
+            
+            liked.push(currentOnlineLevel.docId);
+            localStorage.setItem('yesilkare_likes', JSON.stringify(liked));
+            
+            db.collection("levels").doc(currentOnlineLevel.docId).update({ likes: currentOnlineLevel.likes }).catch(e=>{});
+        }
+
         function closeDetailModal() { playSound(sfxClick); document.getElementById('level-detail-modal').classList.add('hidden'); }
 
         function startOnlineLevelFromDetail() {
@@ -1111,7 +1160,6 @@
             closeDetailModal();
             isTestMode = false; isPlayingOnline = true; 
             
-            // Oynanma sayısını 1 artır (Firebase'de)
             if (currentOnlineLevel.docId && user.name) {
                 currentOnlineLevel.plays = (currentOnlineLevel.plays || 0) + 1;
                 db.collection("levels").doc(currentOnlineLevel.docId).update({ plays: currentOnlineLevel.plays }).catch(e=>{});
@@ -1138,7 +1186,6 @@
                     const encodedLvl = encodeURIComponent(JSON.stringify(lvl));
                     const addBtn = user.isAdmin ? `<button class="action-btn" style="padding:6px; font-size:0.6rem; margin-top:5px;" onclick="addLevelToArc('${encodedLvl}')">ARC Ekle 📥</button>` : '';
 
-                    // YENİ: ETİKET (TAG) SİSTEMİ
                     let tagHTML = `<span class="tag tag-classic">Klasik</span>`;
                     if (nem.length > 0) tagHTML = `<span class="tag tag-nemesis">👹 Avcı Modu</span>`;
 
@@ -1275,7 +1322,6 @@
             const ch = characters.find(x => x.id === user.activeChar) || {perk:'none'};
             let baseEarned = (currentIdx + 1) * 100; let timeBonus = Math.max(50, Math.floor(2000 / (dur + 1))); let earned = baseEarned + timeBonus;
             
-            // Eğer haritada Avcı (Nemesis) varsa x2 Altın Ödülü!
             if(nemesisBots.length > 0) earned *= 2;
             if(ch.perk === 'rich') earned *= 2; 
 
@@ -1284,11 +1330,9 @@
             
             if(isTestMode){ levelVerified = true; document.getElementById('publish-btn').disabled = false; setTimeout(()=>returnToEditor(), 1500); return; }
             
-            // LİDERLİK TABLOSU GÜNCELLEMESİ (Sadece Online Oyunlar için)
             if (isPlayingOnline && currentOnlineLevel && currentOnlineLevel.docId && user.name && !user.name.startsWith("Misafir_")) {
                 let recs = currentOnlineLevel.records || [];
                 recs.push({ user: user.name, time: dur });
-                // En iyi süreleri bul, aynı kullanıcı varsa sadece en iyisini tut
                 let bestRecords = [];
                 recs.forEach(r => {
                     let existing = bestRecords.find(x => x.user === r.user);
@@ -1296,7 +1340,6 @@
                     else if(r.time < existing.time) existing.time = r.time;
                 });
                 bestRecords.sort((a,b) => a.time - b.time);
-                // Sadece top 10 tut
                 db.collection("levels").doc(currentOnlineLevel.docId).update({ records: bestRecords.slice(0,10) }).catch(e=>{});
             }
 
@@ -1328,74 +1371,6 @@
         pixelGridEl.addEventListener('touchmove', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
 
         initGame();
-        <div id="game-music-ui" style="position: fixed; bottom: 20px; right: 20px; background: rgba(20, 20, 20, 0.9); color: #00ff41; padding: 15px; border: 2px solid #00ff41; border-radius: 10px; font-family: 'Courier New', Courier, monospace; z-index: 1000; box-shadow: 0 0 15px rgba(0,255,65,0.3);">
-    <h3 style="margin-top: 0; font-size: 16px; text-align: center;">🎮 SES AYARLARI</h3>
-    
-    <div style="margin-bottom: 10px;">
-        <label style="font-size: 12px;">Müzik Türü:</label><br>
-        <select id="genreSelector" style="width: 100%; background: #333; color: white; border: 1px solid #00ff41; padding: 5px; cursor: pointer;">
-            <option value="asansor">Asansör (Sakin Caz)</option>
-            <option value="phonk">Agresif Phonk</option>
-            <option value="lofi">Lo-Fi (Chill)</option>
-        </select>
-    </div>
-
-    <div style="margin-bottom: 10px;">
-        <label style="font-size: 12px;">Ses Düzeyi:</label><br>
-        <input type="range" id="volControl" min="0" max="1" step="0.1" value="0.5" style="width: 100%; accent-color: #00ff41; cursor: pointer;">
-    </div>
-
-    <button id="musicToggleBtn" style="width: 100%; background: #00ff41; color: black; border: none; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 5px;">MÜZİĞİ BAŞLAT</button>
-</div>
-
-<script>
-    // Müzik Kütüphanesi (Telifsiz Linkler)
-    const tracks = {
-        asansor: "https://www.chosic.com/wp-content/uploads/2021/07/The-Girl-From-Ipanema.mp3",
-        phonk: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequency/Ketsa_-_08_-_Small_Steps.mp3", // Temsili enerjik parça
-        lofi: "https://www.chosic.com/wp-content/uploads/2021/04/And-So-It-Begins-Inspired-By-Lo-Fi.mp3"
-    };
-
-    let audio = new Audio(tracks.asansor);
-    audio.loop = true;
-    let isPlaying = false;
-
-    const genreSelector = document.getElementById('genreSelector');
-    const volControl = document.getElementById('volControl');
-    const musicBtn = document.getElementById('musicToggleBtn');
-
-    // Müzik Başlat/Durdur
-    musicBtn.addEventListener('click', () => {
-        if (!isPlaying) {
-            audio.play().catch(e => alert("Lütfen önce sayfaya bir kez tıklayın!"));
-            musicBtn.innerText = "MÜZİĞİ DURDUR";
-            musicBtn.style.background = "#ff4141";
-            isPlaying = true;
-        } else {
-            audio.pause();
-            musicBtn.innerText = "MÜZİĞİ BAŞLAT";
-            musicBtn.style.background = "#00ff41";
-            isPlaying = false;
-        }
-    });
-
-    // Tür Değiştirme
-    genreSelector.addEventListener('change', (e) => {
-        const wasPlaying = isPlaying;
-        audio.pause();
-        audio = new Audio(tracks[e.target.value]);
-        audio.loop = true;
-        audio.volume = volControl.value;
-        
-        if (wasPlaying) {
-            audio.play();
-        }
-    });
-
-    // Ses Kontrolü
-    volControl.addEventListener('input', (e) => {
-        audio.volume = e.target.value;
-    });
-</script>
+    </script>
 </body>
-</html> 
+</html>
