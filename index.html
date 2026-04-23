@@ -1328,6 +1328,74 @@
         pixelGridEl.addEventListener('touchmove', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
 
         initGame();
-    </script>
+        <div id="game-music-ui" style="position: fixed; bottom: 20px; right: 20px; background: rgba(20, 20, 20, 0.9); color: #00ff41; padding: 15px; border: 2px solid #00ff41; border-radius: 10px; font-family: 'Courier New', Courier, monospace; z-index: 1000; box-shadow: 0 0 15px rgba(0,255,65,0.3);">
+    <h3 style="margin-top: 0; font-size: 16px; text-align: center;">🎮 SES AYARLARI</h3>
+    
+    <div style="margin-bottom: 10px;">
+        <label style="font-size: 12px;">Müzik Türü:</label><br>
+        <select id="genreSelector" style="width: 100%; background: #333; color: white; border: 1px solid #00ff41; padding: 5px; cursor: pointer;">
+            <option value="asansor">Asansör (Sakin Caz)</option>
+            <option value="phonk">Agresif Phonk</option>
+            <option value="lofi">Lo-Fi (Chill)</option>
+        </select>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <label style="font-size: 12px;">Ses Düzeyi:</label><br>
+        <input type="range" id="volControl" min="0" max="1" step="0.1" value="0.5" style="width: 100%; accent-color: #00ff41; cursor: pointer;">
+    </div>
+
+    <button id="musicToggleBtn" style="width: 100%; background: #00ff41; color: black; border: none; padding: 8px; font-weight: bold; cursor: pointer; border-radius: 5px;">MÜZİĞİ BAŞLAT</button>
+</div>
+
+<script>
+    // Müzik Kütüphanesi (Telifsiz Linkler)
+    const tracks = {
+        asansor: "https://www.chosic.com/wp-content/uploads/2021/07/The-Girl-From-Ipanema.mp3",
+        phonk: "https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequency/Ketsa_-_08_-_Small_Steps.mp3", // Temsili enerjik parça
+        lofi: "https://www.chosic.com/wp-content/uploads/2021/04/And-So-It-Begins-Inspired-By-Lo-Fi.mp3"
+    };
+
+    let audio = new Audio(tracks.asansor);
+    audio.loop = true;
+    let isPlaying = false;
+
+    const genreSelector = document.getElementById('genreSelector');
+    const volControl = document.getElementById('volControl');
+    const musicBtn = document.getElementById('musicToggleBtn');
+
+    // Müzik Başlat/Durdur
+    musicBtn.addEventListener('click', () => {
+        if (!isPlaying) {
+            audio.play().catch(e => alert("Lütfen önce sayfaya bir kez tıklayın!"));
+            musicBtn.innerText = "MÜZİĞİ DURDUR";
+            musicBtn.style.background = "#ff4141";
+            isPlaying = true;
+        } else {
+            audio.pause();
+            musicBtn.innerText = "MÜZİĞİ BAŞLAT";
+            musicBtn.style.background = "#00ff41";
+            isPlaying = false;
+        }
+    });
+
+    // Tür Değiştirme
+    genreSelector.addEventListener('change', (e) => {
+        const wasPlaying = isPlaying;
+        audio.pause();
+        audio = new Audio(tracks[e.target.value]);
+        audio.loop = true;
+        audio.volume = volControl.value;
+        
+        if (wasPlaying) {
+            audio.play();
+        }
+    });
+
+    // Ses Kontrolü
+    volControl.addEventListener('input', (e) => {
+        audio.volume = e.target.value;
+    });
+</script>
 </body>
 </html> 
