@@ -194,6 +194,16 @@
         </div>
     </div>
 
+    <div id="tutorial-overlay" class="screen hidden" style="background:rgba(10,10,15,0.98); z-index:10005;">
+        <div class="creator-box" style="text-align:center; max-width: 350px;">
+            <h2 id="tut-title" style="color:var(--orange); margin-top:0;">EĞİTİM</h2>
+            <div id="tut-anim-container" style="height:120px; display:flex; align-items:center; justify-content:center; margin: 15px 0; background:#111; border-radius:10px; border:2px solid #333; position:relative; overflow:hidden;">
+                </div>
+            <p id="tut-desc" style="color:#fff; font-size:0.9rem; line-height:1.5; font-weight:bold;"></p>
+            <button class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9; margin-top:20px;" onclick="closeTutorial()">ANLADIM 🚀</button>
+        </div>
+    </div>
+
     <audio id="bg-music" loop preload="auto"></audio>
     <audio id="sfx-click" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_bb630cc098.mp3" preload="auto"></audio>
     <audio id="sfx-die" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde10a.mp3" preload="auto"></audio>
@@ -463,8 +473,30 @@
             default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
             asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
             phonk: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3",  
-            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",    
+            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
             taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
+        };
+
+        // EĞİTİM VERİLERİ (ARC 2 ve ARC 3 İÇİN)
+        const tutorials = {
+            arc2: {
+                title: "ARC 2: KÖPRÜ & BALYOZ",
+                anim: `<div style="display:flex; align-items:center; gap:20px;">
+                        <div class="cell breakable" style="width:40px; height:40px; font-size:1.2rem; display:flex; align-items:center; justify-content:center;"></div>
+                        <div style="color:white; font-size:2rem;">&</div>
+                        <div class="cell bridge-h" style="width:40px; height:40px;"></div>
+                       </div>`,
+                desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. Balyoz yeteneğin varsa tek atarsın!<br><br>🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden geçebilirsin."
+            },
+            arc3: {
+                title: "ARC 3: PORTALLAR",
+                anim: `<div style="display:flex; align-items:center; justify-content:center; gap:30px;">
+                        <div class="cell portal-m" style="width:40px; height:40px;"></div>
+                        <div style="color:white; font-size:2rem;">➡️</div>
+                        <div class="cell portal-t" style="width:40px; height:40px;"></div>
+                       </div>`,
+                desc: "🔵 🟠 <b>Portallar:</b> Mavi portala girdiğinde anında turuncu portaldan çıkarsın. Haritada hızlıca ışınlanmak için kullan!"
+            }
         };
 
         let savedBgmVol = localStorage.getItem('yesilkare_bgm');
@@ -593,6 +625,22 @@
             if(user.name && !user.name.startsWith("Misafir_")) {
                 db.collection("users").doc(user.name).set(user, {merge: true}).catch(e=>console.log(e));
             }
+        }
+
+        // ÖĞRETİCİ FONKSİYONLARI
+        function showTutorial(tutKey) {
+            playSound(sfxClick);
+            const tut = tutorials[tutKey];
+            if (!tut) return;
+            document.getElementById('tut-title').innerHTML = tut.title;
+            document.getElementById('tut-anim-container').innerHTML = tut.anim;
+            document.getElementById('tut-desc').innerHTML = tut.desc;
+            document.getElementById('tutorial-overlay').classList.remove('hidden');
+        }
+
+        function closeTutorial() {
+            playSound(sfxClick);
+            document.getElementById('tutorial-overlay').classList.add('hidden');
         }
 
         async function fetchGlobalArcs() {
@@ -815,7 +863,7 @@
 
                     if(nem.x === pos.x && nem.y === pos.y) die();
                 });
-            }, 300); // <--- HIZLANDIRILDI (Eskiden 600'dü)
+            }, 300);
         }
 
         window.addEventListener('keydown', e => { 
@@ -1012,7 +1060,17 @@
                 else if(t==='faces') { if(item.url && item.url !== 'none') prev = `<div class="skin-prev" style="background:url(${item.url}) center/cover, #fff;"></div>`; else prev = `<div class="skin-prev" style="background:#fff; overflow:hidden;"><div class="kare-yuz ${item.cls}" style="transform:scale(0.6);"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div></div>`; }
                 else { let bStyle = item.body.startsWith('data') ? `url(${item.body}) center/cover` : item.body; let fStyle = item.faceUrl && item.faceUrl !== 'none' ? `<div class="layer" style="background-image:url(${item.faceUrl})"></div>` : `<div class="kare-yuz ${item.face}"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div>`; prev = `<div class="skin-prev" style="background:${bStyle}; overflow:hidden;">${fStyle}</div>`; }
                 let creatorTag = item.creator ? `<span style="font-size:0.6rem; color:#aaa; margin-top:-5px; margin-bottom:5px;">Mimar: ${item.creator}</span>` : '';
-                c.innerHTML=`${delBtn}${prev}<b style="font-size:0.8rem; margin-bottom:5px;">${item.name}</b>${creatorTag}<button class="action-btn ${active?'':'orange-btn'}" style="padding:8px; font-size:0.7rem;" onclick="buyItem('${item.id}','${t}', ${item.price||0})">${active?'SEÇİLDİ':(owned?'SEÇ':(item.price||0)+' 💰')}</button>`; 
+                
+                // Karakter Yetenek Açıklaması
+                let perkTag = '';
+                if (t === 'chars') {
+                    let pObj = perks.find(p => p.type === item.perk);
+                    if (pObj && pObj.type !== 'none') {
+                        perkTag = `<div style="font-size:0.65rem; color:#f1c40f; margin-bottom:5px; background:rgba(0,0,0,0.5); padding:4px 6px; border-radius:6px;">✨ ${pObj.name}: ${pObj.desc}</div>`;
+                    }
+                }
+
+                c.innerHTML=`${delBtn}${prev}<b style="font-size:0.8rem; margin-bottom:5px;">${item.name}</b>${creatorTag}${perkTag}<button class="action-btn ${active?'':'orange-btn'}" style="padding:8px; font-size:0.7rem; margin-top:auto;" onclick="buyItem('${item.id}','${t}', ${item.price||0})">${active?'SEÇİLDİ':(owned?'SEÇ':(item.price||0)+' 💰')}</button>`; 
                 g.appendChild(c); 
             }); 
         }
@@ -1240,6 +1298,17 @@
             document.getElementById('next-lvl-btn').style.display = 'none';
             document.getElementById('edit-lvl-btn').style.display = isTestMode ? 'flex' : 'none'; 
 
+            // EĞİTİM KONTROLÜ (TEST veya ONLİNE MODUNDA DEĞİLSE)
+            if (!isTestMode && !isPlayingOnline && currentIdx === 0) {
+                if (currentArc === 2 && !localStorage.getItem('tut_v47_arc2')) {
+                    showTutorial('arc2');
+                    localStorage.setItem('tut_v47_arc2', '1');
+                } else if (currentArc === 3 && !localStorage.getItem('tut_v47_arc3')) {
+                    showTutorial('arc3');
+                    localStorage.setItem('tut_v47_arc3', '1');
+                }
+            }
+
             let bVal = '#00ff88'; let fCls = 'yuz-standart'; let fUrl = 'none'; let activePerk = 'none';
             if(user.activeChar !== 'none') { const ch = characters.find(x => x.id === user.activeChar) || characters[0]; bVal = ch.body; fCls = ch.face; fUrl = ch.faceUrl; activePerk = ch.perk; } 
             else { let clrObj = db_colors.find(x=>x.id===user.activeColor)||db_colors[0]; bVal = clrObj.val; let fObj = db_faces.find(x=>x.id===user.activeFace)||db_faces[0]; fCls = fObj.cls || 'none'; fUrl = fObj.url || 'none'; }
@@ -1267,8 +1336,7 @@
 
             for(let y=0; y<d.grid; y++){ for(let x=0; x<d.grid; x++){
                 const isW = checkP(d.walls, x, y), isB = checkP(d.breakables, x, y), isBH = checkP(d.bridgesH, x, y), isBV = checkP(d.bridgesV, x, y);
-                const isPM=d.portalsM?.some(w=>w.x===x && w.y===y), isPT=d.portalsT?.some(w=>w.x===x && w.y===y), isL=d.lasers?.some(w=>w.x===x && w.y===y);
-                
+                const isPM=checkP(d.portalsM, x, y), isPT=checkP(d.portalsT, x, y), isL=checkP(d.lasers, x, y);                
                 let ePath = null; if(d.enemyPaths) { let p = d.enemyPaths.find(ep => ep.x === x && ep.y === y); if(p) ePath = p.dir; }
 
                 let cType = 'floor';
