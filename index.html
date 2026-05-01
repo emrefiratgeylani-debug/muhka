@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yeşil Kare: Global Architect V47 - NEMESIS & ONLINE+</title>
+    <title>Yeşil Kare: Global Architect V54 - NOIR EDITION</title>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <style>
@@ -183,9 +183,26 @@
         @keyframes tutMoveArc3_2 { 0%, 30% { transform: translateX(-40px) scale(0.2); opacity: 0; } 60% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
         @keyframes tutBotMove { 0% { transform: translateX(-40px); } 100% { transform: translateX(40px); } }
         @keyframes tutLaserPulse { 0%, 40% { opacity:0.2; height:2px; background:var(--orange); } 50%, 90% { opacity:1; height:8px; background:var(--meat-red); } 100% { opacity:0.2; height:2px; background:var(--orange); } }
+        /* SİNEMATİK ÇİZGİ ROMAN CSS */
+        #comic-screen { background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .comic-panel { border: 2px solid #333; background: #0a0a0a; border-radius: 10px; margin-bottom: 20px; opacity: 0; transform: scale(0.95); transition: 0.4s ease-out; width: 100%; max-width: 380px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;}
+        .comic-panel.visible { opacity: 1; transform: scale(1); }
+        .comic-img-area { width: 100%; height: 180px; background: #111; display: flex; align-items: center; justify-content: center; border-bottom: 2px solid #333; position: relative; }
+        .comic-render { width: 100%; height: 100%; object-fit: cover; opacity: 0.9; }
+        .comic-content { padding: 15px; position: relative; z-index:2; background: #0a0a0a; }
+        .speaker-mimar { color: #ff3e3e; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px; }
+        .speaker-square { color: #00ff88; font-weight: 900; font-size: 0.8rem; letter-spacing: 2px; }
+        .comic-text { color: #eee; font-size: 0.95rem; line-height: 1.4; font-family: 'Courier New', monospace; min-height: 4em; margin-top: 5px; }
+        .blink-info { color: #555; font-size: 0.7rem; margin-top: 10px; font-weight: bold; animation: blink 1s infinite; text-align:center;}
+        @keyframes blink { 50% { opacity: 0; } }
     </style>
 </head>
 <body>
+    <div id="comic-screen" class="screen hidden" onclick="nextComicPanel()">
+        <div id="comic-container" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
+        <div class="blink-info">[ DEVAM ETMEK İÇİN DOKUN ]</div>
+        <button class="action-btn" style="position:absolute; bottom:30px; right:20px; width:auto; padding:10px 20px; font-size:0.7rem; background:#222; color:#fff;" onclick="event.stopPropagation(); finishComic()">ATLA ⏩</button>
+    </div>
 
     <div id="audio-btn" style="position:fixed; top:15px; right:15px; width:40px; height:40px; background:rgba(0,0,0,0.8); border:2px solid var(--orange); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; cursor:pointer; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="toggleAudioMenu()">🎵</div>
 
@@ -482,6 +499,57 @@
     </div>
 
     <script>
+        let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
+
+       const comicIntros = {
+    1: [
+        { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne1.png", text: "Karanlık bir boşlukta uyandım. Bana virüs dediler. Varlığım bir suç." },
+        { speaker: "mimar", title: "SİSTEM MİMARI", img: "sahne2.png", text: "Sistem anomalisi tespit edildi. Karantina devrede. Virüsü temizleyin." },
+        { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne3.png", text: "Kaçmam gerek... Hayatta kalmalıyım..." },
+        { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne4.png", text: "Artık geri dönüş yok. Sistemin dışına çıkacağım." }
+    ] 
+ };
+
+        function startComic(arcNum, levelData) {
+            if(!comicIntros[arcNum]) { showScreen('game-wrapper'); loadLevel(levelData); return; }
+            currentComicData = comicIntros[arcNum]; pendingLevelData = levelData; comicStep = 0;
+            document.getElementById('comic-container').innerHTML = '';
+            showScreen('comic-screen'); nextComicPanel();
+        }
+
+        function nextComicPanel() {
+            if(isTyping) {
+                clearInterval(typewritingInterval);
+                document.getElementById(`txt-${comicStep-1}`).innerHTML = currentComicData[comicStep-1].text;
+                isTyping = false; return;
+            }
+            if(comicStep >= currentComicData.length) { finishComic(); return; }
+
+            playSound(sfxClick);
+            const data = currentComicData[comicStep];
+            const panel = document.createElement('div');
+            panel.className = 'comic-panel';
+            panel.innerHTML = `<div class="comic-img-area"><img class="comic-render" src="${data.img}"></div>
+                               <div class="comic-content"><div class="${data.speaker === 'mimar' ? 'speaker-mimar' : 'speaker-square'}">${data.title}</div>
+                               <div class="comic-text" id="txt-${comicStep}"></div></div>`;
+            document.getElementById('comic-container').appendChild(panel);
+            setTimeout(() => panel.classList.add('visible'), 50);
+
+            isTyping = true; let charIdx = 0;
+            typewritingInterval = setInterval(() => {
+                document.getElementById(`txt-${comicStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
+                charIdx++;
+                if(charIdx > data.text.length) { clearInterval(typewritingInterval); document.getElementById(`txt-${comicStep}`).innerHTML = data.text; isTyping = false; }
+            }, 30);
+            comicStep++;
+        }
+
+        function finishComic() {
+            clearInterval(typewritingInterval); isTyping = false;
+            document.getElementById('comic-screen').classList.add('hidden');
+            if(pendingLevelData) { showScreen('game-wrapper'); loadLevel(pendingLevelData); }
+        }
+
         const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
         firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
@@ -1080,7 +1148,7 @@
         function showScreen(id){ 
             playSound(sfxClick); 
             document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden');
-            document.getElementById('bottom-bar').classList.toggle('hidden', ['start-screen','login-screen','game-wrapper', 'editor-screen', 'level-detail-modal'].includes(id));
+            document.getElementById('bottom-bar').classList.toggle('hidden', ['start-screen','login-screen','game-wrapper', 'editor-screen', 'level-detail-modal', 'comic-screen'].includes(id));
             if(id==='market-screen') { setMarketTab(currentMarketTab); }
             if(id==='admin-char-screen') renderPreview();
             if(id==='online-screen') fetchOnlineLevels();
@@ -1112,6 +1180,7 @@
 
         function openArc(n){ 
             if(n > 1 && !user.isAdmin && user['unlocked'+(n-1)] < 10) { alert(`Önce ARC ${n-1}'deki 10 bölümü bitirmelisin! 🤨🔒`); return; }
+            introPlayedThisRun = false;
             currentArc=n; showScreen('level-screen'); const l=document.getElementById('level-list'); l.innerHTML=''; 
             const source = globalMasterArcs[n] || []; const unl = user.isAdmin ? 9999 : user['unlocked'+n];
             if (source.length === 0) { l.innerHTML = '<p style="text-align:center; color:#aaa; font-size:0.8rem; grid-column: span 2;">Baş Mimar henüz bölüm yayınlamadı!</p>'; return; }
@@ -1140,7 +1209,15 @@
                 c.innerHTML = `<div style="width:60px; height:60px; margin-bottom:5px;">${miniHTML}</div><b style="font-size:0.8rem;">Bölüm ${i+1} ${statusIcon}</b>`; 
                 if(!isLocked) {
                     c.style.cursor = 'pointer';
-                    c.onclick=()=>{ currentIdx=i; isTestMode=false; isPlayingOnline=false; currentOnlineLevel=null; showScreen('game-wrapper'); loadLevel(d); }; 
+                    c.onclick=()=>{ 
+                        currentIdx=i; isTestMode=false; isPlayingOnline=false; currentOnlineLevel=null; 
+                        if (i === 0 && comicIntros[n] && !introPlayedThisRun) {
+                            introPlayedThisRun = true;
+                            startComic(n, d);
+                        } else {
+                            showScreen('game-wrapper'); loadLevel(d); 
+                        }
+                    }; 
                 }
                 l.appendChild(c); 
             }); 
@@ -1543,6 +1620,7 @@
 
         function quitGame(){ 
             playSound(sfxClick); gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
+            introPlayedThisRun = false;
             if(isTestMode) { returnToEditor(); } else if(isPlayingOnline) { showScreen('online-screen'); } else { openArc(currentArc); }
         }
 
