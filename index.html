@@ -175,11 +175,14 @@
         .tag-nemesis { background:#8b0000; color:#ffcccc; border:1px solid #ff0000; }
         .tag-classic { background:#1e3a8a; color:#cce5ff; border:1px solid #3498db; }
 
-        /* EĞİTİM ANİMASYONLARI KEYFRAMES */
-        @keyframes tutMoveArc2 { 0% { transform: translateX(0); } 30% { transform: translateX(40px); } 40% { transform: translateX(40px); } 70% { transform: translateX(80px); } 100% { transform: translateX(80px); } }
-        @keyframes tutWallBreak { 0%, 25% { opacity: 1; transform: scale(1); } 35%, 100% { opacity: 0; transform: scale(0); } }
+        /* EĞİTİM ANİMASYONLARI KEYFRAMES - GÜNCELLENDİ */
+        @keyframes tutBridgeMove { 0% { transform: translateY(-40px); opacity:0; } 15% { transform: translateY(-40px); opacity:1; } 50%, 85% { transform: translateY(40px); opacity:1; } 100% { transform: translateY(40px); opacity:0; } }
+        @keyframes tutHammerMove { 0% { transform: translateX(0); } 30%, 40% { transform: translateX(30px); } 100% { transform: translateX(30px); } }
+        @keyframes tutWallBreak { 0%, 25% { opacity: 1; transform: scale(1); } 30% { transform: scale(1.1); } 35%, 100% { opacity: 0; transform: scale(0); } }
         @keyframes tutMoveArc3_1 { 0% { transform: translateX(0) scale(1); opacity: 1; } 30% { transform: translateX(40px) scale(0.2); opacity: 0; } 100% { transform: translateX(40px) scale(0.2); opacity: 0; } }
         @keyframes tutMoveArc3_2 { 0%, 30% { transform: translateX(-40px) scale(0.2); opacity: 0; } 60% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
+        @keyframes tutBotMove { 0% { transform: translateX(-40px); } 100% { transform: translateX(40px); } }
+        @keyframes tutLaserPulse { 0%, 40% { opacity:0.2; height:2px; background:var(--orange); } 50%, 90% { opacity:1; height:8px; background:var(--meat-red); } 100% { opacity:0.2; height:2px; background:var(--orange); } }
     </style>
 </head>
 <body>
@@ -495,16 +498,23 @@
             taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
         };
 
-        // YENİ ANİMASYONLU EĞİTİM VERİLERİ (ARC 2 ve ARC 3 İÇİN)
+        // YENİ ANİMASYONLU EĞİTİM VERİLERİ - BÖLÜNDÜ VE GÜZELLEŞTİRİLDİ
         const tutorials = {
-            arc2: {
-                title: "ARC 2: KÖPRÜ & BALYOZ",
-                anim: `<div style="position:relative; width: 120px; height: 40px; display:flex;">
-                        <div class="cell bridge-h" style="position:absolute; left:80px; width:40px; height:40px;"></div>
-                        <div class="cell breakable" style="position:absolute; left:40px; width:40px; height:40px; animation: tutWallBreak 3s infinite;"></div>
-                        <div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutMoveArc2 3s infinite; z-index:5;"></div>
+            arc2_bridge: {
+                title: "ARC 2: KÖPRÜLER",
+                anim: `<div style="position:relative; width: 140px; height: 40px; display:flex; align-items:center; justify-content:center;">
+                        <div class="cell bridge-v" style="position:absolute; width:40px; height:40px; z-index:2;"></div>
+                        <div style="position:absolute; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutBridgeMove 2.5s infinite ease-in-out; z-index:1;"></div>
                        </div>`,
-                desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. Balyoz yeteneğin varsa tek atarsın!<br><br>🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden geçebilirsin."
+                desc: "🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden süzülerek geçebilirsin. Yanlardan girmeye çalışırsan seni duvar gibi durdurur."
+            },
+            arc2_hammer: {
+                title: "BİLGİ: KIRILGAN DUVARLAR",
+                anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center;">
+                        <div class="cell breakable" style="position:absolute; left:60px; width:40px; height:40px; animation: tutWallBreak 2.5s infinite;"></div>
+                        <div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutHammerMove 2.5s infinite;"></div>
+                       </div>`,
+                desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. Çarptığında önce seni durdurur, ikinci çarpışında tamamen kırılır. Balyoz yeteneğin varsa tek atarsın!"
             },
             arc3: {
                 title: "ARC 3: PORTALLAR",
@@ -515,6 +525,23 @@
                         <div style="position:absolute; right:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_2 3s infinite; z-index:1;"></div>
                        </div>`,
                 desc: "🔵 🟠 <b>Portallar:</b> Mavi portala girdiğinde anında turuncu portaldan çıkarsın. Haritada hızlıca ışınlanmak için kullan!"
+            },
+            arc3_bot: {
+                title: "BİLGİ: DEVRİYE BOTLARI",
+                anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;">
+                        <div class="enemy-bot" style="position:absolute; width:30px; height:30px; animation: tutBotMove 2s infinite alternate linear;">🤖</div>
+                       </div>`,
+                desc: "🤖 <b>Devriye Botları:</b> Haritada belirli bir rotayı izlerler. Duvarlara veya engellere çarptıklarında geri dönerler. Onlara çarparsan yanarsın, zamanlamanı iyi ayarla!"
+            },
+            arc3_laser: {
+                title: "BİLGİ: LAZER AĞLARI",
+                anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;">
+                        <div style="width:40px; height:40px; position:relative; display:flex; align-items:center;">
+                            <div class="laser-base" style="width:100%;"></div>
+                            <div class="laser-beam" style="width:100%; height:8px; background:var(--meat-red); animation: tutLaserPulse 1.4s infinite;"></div>
+                        </div>
+                       </div>`,
+                desc: "⚡ <b>Lazerler:</b> Belirli aralıklarla açılıp kapanırlar. Kırmızı renkte parladıklarında üzerlerinde olursan ölürsün. Sönükken veya sarı uyarı modundayken hızla geçmelisin!"
             }
         };
 
@@ -625,7 +652,6 @@
         let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
         let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0;
         
-        // YENİ: Ters Yön Değişkenleri
         let reverseActive = false;
         let reverseIntervalObj = null;
 
@@ -650,7 +676,6 @@
             }
         }
 
-        // ÖĞRETİCİ FONKSİYONLARI
         function showTutorial(tutKey) {
             playSound(sfxClick);
             const tut = tutorials[tutKey];
@@ -742,6 +767,10 @@
             while (gameActive) {
                 let cCell = getCell(pos.x, pos.y);
                 if(!cCell) break;
+
+                if((dy !== 0 && cCell.type === 'bh') || (dx !== 0 && cCell.type === 'bv')) { 
+                    if(ch.perk !== 'ghost' || !ghostActive) break; 
+                }
 
                 let hitSpike = false; 
                 let nx = pos.x + dx, ny = pos.y + dy; 
@@ -1087,9 +1116,32 @@
             const source = globalMasterArcs[n] || []; const unl = user.isAdmin ? 9999 : user['unlocked'+n];
             if (source.length === 0) { l.innerHTML = '<p style="text-align:center; color:#aaa; font-size:0.8rem; grid-column: span 2;">Baş Mimar henüz bölüm yayınlamadı!</p>'; return; }
 
-            source.forEach((v,i)=>{ 
-                const c=document.createElement('div'); c.className=`card ${i<=unl?'':'locked'}`; c.innerHTML=`<b>Bölüm ${i+1} ${i>unl ? '🔒' : ''}</b>`; 
-                if(i<=unl) c.onclick=()=>{ currentIdx=i; isTestMode=false; isPlayingOnline=false; currentOnlineLevel=null; showScreen('game-wrapper'); loadLevel(v); }; 
+            source.forEach((d,i)=>{ 
+                const isCompleted = i < unl;
+                const isLocked = i > unl;
+                const c=document.createElement('div'); c.className=`skin-card ${!isLocked?'':'locked'}`; 
+                
+                const getC = (w) => w.x !== undefined ? [w.x, w.y] : [w[0], w[1]];
+                const walls = (d.walls || []).map(getC); const brH = (d.bridgesH || []).map(getC); const brV = (d.bridgesV || []).map(getC); const breaks = (d.breakables || []).map(getC); 
+                const sPos = [d.start?.x ?? d.start?.[0] ?? 0, d.start?.y ?? d.start?.[1] ?? 0];
+                
+                let miniHTML = `<div style="display:grid; grid-template-columns:repeat(${d.grid}, 1fr); gap:1px; width:100%; height:100%; padding:4px; background:#2a2a32; border-radius:6px; ${isLocked ? 'filter: grayscale(1) opacity(0.4);' : ''}">`;
+                for(let j=0; j<d.grid*d.grid; j++){ 
+                    let cx = j % d.grid; let cy = Math.floor(j / d.grid); let bg = '#ecf0f1'; 
+                    if(walls.some(w => w[0]===cx && w[1]===cy)) bg = '#222'; 
+                    else if(breaks.some(w => w[0]===cx && w[1]===cy)) bg = '#5d4037'; 
+                    else if(brH.some(w => w[0]===cx && w[1]===cy) || brV.some(w => w[0]===cx && w[1]===cy)) bg = '#000'; 
+                    else if(sPos[0]===cx && sPos[1]===cy) bg = '#00ff88'; 
+                    miniHTML += `<div style="background:${bg}; border-radius:2px;"></div>`; 
+                } 
+                miniHTML += `</div>`;
+
+                let statusIcon = isLocked ? '🔒' : (isCompleted ? '✅' : '▶️');
+                c.innerHTML = `<div style="width:60px; height:60px; margin-bottom:5px;">${miniHTML}</div><b style="font-size:0.8rem;">Bölüm ${i+1} ${statusIcon}</b>`; 
+                if(!isLocked) {
+                    c.style.cursor = 'pointer';
+                    c.onclick=()=>{ currentIdx=i; isTestMode=false; isPlayingOnline=false; currentOnlineLevel=null; showScreen('game-wrapper'); loadLevel(d); }; 
+                }
                 l.appendChild(c); 
             }); 
         }
@@ -1352,14 +1404,18 @@
             document.getElementById('next-lvl-btn').style.display = 'none';
             document.getElementById('edit-lvl-btn').style.display = isTestMode ? 'flex' : 'none'; 
 
-            // EĞİTİM KONTROLÜ (TEST veya ONLİNE MODUNDA DEĞİLSE)
-            if (!isTestMode && !isPlayingOnline && currentIdx === 0) {
-                if (currentArc === 2 && !localStorage.getItem('tut_v47_arc2')) {
-                    showTutorial('arc2');
-                    localStorage.setItem('tut_v47_arc2', '1');
-                } else if (currentArc === 3 && !localStorage.getItem('tut_v47_arc3')) {
+            // EĞİTİM KONTROLÜ (TEST veya ONLİNE MODUNDA DEĞİLSE) - Her girişte gösterilecek şekilde ayarlandı
+            if (!isTestMode && !isPlayingOnline) {
+                if (currentArc === 2 && currentIdx === 0) {
+                    showTutorial('arc2_bridge');
+                } else if (currentArc === 2 && currentIdx === 3) {
+                    showTutorial('arc2_hammer');
+                } else if (currentArc === 3 && currentIdx === 0) {
                     showTutorial('arc3');
-                    localStorage.setItem('tut_v47_arc3', '1');
+                } else if (currentArc === 3 && currentIdx === 6) {
+                    showTutorial('arc3_bot');
+                } else if (currentArc === 3 && currentIdx === 7) {
+                    showTutorial('arc3_laser');
                 }
             }
 
@@ -1429,7 +1485,6 @@
             timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100);
             startCycles(); 
 
-            // TERS YÖN ZAMANLAYICISI BURADA BAŞLIYOR!
             if (d.revTime && d.revTime > 0) {
                 reverseIntervalObj = setInterval(() => {
                     if(!gameActive) return;
@@ -1488,7 +1543,7 @@
 
         function quitGame(){ 
             playSound(sfxClick); gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
-            if(isTestMode) { returnToEditor(); } else if(isPlayingOnline) { showScreen('online-screen'); } else { showScreen('level-screen'); }
+            if(isTestMode) { returnToEditor(); } else if(isPlayingOnline) { showScreen('online-screen'); } else { openArc(currentArc); }
         }
 
         function resetLevel(){ 
