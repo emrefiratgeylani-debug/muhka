@@ -25,6 +25,10 @@
         #player-container { position: absolute; z-index: 60; pointer-events: none; width: var(--cell-sz); height: var(--cell-sz); transition: transform 0.1s linear; top: 0; left: 0; will-change: transform; }
         #player-body { width: 100%; height: 100%; border-radius: 6px; position: relative; display: flex; align-items: center; justify-content: center; background-size: cover !important; }
         
+        /* TERS YÖN ANİMASYONU VE SİMGESİ */
+        .reverse-active::after { content: '🔄'; position: absolute; top: -25px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; animation: spinRevIcon 2s linear infinite; z-index: 100; text-shadow: 0 0 10px #e74c3c; color: #e74c3c; pointer-events: none; }
+        @keyframes spinRevIcon { 100% { transform: translateX(-50%) rotate(-360deg); } }
+
         .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; border-radius: 6px; z-index:10; pointer-events: none; }
         .dead-player { background: #c0392b !important; transform: scale3d(1.2, 1.2, 1) rotate(15deg); }
         .dead-player .kare-yuz, .dead-player .layer { opacity: 0; }
@@ -81,10 +85,12 @@
         .yuz-havali::before { content:''; position:absolute; width:100%; height:4px; background:#111; top:38%; z-index:1; }
 
         #game-container, #editor-container { position: relative; border: 4px solid #333; background: #2a2a32; display: grid; gap: var(--gap); padding: var(--gap); border-radius: 12px; margin: 0 auto; width: fit-content; max-width: 95vw; flex-shrink: 0; touch-action: none;}
-        .cell { width: var(--cell-sz); height: var(--cell-sz); background: var(--cell-bg); border-radius: 4px; position: relative; }
-        .cell.wall { background: var(--wall); border: 1px solid #444; }
         
-        .cell.painted { opacity: 0.9; transform: scale(0.95); transition: transform 0.1s; }
+        /* Z-INDEX ÇÖZÜMÜ BURADA: Hücreler z-index:1, Boyalı z-index:2, Dikenler z-index:10 */
+        .cell { width: var(--cell-sz); height: var(--cell-sz); background: var(--cell-bg); border-radius: 4px; position: relative; z-index: 1; }
+        .cell.wall { background: var(--wall); border: 1px solid #444; }
+        .cell.painted { opacity: 0.9; transform: scale(0.95); transition: transform 0.1s; z-index: 2; }
+        .spike-t, .spike-b, .spike-l, .spike-r { z-index: 10 !important; }
         
         .cell.breakable { background: #5d4037; border: 1px solid #3e2723; }
         .cell.breakable::after { content: '🧱'; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; height: 100%; }
@@ -93,10 +99,13 @@
         .cell.bridge-v { border-left: 6px solid var(--bridge); border-right: 6px solid var(--bridge); }
         .cell.start-marker::before { content: 'S'; color: #2ecc71; font-weight: 900; position: absolute; left: 10%; top: 5%; }
 
-        .spike-t::before { content:''; position:absolute; top:-2px; left:0; width:100%; height:6px; background: repeating-linear-gradient(45deg, transparent, transparent 4px, #e74c3c 4px, #e74c3c 8px); z-index:15; border-top: 2px solid #c0392b; }
-        .spike-b::after { content:''; position:absolute; bottom:-2px; left:0; width:100%; height:6px; background: repeating-linear-gradient(45deg, transparent, transparent 4px, #e74c3c 4px, #e74c3c 8px); z-index:15; border-bottom: 2px solid #c0392b; }
-        .spike-l { border-left: 6px dashed #e74c3c !important; }
-        .spike-r { border-right: 6px dashed #e74c3c !important; }
+        /* YENİ NEON ÜÇGEN DİKEN TASARIMLARI - Z-INDEX 50! */
+        .spike-t::before { content:''; position:absolute; top:-6px; left:0; width:100%; height:8px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 10 8"><polygon points="5,0 10,8 0,8" fill="%23ff003c"/></svg>') repeat-x; z-index:50 !important; filter: drop-shadow(0 0 3px #ff003c); border:none; }
+        .spike-b::after { content:''; position:absolute; bottom:-6px; left:0; width:100%; height:8px; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 10 8"><polygon points="0,0 10,0 5,8" fill="%23ff003c"/></svg>') repeat-x; z-index:50 !important; filter: drop-shadow(0 0 3px #ff003c); border:none; }
+        .spike-l { border: none !important; }
+        .spike-l::before { content:''; position:absolute; left:-6px; top:0; width:8px; height:100%; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="10" viewBox="0 0 8 10"><polygon points="0,5 8,0 8,10" fill="%23ff003c"/></svg>') repeat-y; z-index:50 !important; filter: drop-shadow(0 0 3px #ff003c); }
+        .spike-r { border: none !important; }
+        .spike-r::after { content:''; position:absolute; right:-6px; top:0; width:8px; height:100%; background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="10" viewBox="0 0 8 10"><polygon points="0,0 8,5 0,10" fill="%23ff003c"/></svg>') repeat-y; z-index:50 !important; filter: drop-shadow(0 0 3px #ff003c); }
 
         .cell.portal-m { background: var(--portal-m); border-radius: 50%; }
         .cell.portal-t { background: var(--portal-t); border-radius: 50%; }
@@ -165,6 +174,12 @@
         .tag { font-size:0.6rem; padding:2px 6px; border-radius:4px; font-weight:bold; }
         .tag-nemesis { background:#8b0000; color:#ffcccc; border:1px solid #ff0000; }
         .tag-classic { background:#1e3a8a; color:#cce5ff; border:1px solid #3498db; }
+
+        /* EĞİTİM ANİMASYONLARI KEYFRAMES */
+        @keyframes tutMoveArc2 { 0% { transform: translateX(0); } 30% { transform: translateX(40px); } 40% { transform: translateX(40px); } 70% { transform: translateX(80px); } 100% { transform: translateX(80px); } }
+        @keyframes tutWallBreak { 0%, 25% { opacity: 1; transform: scale(1); } 35%, 100% { opacity: 0; transform: scale(0); } }
+        @keyframes tutMoveArc3_1 { 0% { transform: translateX(0) scale(1); opacity: 1; } 30% { transform: translateX(40px) scale(0.2); opacity: 0; } 100% { transform: translateX(40px) scale(0.2); opacity: 0; } }
+        @keyframes tutMoveArc3_2 { 0%, 30% { transform: translateX(-40px) scale(0.2); opacity: 0; } 60% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
@@ -429,8 +444,11 @@
         <div id="editor-container" style="flex-shrink:0;"></div>
         
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px; width: 100%; max-width: 350px; flex-shrink:0;">
-            <select id="grid-size" onchange="renderEditor()" style="background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;">
+            <div style="display:flex; gap:10px; width: 100%;">
+                <select id="grid-size" onchange="renderEditor()" style="flex:1; background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;">
                 </select>
+                <input type="number" id="reverse-timer" placeholder="Ters Yön (sn)" min="0" style="flex:1; background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;">
+            </div>
             
            <div style="display:flex; gap:10px; width: 100%;">
                 <button class="action-btn" style="background:#9b59b6; color:white; font-size:0.7rem; padding:10px; flex:1; margin:0;" onclick="importMapCode()">📂 İÇE AKTAR</button>
@@ -477,23 +495,24 @@
             taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
         };
 
-        // EĞİTİM VERİLERİ (ARC 2 ve ARC 3 İÇİN)
+        // YENİ ANİMASYONLU EĞİTİM VERİLERİ (ARC 2 ve ARC 3 İÇİN)
         const tutorials = {
             arc2: {
                 title: "ARC 2: KÖPRÜ & BALYOZ",
-                anim: `<div style="display:flex; align-items:center; gap:20px;">
-                        <div class="cell breakable" style="width:40px; height:40px; font-size:1.2rem; display:flex; align-items:center; justify-content:center;"></div>
-                        <div style="color:white; font-size:2rem;">&</div>
-                        <div class="cell bridge-h" style="width:40px; height:40px;"></div>
+                anim: `<div style="position:relative; width: 120px; height: 40px; display:flex;">
+                        <div class="cell bridge-h" style="position:absolute; left:80px; width:40px; height:40px;"></div>
+                        <div class="cell breakable" style="position:absolute; left:40px; width:40px; height:40px; animation: tutWallBreak 3s infinite;"></div>
+                        <div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutMoveArc2 3s infinite; z-index:5;"></div>
                        </div>`,
                 desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. Balyoz yeteneğin varsa tek atarsın!<br><br>🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden geçebilirsin."
             },
             arc3: {
                 title: "ARC 3: PORTALLAR",
-                anim: `<div style="display:flex; align-items:center; justify-content:center; gap:30px;">
-                        <div class="cell portal-m" style="width:40px; height:40px;"></div>
-                        <div style="color:white; font-size:2rem;">➡️</div>
-                        <div class="cell portal-t" style="width:40px; height:40px;"></div>
+                anim: `<div style="position:relative; width: 150px; height: 40px; display:flex; align-items:center; justify-content:space-between;">
+                        <div class="cell portal-m" style="width:40px; height:40px; position:relative; z-index:2;"></div>
+                        <div style="position:absolute; left:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_1 3s infinite; z-index:1;"></div>
+                        <div class="cell portal-t" style="width:40px; height:40px; position:relative; z-index:2;"></div>
+                        <div style="position:absolute; right:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_2 3s infinite; z-index:1;"></div>
                        </div>`,
                 desc: "🔵 🟠 <b>Portallar:</b> Mavi portala girdiğinde anında turuncu portaldan çıkarsın. Haritada hızlıca ışınlanmak için kullan!"
             }
@@ -606,6 +625,10 @@
         let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
         let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0;
         
+        // YENİ: Ters Yön Değişkenleri
+        let reverseActive = false;
+        let reverseIntervalObj = null;
+
         let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[];
         let editorPM=[], editorPT=[], editorLaser=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], isTestMode=false, levelVerified=false;
         
@@ -721,13 +744,14 @@
                 if(!cCell) break;
 
                 let hitSpike = false; 
-                if(dx===1 && cCell.spikes.includes('r')) hitSpike=true; if(dx===-1 && cCell.spikes.includes('l')) hitSpike=true; if(dy===1 && cCell.spikes.includes('b')) hitSpike=true; if(dy===-1 && cCell.spikes.includes('t')) hitSpike=true;
-                
                 let nx = pos.x + dx, ny = pos.y + dy; 
                 let nCell = getCell(nx, ny);
                 
                 if(nCell) { 
-                    if(dx===1 && nCell.spikes.includes('l')) hitSpike=true; if(dx===-1 && nCell.spikes.includes('r')) hitSpike=true; if(dy===1 && nCell.spikes.includes('t')) hitSpike=true; if(dy===-1 && nCell.spikes.includes('b')) hitSpike=true; 
+                    if(dx===1 && nCell.spikes.includes('l')) hitSpike=true; 
+                    if(dx===-1 && nCell.spikes.includes('r')) hitSpike=true; 
+                    if(dy===1 && nCell.spikes.includes('t')) hitSpike=true; 
+                    if(dy===-1 && nCell.spikes.includes('b')) hitSpike=true;
                 }
 
                 if(hitSpike) {
@@ -747,8 +771,19 @@
                     }
                     
                     if (nCell.type === 'break') {
-                        if (ch.perk === 'breaker') { nCell.type = 'floor'; nCell.el.className = 'cell'; }
-                        else { if(nCell.hp > 1){ nCell.hp--; nCell.el.classList.add('breakable-cracked'); break; } else { nCell.type='floor'; nCell.el.className='cell'; } }
+                        let extraSpikeClasses = Array.from(nCell.el.classList).filter(c => c.startsWith('spike-')).join(' ');
+                        if (ch.perk === 'breaker') { 
+                            nCell.type = 'floor'; 
+                            nCell.el.className = 'cell ' + extraSpikeClasses; 
+                        }
+                        else { 
+                            if(nCell.hp > 1){ 
+                                nCell.hp--; nCell.el.classList.add('breakable-cracked'); break; 
+                            } else { 
+                                nCell.type='floor'; 
+                                nCell.el.className='cell ' + extraSpikeClasses; 
+                            } 
+                        }
                     }
                     
                     if (!nCell.painted && nCell.type !== 'bh' && nCell.type !== 'bv') {
@@ -869,7 +904,12 @@
         window.addEventListener('keydown', e => { 
             if(gameActive) {
                 if (e.code === 'Space') { toggleGhost(); e.preventDefault(); }
-                else if (!moving && e.key.includes('Arrow')) { move(e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0, e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0); }
+                else if (!moving && e.key.includes('Arrow')) { 
+                    let dx = e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+                    let dy = e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0;
+                    if(reverseActive) { dx *= -1; dy *= -1; }
+                    move(dx, dy); 
+                }
             }
         });
 
@@ -892,7 +932,19 @@
             }
             lastTap = currentTime;
 
-            if (Math.abs(dx) > Math.abs(dy)) { if(Math.abs(dx)>25) move(dx > 0 ? 1 : -1, 0); } else { if(Math.abs(dy)>25) move(0, dy > 0 ? 1 : -1); }
+            if (Math.abs(dx) > Math.abs(dy)) { 
+                if(Math.abs(dx)>25) {
+                    let mdx = dx > 0 ? 1 : -1;
+                    if(reverseActive) mdx *= -1;
+                    move(mdx, 0); 
+                }
+            } else { 
+                if(Math.abs(dy)>25) {
+                    let mdy = dy > 0 ? 1 : -1;
+                    if(reverseActive) mdy *= -1;
+                    move(0, mdy); 
+                }
+            }
         }, {passive: false});
 
         async function initGame() {
@@ -1106,13 +1158,13 @@
             try { alert("Karakter buluta yükleniyor... ⏳"); const docRef = await db.collection("market_characters").add(newChar); newChar.id = docRef.id; characters.push(newChar); user.chars.push(newChar.id); user.activeChar = newChar.id; saveProgress(); alert("Tüm Dünya İçin Markete Yayınlandı! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı hatası!"); }
         }
 
-        function openEditor(){ showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; levelVerified=false; document.getElementById('publish-btn').disabled=true; document.getElementById('grid-size').value = "5"; renderEditor(); }
+        function openEditor(){ document.getElementById('reverse-timer').value=''; showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; levelVerified=false; document.getElementById('publish-btn').disabled=true; document.getElementById('grid-size').value = "5"; renderEditor(); }
         
         function setTool(t){ playSound(sfxClick); selectedTool=t; document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active')); if(event && event.target) event.target.classList.add('active'); }
         
-        function exportMapCode() { playSound(sfxClick); const sz = parseInt(document.getElementById('grid-size').value); const mapData = { grid: sz, start: {x: editorS.x || 0, y: editorS.y || 0}, walls: editorW, breakables: editorB, bridgesH: editorBH, bridgesV: editorBV, spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths }; const code = JSON.stringify(mapData); prompt("Harita Kodun:", code); }
+        function exportMapCode() { playSound(sfxClick); const sz = parseInt(document.getElementById('grid-size').value); const mapData = { grid: sz, revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start: {x: editorS.x || 0, y: editorS.y || 0}, walls: editorW, breakables: editorB, bridgesH: editorBH, bridgesV: editorBV, spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths }; const code = JSON.stringify(mapData); prompt("Harita Kodun:", code); }
 
-        function importMapCode() { playSound(sfxClick); const code = prompt("Harita kodu:"); if(!code) return; try { const mapData = JSON.parse(code); document.getElementById('grid-size').value = mapData.grid || 5; const getObj = (w) => w.x !== undefined ? {x: w.x, y: w.y} : {x: w[0] || 0, y: w[1] || 0}; editorS = mapData.start?.x !== undefined ? {x: mapData.start.x, y: mapData.start.y} : {x: mapData.start?.[0] || 0, y: mapData.start?.[1] || 0}; editorW = (mapData.walls || []).map(getObj); editorB = (mapData.breakables || []).map(getObj); editorBH = (mapData.bridgesH || []).map(getObj); editorBV = (mapData.bridgesV || []).map(getObj); editorSpikes = mapData.spikes || []; editorPM = mapData.portalsM || []; editorPT = mapData.portalsT || []; editorLaser = mapData.lasers || []; editorEnemy = mapData.enemies || []; editorNemesis = mapData.nemesis || []; editorEPaths = mapData.enemyPaths || []; renderEditor(); alert("Harita başarıyla yüklendi! 🛠️"); } catch(e) { alert("Hatalı kod! 🤨"); } }
+        function importMapCode() { playSound(sfxClick); const code = prompt("Harita kodu:"); if(!code) return; try { const mapData = JSON.parse(code); document.getElementById('grid-size').value = mapData.grid || 5; document.getElementById('reverse-timer').value = mapData.revTime || ''; const getObj = (w) => w.x !== undefined ? {x: w.x, y: w.y} : {x: w[0] || 0, y: w[1] || 0}; editorS = mapData.start?.x !== undefined ? {x: mapData.start.x, y: mapData.start.y} : {x: mapData.start?.[0] || 0, y: mapData.start?.[1] || 0}; editorW = (mapData.walls || []).map(getObj); editorB = (mapData.breakables || []).map(getObj); editorBH = (mapData.bridgesH || []).map(getObj); editorBV = (mapData.bridgesV || []).map(getObj); editorSpikes = mapData.spikes || []; editorPM = mapData.portalsM || []; editorPT = mapData.portalsT || []; editorLaser = mapData.lasers || []; editorEnemy = mapData.enemies || []; editorNemesis = mapData.nemesis || []; editorEPaths = mapData.enemyPaths || []; renderEditor(); alert("Harita başarıyla yüklendi! 🛠️"); } catch(e) { alert("Hatalı kod! 🤨"); } }
 
         function renderEditor(){ 
             const sz=parseInt(document.getElementById('grid-size').value); const c=document.getElementById('editor-container'); c.innerHTML=''; 
@@ -1158,10 +1210,10 @@
             playSound(sfxClick);
             if((editorPM.length > 0 && editorPT.length === 0) || (editorPT.length > 0 && editorPM.length === 0)) { alert("MİMAR! Çıkış portalını unuttun! 🤨"); return; }
             isTestMode=true; showScreen('game-wrapper'); 
-            loadLevel({grid:parseInt(document.getElementById('grid-size').value), start:{x: editorS.x || 0, y: editorS.y || 0}, walls:editorW, breakables:editorB, bridgesH:editorBH, bridgesV:editorBV, spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); 
+            loadLevel({grid:parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start:{x: editorS.x || 0, y: editorS.y || 0}, walls:editorW, breakables:editorB, bridgesH:editorBH, bridgesV:editorBV, spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); 
         }
         
-        function returnToEditor() { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); showScreen('editor-screen'); }
+        function returnToEditor() { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); showScreen('editor-screen'); }
 
         // HARİTA DETAY VE LİDERLİK TABLOSU
         function openLevelDetail(lvlString, docId) {
@@ -1246,6 +1298,7 @@
 
                     let tagHTML = `<span class="tag tag-classic">Klasik</span>`;
                     if (nem.length > 0) tagHTML = `<span class="tag tag-nemesis">👹 Avcı Modu</span>`;
+                    if (d.revTime > 0) tagHTML += ` <span class="tag" style="background:#8e44ad; color:#fff; border:1px solid #9b59b6;">🔄 Ters Yön</span>`;
 
                     c.innerHTML = `
                         <div style="margin-bottom:5px;">${tagHTML}</div>
@@ -1275,6 +1328,7 @@
             const lvl = { 
                 name: mapName,
                 grid: parseInt(document.getElementById('grid-size').value), 
+                revTime: parseInt(document.getElementById('reverse-timer').value) || 0,
                 start: {x: editorS.x ?? editorS[0] ?? 0, y: editorS.y ?? editorS[1] ?? 0}, 
                 walls: convertCoords(editorW), breakables: convertCoords(editorB), bridgesH: convertCoords(editorBH), bridgesV: convertCoords(editorBV), 
                 spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths, 
@@ -1292,7 +1346,7 @@
         }
 
         function loadLevel(d){
-            clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval);
+            clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
             
             document.getElementById('status-msg').innerHTML = ""; 
             document.getElementById('next-lvl-btn').style.display = 'none';
@@ -1313,7 +1367,8 @@
             if(user.activeChar !== 'none') { const ch = characters.find(x => x.id === user.activeChar) || characters[0]; bVal = ch.body; fCls = ch.face; fUrl = ch.faceUrl; activePerk = ch.perk; } 
             else { let clrObj = db_colors.find(x=>x.id===user.activeColor)||db_colors[0]; bVal = clrObj.val; let fObj = db_faces.find(x=>x.id===user.activeFace)||db_faces[0]; fCls = fObj.cls || 'none'; fUrl = fObj.url || 'none'; }
 
-            shieldActive = (activePerk === 'armor'); ghostActive = false; document.getElementById('ghost-indicator').classList.add('hidden');
+            shieldActive = (activePerk === 'armor'); ghostActive = false; reverseActive = false; 
+            document.getElementById('ghost-indicator').classList.add('hidden');
             
             let startPaintStyle = '';
             if (bVal.startsWith('data')) { document.documentElement.style.setProperty('--current-color', 'transparent'); startPaintStyle = `url(${bVal}) center/cover`; } 
@@ -1373,17 +1428,30 @@
             updateUI(); gameActive=true; levelStartTime=Date.now();
             timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100);
             startCycles(); 
+
+            // TERS YÖN ZAMANLAYICISI BURADA BAŞLIYOR!
+            if (d.revTime && d.revTime > 0) {
+                reverseIntervalObj = setInterval(() => {
+                    if(!gameActive) return;
+                    reverseActive = !reverseActive;
+                    const pb = document.getElementById('player-body');
+                    if(pb) {
+                        if(reverseActive) pb.classList.add('reverse-active');
+                        else pb.classList.remove('reverse-active');
+                    }
+                }, d.revTime * 1000);
+            }
         }
 
         function die() {
             playSound(sfxDie);
-            gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval);
+            gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
             const gameBox = document.getElementById('game-container'); gameBox.classList.add('shake-screen'); setTimeout(() => gameBox.classList.remove('shake-screen'), 300);
             document.getElementById('player-body').classList.add('dead-player'); document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">ÖLDÜN! 🩸</span>`;
             setTimeout(() => { if(isTestMode) testDesign(); else resetLevel(); }, 1200);
         }
 
-        function checkWin(){ if(cells.filter(c=> c && (c.type==='floor' || c.type==='break' || c.type==='laser')).every(c=>c.painted)){ gameActive=false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); celebrate(); } }
+        function checkWin(){ if(cells.filter(c=> c && (c.type==='floor' || c.type==='break' || c.type==='laser')).every(c=>c.painted)){ gameActive=false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); celebrate(); } }
 
         function celebrate(){ 
             playSound(sfxWin); const dur = parseFloat(((Date.now() - levelStartTime) / 1000).toFixed(1));
@@ -1419,13 +1487,13 @@
         }
 
         function quitGame(){ 
-            playSound(sfxClick); gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval);
+            playSound(sfxClick); gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
             if(isTestMode) { returnToEditor(); } else if(isPlayingOnline) { showScreen('online-screen'); } else { showScreen('level-screen'); }
         }
 
         function resetLevel(){ 
             playSound(sfxClick);
-            if(isTestMode) { const convertCoords = (arr) => arr.map(p => ({x: p.x ?? p[0], y: p.y ?? p[1]})); loadLevel({grid:parseInt(document.getElementById('grid-size').value), start:{x: editorS.x ?? editorS[0] ?? 0, y: editorS.y ?? editorS[1] ?? 0}, walls:convertCoords(editorW), breakables:convertCoords(editorB), bridgesH:convertCoords(editorBH), bridgesV:convertCoords(editorBV), spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); } 
+            if(isTestMode) { const convertCoords = (arr) => arr.map(p => ({x: p.x ?? p[0], y: p.y ?? p[1]})); loadLevel({grid:parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start:{x: editorS.x ?? editorS[0] ?? 0, y: editorS.y ?? editorS[1] ?? 0}, walls:convertCoords(editorW), breakables:convertCoords(editorB), bridgesH:convertCoords(editorBH), bridgesV:convertCoords(editorBV), spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); } 
             else if (isPlayingOnline && currentOnlineLevel) { loadLevel(currentOnlineLevel); } 
             else { const source = globalMasterArcs[currentArc] || []; loadLevel(source[currentIdx]); }
         }
