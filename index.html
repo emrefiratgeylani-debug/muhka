@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yeşil Kare: Global Architect V54.1 - NOIR EDITION</title>
+    <!-- YANDEX SDK BURAYA EKLENDİ -->
+    <script src="https://yandex.ru/games/sdk/v2"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
     <style>
@@ -508,9 +510,30 @@
         <div id="status-msg" style="margin-top:5px; font-weight:900; font-size:1.2rem; color:#00ff88; text-align:center; text-shadow:0 0 10px #00ff88;"></div>
     </div>
 <script>
+        // --- YANDEX BAŞLATMA MOTORU ---
+        let ysdk;
+        let player;
+
+        YaGames.init().then(_sdk => {
+            ysdk = _sdk;
+            // Yandex'e yükleme bittiğini haber veriyoruz (Önemli!)
+            ysdk.features.LoadingProgress.report(100);
+            
+            ysdk.getPlayer().then(_player => {
+                player = _player;
+                initGame(); // Her şey hazır, oyunu başlat!
+            }).catch(err => {
+                initGame(); // Oyuncu misafirse yine de başlat
+            });
+        }).catch(err => {
+            // Yandex dışı lokal testler için (Github vb.) çökme önleyici
+            initGame(); 
+        });
+
+        // --- MEVCUT OYUN DEĞİŞKENLERİ ---
         let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
-let canPublish = false; // Harita doğrulama kilidi (YENİ)
-let autoAdvanceTimer = null; // Otomatik geçiş için yeni ekledik
+        let canPublish = false; // Harita doğrulama kilidi (YENİ)
+        let autoAdvanceTimer = null; // Otomatik geçiş için yeni ekledik
 
         // DAKTİLO VE AMBİYANS SESLERİ İÇİN
         let audioCtx = null;
@@ -655,7 +678,6 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
             const panel = document.createElement('div');
             panel.className = 'comic-panel';
             
-            // HATA BURADAYDI! currentStep değişkeni ile o anki sırayı kilitledik
             const currentStep = comicStep;
             
             panel.innerHTML = `<div class="comic-img-area"><img class="comic-render" src="${data.img}"></div>
@@ -673,7 +695,6 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
             let charIdx = 0;
             typewritingInterval = setInterval(() => {
                 
-                // Makineleşmeyi önlemek için sesi 2 harfte bir ve boşluk (' ') olmayan harflerde çalıyoruz
                 if (charIdx % 2 === 0 && data.text[charIdx] !== ' ') {
                     playTypewriterTick(); 
                 }
@@ -685,10 +706,9 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
                     clearInterval(typewritingInterval); 
                     document.getElementById(`txt-${currentStep}`).innerHTML = data.text; 
                     isTyping = false; 
-                    // Yazı bitti, 3.5 Saniye Sonra Diğer Sahneye Geç
                     autoAdvanceTimer = setTimeout(nextComicPanel, 3500);
                 }
-            }, 45); // Hızı biraz düşürdük, daha organik bir daktilo ritmi oldu
+            }, 45); 
             
             comicStep++;
         }
@@ -1903,9 +1923,6 @@ async function deleteOnlineMap(mapId) {
         alert("Silme başarısız: " + e.message);
     }
 }
-
-        initGame();
-
     </script>
 </body>
 </html>
