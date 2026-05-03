@@ -211,20 +211,16 @@
     </style>
 </head>
 <body>
-    <!-- ÇİZGİ ROMAN EKRANI -->
     <div id="comic-screen" class="screen hidden" onclick="nextComicPanel()">
         <div id="comic-container" style="width:100%; display:flex; flex-direction:column; align-items:center;"></div>
         <div class="blink-info">[ DEVAM ETMEK İÇİN DOKUN ]</div>
         <div id="btn-skip" class="hud-item" style="position:absolute; bottom:30px; right:20px; width:auto; padding:10px 20px; font-size:0.7rem; background:#222; color:#fff; cursor:pointer;" onclick="event.stopPropagation(); finishComic()">ATLA ⏩</div>
     </div>
 
-    <!-- DİL BUTONU (Sadece Menülerde) -->
     <div id="lang-btn" style="position:fixed; top:15px; left:15px; width:40px; height:40px; background:rgba(0,0,0,0.8); border:2px solid #3498db; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="toggleLangMenu()">A/文</div>
 
-    <!-- MÜZİK BUTONU -->
     <div id="audio-btn" style="position:fixed; top:15px; right:15px; width:40px; height:40px; background:rgba(0,0,0,0.8); border:2px solid var(--orange); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; cursor:pointer; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="toggleAudioMenu()">🎵</div>
 
-    <!-- DİL MENÜSÜ -->
     <div id="lang-menu" class="screen hidden" style="background:rgba(10,10,15,0.95); z-index:10001;">
         <div class="creator-box" style="text-align:center;">
             <h2 style="color:#3498db; margin-top:0;">DİL / LANGUAGE 🌐</h2>
@@ -240,7 +236,6 @@
         </div>
     </div>
 
-    <!-- SES MENÜSÜ -->
     <div id="audio-menu" class="screen hidden" style="background:rgba(10,10,15,0.95); z-index:10001;">
         <div class="creator-box" style="text-align:center;">
             <h2 style="color:var(--orange); margin-top:0;">SES AYARLARI 🎛️</h2>
@@ -260,7 +255,6 @@
         </div>
     </div>
 
-    <!-- EĞİTİM MODALI -->
     <div id="tutorial-overlay" class="screen hidden" style="background:rgba(10,10,15,0.98); z-index:10005;">
         <div class="creator-box" style="text-align:center; max-width: 350px;">
             <h2 id="tut-title" style="color:var(--orange); margin-top:0;">EĞİTİM</h2>
@@ -274,7 +268,6 @@
     <audio id="sfx-die" src="https://cdn.pixabay.com/download/audio/2021/08/09/audio_dc39bde10a.mp3" preload="auto"></audio>
     <audio id="sfx-win" src="https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3" preload="auto"></audio>
 
-    <!-- ALT BAR -->
     <div id="bottom-bar" class="bottom-bar hidden">
         <div style="display:flex; align-items:center; gap:10px;">
             <div id="avatar-icon" style="width:40px; height:40px; border-radius:50%; background:#222; border:2px solid var(--current-color); display:flex; align-items:center; justify-content:center; font-size:1.2rem;">👤</div>
@@ -286,14 +279,12 @@
         <div class="hud-item" style="position:static; margin:0; box-shadow:none;"><span class="coin-icon">💰</span><span id="menu-points">0</span></div>
     </div>
 
-    <!-- OYUN İÇİ HUD -->
     <div class="hud hidden" id="game-hud">
         <div class="hud-item">👤 <span id="username-display">...</span></div>
         <div id="ghost-indicator" class="hud-item hidden" style="background:#bdc3c7; color:#000; border-color:#7f8c8d; box-shadow: 0 0 10px #bdc3c7;">👻 HAYALET AÇIK</div>
         <div class="hud-item"><span class="coin-icon">💰</span><span id="total-points">0</span></div>
     </div>
 
-    <!-- BAŞLANGIÇ EKRANI -->
     <div id="start-screen" class="screen">
         <h1 style="color:#00ff88; text-align:center; font-size:2.5rem; text-shadow:0 0 20px rgba(0,255,136,0.5);">YEŞİL KARE<br><span style="font-size:1rem; color:white; opacity:0.7; letter-spacing:5px;">V54.1 NOIR EDITION</span></h1>
         <div class="menu-container" style="margin-top:20px; width: 100%; max-width: 300px;">
@@ -302,7 +293,6 @@
         </div>
     </div>
 
-    <!-- GİRİŞ EKRANI -->
     <div id="login-screen" class="screen hidden">
         <div class="menu-container" style="background:#1e1e24; padding:30px; border-radius:20px; border:1px solid #333; box-shadow:0 10px 30px rgba(0,0,0,0.8); width: 100%; max-width: 300px;">
             <div style="font-size: 3rem; margin-bottom: 10px; text-align:center;">👤</div>
@@ -318,7 +308,6 @@
         </div>
     </div>
 
-    <!-- ANA MENÜ -->
     <div id="menu-screen" class="screen hidden">
         <div class="menu-container" style="width: 100%; max-width: 300px;">
             <div id="btn-play" class="action-btn" onclick="showScreen('play-menu-screen')">🎮 OYNA</div>
@@ -329,7 +318,6 @@
         </div>
     </div>
 
-    <!-- ARC YÖNETİCİSİ -->
     <div id="arc-manager-screen" class="screen hidden">
         <h2 style="color: #2ecc71; margin-bottom:10px; flex-shrink: 0;">🛠️ ARC DÜZENLEYİCİ (GLOBAL)</h2>
         <div class="tab-container" style="margin-bottom: 15px;">
@@ -344,7 +332,6 @@
         <div id="btn-back-arc" class="action-btn" style="background:#e74c3c; color:white; box-shadow:0 6px 0 #c0392b; max-width:350px; margin-top:20px;" onclick="showScreen('menu-screen')">GERİ DÖN</div>
     </div>
 
-    <!-- BÖLÜM SEÇİM (ARC) EKRANI -->
     <div id="play-menu-screen" class="screen hidden">
         <div class="menu-container" style="width: 100%; max-width: 300px;">
             <div class="arc-grid">
@@ -359,7 +346,6 @@
         </div>
     </div>
 
-    <!-- ONLINE MENÜ -->
     <div id="online-menu-screen" class="screen hidden">
         <div class="menu-container" style="width: 100%; max-width: 300px;">
             <div id="btn-map-pool" class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9;" onclick="showScreen('online-screen')">🌍 HARİTA HAVUZU</div>
@@ -368,9 +354,14 @@
         </div>
     </div>
 
-    <!-- MARKET -->
     <div id="market-screen" class="screen hidden">
         <h2 id="title-market" style="color: gold; margin-bottom:10px; font-size:1.8rem; flex-shrink: 0;">🛒 MAĞAZA</h2>
+        
+        <div id="effect-preview-stage" class="hidden" style="width: 150px; height: 150px; background: #050505; border: 3px solid #333; border-radius: 12px; margin-bottom: 15px; position: relative; overflow: hidden; box-shadow: inset 0 0 20px #000, 0 5px 15px rgba(0,0,0,0.5); flex-shrink: 0;">
+            <div id="preview-text" style="position:absolute; top:5px; width:100%; text-align:center; font-size:0.6rem; color:#888; font-weight:bold; z-index:10;">CANLI ÖNİZLEME</div>
+            <div id="preview-canvas" style="width:100%; height:100%; position:relative;"></div>
+        </div>
+
         <div class="tab-container">
             <button id="tab-colors" class="tab-btn active" onclick="setMarketTab('colors')">🎨 RENKLER</button>
             <button id="tab-faces" class="tab-btn" onclick="setMarketTab('faces')">👁️ YÜZLER</button>
@@ -381,7 +372,6 @@
         <div id="btn-back-market" class="action-btn" style="background:#e74c3c; color:white; box-shadow:0 6px 0 #c0392b; max-width:350px; margin-top:10px;" onclick="showScreen('menu-screen')">GERİ</div>
     </div>
 
-    <!-- KARAKTER TASARIM (ADMİN) -->
     <div id="admin-char-screen" class="screen hidden">
         <div style="background:#1e1e24; padding:20px; border-radius:15px; border:1px solid #333; width:100%; max-width:350px;">
             <h2 style="color:#9b59b6; font-size:1.2rem; margin-top:0; text-align:center;">🛠️ YETENEK & TASARIM</h2>
@@ -421,7 +411,6 @@
         </div>
     </div>
 
-    <!-- PİKSEL EDİTÖRÜ -->
     <div id="pixel-modal" class="pixel-editor-modal hidden">
         <h2 id="pixel-target-label" style="color:#00ff88; margin-bottom:10px; text-transform:uppercase;">ÇİZİM</h2>
         <div style="display:flex; gap:10px; margin-bottom:10px; align-items:center; background:#222; padding:10px; border-radius:8px; border:2px solid #444;">
@@ -437,7 +426,6 @@
         </div> 
     </div>
 
-    <!-- SEVİYE DETAY EKRANI -->
     <div id="level-detail-modal" class="screen hidden" style="background:rgba(10,10,15,0.98); z-index:10002;">
         <div class="creator-box" style="text-align:center;">
             <h2 id="detail-title" style="color:var(--orange); margin-top:0; font-size:1.5rem;">Harita Yükleniyor...</h2>
@@ -455,21 +443,18 @@
         </div>
     </div>
 
-    <!-- SEVİYE LİSTESİ -->
     <div id="level-screen" class="screen hidden">
         <h2 id="title-levels" style="color: #00ff88; margin-bottom:15px; flex-shrink:0;">BÖLÜMLER</h2>
         <div id="level-list" class="scroll-list"></div>
         <div id="btn-back-lvl" class="action-btn" style="background:#e74c3c; color:white; box-shadow:0 6px 0 #c0392b; margin-top:10px; max-width:350px;" onclick="showScreen('play-menu-screen')">GERİ</div>
     </div>
     
-    <!-- ONLİNE HARİTA LİSTESİ -->
     <div id="online-screen" class="screen hidden">
         <h2 id="title-online" style="color: #3498db; margin-bottom:15px; flex-shrink:0;">🌍 HARİTA HAVUZU</h2>
         <div id="online-list" class="scroll-list"></div>
         <div id="btn-back-onl" class="action-btn" style="background:#e74c3c; color:white; margin-top:10px; max-width:350px;" onclick="showScreen('online-menu-screen')">GERİ</div>
     </div>
     
-    <!-- HARİTA EDİTÖRÜ -->
     <div id="editor-screen" class="screen hidden" style="justify-content: flex-start; padding-top: 30px;">
         <h2 id="title-editor" style="color: #2ecc71; margin-bottom:10px; flex-shrink:0;">✏️ HARİTA TASARLA</h2>
         <div class="editor-toolbar">
@@ -511,7 +496,6 @@
         </div>
     </div>
 
-    <!-- OYUN ALANI -->
     <div id="game-wrapper" class="screen hidden">
         <div class="hud-item" style="margin-bottom: 10px; background:rgba(0,0,0,0.8); z-index:100; align-self: flex-start; width: fit-content;">⏱️ <span id="timer-display">0.0</span>s</div>
         <div id="game-container" style="flex-shrink:0; margin-bottom: 20px;"></div>
@@ -559,7 +543,6 @@
             osc.start(); osc.stop(audioCtx.currentTime + 0.03);
         }
 
-        // ÇOK DİLLİ İNTRO SİSTEMİ
         const comicIntros = {
             tr: {
                 1: [
@@ -579,10 +562,7 @@
             }
         };
 
-        function getLocalizedIntro(arcNum) {
-            let langIntros = comicIntros[curLang] || comicIntros['en'];
-            return langIntros[arcNum];
-        }
+        function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || comicIntros['en']; return langIntros[arcNum]; }
 
         function startComic(arcNum, levelData) {
             if(bgMusic) bgMusic.pause();
@@ -601,7 +581,6 @@
                 isTyping = false; return;
             }
             if(comicStep >= currentComicData.length) { finishComic(); return; }
-
             const data = currentComicData[comicStep];
             const panel = document.createElement('div');
             panel.className = 'comic-panel';
@@ -614,7 +593,7 @@
             isTyping = true; let charIdx = 0;
             typewritingInterval = setInterval(() => {
                 document.getElementById(`txt-${comicStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
-                if (charIdx % 2 === 0) playTypewriterTick(); // Tok Daktilo Sesi
+                if (charIdx % 2 === 0) playTypewriterTick(); 
                 charIdx++;
                 if(charIdx > data.text.length) { clearInterval(typewritingInterval); document.getElementById(`txt-${comicStep}`).innerHTML = data.text; isTyping = false; }
             }, 35);
@@ -684,10 +663,9 @@
 
         function setLang(l) {
             curLang = l; localStorage.setItem('yesilkare_lang', l);
-            toggleLangMenu(); updateUITexts(); // DİNAMİK ÇEVİRİ ATEŞLENİR
+            toggleLangMenu(); updateUITexts(); 
         }
 
-        // --- GLOBAL DİL SİSTEMİ (6 DİL) ---
         const i18n = {
             tr: { play: "🎮 OYNA", online: "🌐 ONLİNE", market: "🛒 MAĞAZA", back: "GERİ DÖN", guest: "MİSAFİR GİRİŞİ 🚀", login_reg: "GİRİŞ YAP / KAYIT OL 👤", map_pool: "🌍 HARİTA HAVUZU", map_edit: "✏️ HARİTA TASARLA", colors: "🎨 RENKLER", faces: "👁️ YÜZLER", chars: "🎭 KARAKTER", effects: "✨ EFEKTLER", cancel: "İPTAL", logout: "ÇIKIŞ YAP", retry: "TEKRAR", quit: "ÇIK", score: "💰 PUAN:", buy_ok: "Eşya alındı! 🚀", low_gold: "Altın yetersiz! 🛑", del_conf: "Sileyim mi? 🗑️", perks: { none: "Özellik yok.", armor: "Dikenli telden korur.", breaker: "Duvarı tek atar.", rich: "Kazancı x2 yapar.", speed: "%30 hızlı.", hyperspeed: "Mermi hızı!", ghost: "Hayalet modu." }},
             en: { play: "🎮 PLAY", online: "🌐 ONLINE", market: "🛒 MARKET", back: "BACK", guest: "GUEST LOGIN 🚀", login_reg: "LOGIN / REGISTER 👤", map_pool: "🌍 MAP POOL", map_edit: "✏️ MAP EDITOR", colors: "🎨 COLORS", faces: "👁️ FACES", chars: "🎭 CHARACTERS", effects: "✨ EFFECTS", cancel: "CANCEL", logout: "LOGOUT", retry: "RETRY", quit: "QUIT", score: "💰 SCORE:", buy_ok: "Bought! 🚀", low_gold: "Not enough gold! 🛑", del_conf: "Delete? 🗑️", perks: { none: "No perks.", armor: "Protects from spikes.", breaker: "One-shots walls.", rich: "2x Earnings.", speed: "30% faster.", hyperspeed: "Bullet speed!", ghost: "Ghost mode." }},
@@ -744,10 +722,9 @@
         let db_faces = [ {id:'f0', name:'Standart', cls:'yuz-standart', price:0}, {id:'f1', name:'Kızgın', cls:'yuz-kizgin', price:500}, {id:'f2', name:'Sayborg', cls:'yuz-sayborg', price:1500}, {id:'f3', name:'Uykulu', cls:'yuz-uykulu', price:1000}, {id:'f4', name:'Aşık', cls:'yuz-ask', price:1200}, {id:'f5', name:'Deli', cls:'yuz-deli', price:2000}, {id:'f6', name:'Ninja', cls:'yuz-ninja', price:3000}, {id:'f7', name:'Şaşkın', cls:'yuz-saskin', price:800}, {id:'f8', name:'Şüpheli', cls:'yuz-supheli', price:1100}, {id:'f9', name:'Havalı', cls:'yuz-havali', price:2500} ];
         let characters = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price: 0}];
         
-        // EFSANEVİ 12 BİTİRİŞ EFEKTİ DB'Sİ (YENİLER EKLENDİ)
         let db_effects = [
             {id:'fx0', name:'Klasik Geçiş', price:0},
-            {id:'fx1', name:'Kara Delik', price:1000},
+            {id:'fx1', name:'Siyah Portal', price:1000},
             {id:'fx2', name:'Ağla Kaçış (Web-Zip)', price:1500},
             {id:'fx3', name:'Gizli Geçit', price:2000},
             {id:'fx4', name:'Kancalı Salınım', price:2500},
@@ -770,6 +747,141 @@
         let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[], editorPM=[], editorPT=[], editorLaser=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], isTestMode=false, levelVerified=false;
         let idx = { colors:0, faces:0, perk:0 }, currentPixelColor = '#00ff88', editingTarget = 'colors', currentMarketTab = 'colors', shieldActive = false, ghostActive = false, currentCellSize = 32, currentManagerArc = 1, isPlayingOnline = false, currentOnlineLevel = null;
 
+        // --- MARKET CANLI ÖNİZLEME MOTORU ---
+        let previewInterval = null;
+        let previewTimeouts = [];
+        
+        function clearPreview() {
+            clearInterval(previewInterval);
+            previewTimeouts.forEach(clearTimeout);
+            previewTimeouts = [];
+            const canvas = document.getElementById('preview-canvas');
+            if(canvas) canvas.innerHTML = '';
+        }
+
+        function pt(fn, delay) { const t = setTimeout(fn, delay); previewTimeouts.push(t); return t; }
+
+        function playEffectPreview(fxId) {
+            clearPreview();
+            const canvas = document.getElementById('preview-canvas');
+            if(!canvas) return;
+
+            const runAnim = () => {
+                canvas.innerHTML = '';
+                const pSize = 24; const cx = 75; const cy = 85;
+                
+                const p = document.createElement('div');
+                let activeClr = user.activeColor ? (db_colors.find(x=>x.id===user.activeColor)||db_colors[0]).val : '#00ff88';
+                p.style.cssText = `width:${pSize}px; height:${pSize}px; background:${activeClr.startsWith('data') ? 'url('+activeClr+') center/cover' : activeClr}; border-radius:4px; position:absolute; left:${cx - pSize/2}px; top:${cy - pSize/2}px; z-index:100; box-shadow:0 0 10px rgba(0,255,136,0.3); display:flex; justify-content:center; align-items:center;`;
+                p.innerHTML = '<div style="width:4px;height:4px;background:#000;border-radius:50%;position:absolute;top:6px;left:4px;"></div><div style="width:4px;height:4px;background:#000;border-radius:50%;position:absolute;top:6px;right:4px;"></div>';
+                canvas.appendChild(p);
+
+                if(fxId === 'fx0') { 
+                    pt(() => { p.style.transition = 'all 0.5s'; p.style.transform = 'scale(1.5)'; p.style.opacity = '0'; }, 500);
+                } 
+                else if(fxId === 'fx1') { 
+                    const portal = document.createElement('div');
+                    portal.style.cssText = `position:absolute; width:60px; height:60px; background:#000; border-radius:50%; left:${cx-30}px; top:${cy-30}px; box-shadow:0 0 15px #8a008a, inset 0 0 10px #fff; transform:scale(0); opacity:0; transition:all 0.5s; z-index:90;`;
+                    canvas.appendChild(portal);
+                    pt(() => { portal.style.opacity='1'; portal.style.transform='scale(1) rotate(180deg)'; }, 200);
+                    pt(() => { p.style.transition='all 0.5s cubic-bezier(0.5,-0.5,0.5,1.5)'; p.style.transform='scale(0) rotate(720deg)'; p.style.opacity='0'; }, 500);
+                    pt(() => { portal.style.transform='scale(0)'; portal.style.opacity='0'; }, 900);
+                }
+                else if(fxId === 'fx2') { 
+                    const web = document.createElement('div');
+                    web.style.cssText = `position:absolute; width:2px; height:200px; background:#fff; left:${cx}px; bottom:${150-cy}px; transform-origin:bottom; opacity:0; z-index:90;`;
+                    canvas.appendChild(web);
+                    pt(() => { web.style.opacity='1'; p.style.transition='transform 0.2s'; p.style.transform='scaleY(1.3) scaleX(0.7)'; }, 300);
+                    pt(() => { p.style.transition='top 0.5s ease-in, transform 0.3s'; p.style.top='-50px'; web.style.transition='bottom 0.5s ease-in'; web.style.bottom='200px'; }, 500);
+                }
+                else if(fxId === 'fx3') { 
+                    const door = document.createElement('div');
+                    door.style.cssText = `position:absolute; width:34px; height:34px; background:#111; border:1px solid #333; left:${cx-17}px; top:${cy-10}px; z-index:10;`;
+                    canvas.appendChild(door);
+                    pt(() => { door.style.background='#000'; door.style.borderLeft='17px solid #222'; door.style.borderRight='17px solid #222'; }, 200);
+                    pt(() => { p.style.transition='all 0.5s ease-in'; p.style.top='150px'; p.style.transform='scale(0.5)'; p.style.opacity='0'; }, 400);
+                }
+                else if(fxId === 'fx4') { 
+                    pt(() => { p.style.transition='all 0.3s'; p.style.left='0px'; p.style.top='40px'; p.style.transform='rotate(-90deg) scaleY(0.7)'; }, 200);
+                    pt(() => { p.style.transition='all 0.5s ease-out'; p.style.left='160px'; p.style.top='30px'; p.style.transform='rotate(45deg) scaleY(1.2)'; p.style.opacity='0'; }, 600);
+                }
+                else if(fxId === 'fx5') { 
+                    const rift = document.createElement('div');
+                    rift.style.cssText = `position:absolute; width:4px; height:60px; background:cyan; border-radius:50%; box-shadow:0 0 10px cyan; left:${cx+20}px; top:${cy-30}px; transform:scaleY(0); transition:0.2s; z-index:90;`;
+                    canvas.appendChild(rift);
+                    pt(() => { rift.style.transform='scaleY(1)'; }, 200);
+                    pt(() => { p.style.transition='all 0.3s'; p.style.left=(cx+20)+'px'; p.style.transform='scaleX(0.1) scaleY(1.5)'; p.style.opacity='0'; }, 400);
+                    pt(() => { rift.style.transform='scaleY(0)'; }, 700);
+                }
+                else if(fxId === 'fx6') { 
+                    pt(() => { p.style.transition='all 0.3s ease-in'; p.style.left='160px'; p.style.transform='skewX(-20deg)'; p.style.opacity='0'; }, 300);
+                }
+                else if(fxId === 'fx7') { 
+                    const bg = document.createElement('div');
+                    bg.style.cssText = `position:absolute; width:100%; height:100%; background:radial-gradient(#333 1px, transparent 1px); background-size:10px 10px; transition:all 0.6s; z-index:1;`;
+                    canvas.insertBefore(bg, p);
+                    pt(() => { p.style.transition='all 0.4s'; p.style.transform='scaleX(0.05) scaleY(5) rotate(720deg)'; p.style.opacity='0'; }, 300);
+                    pt(() => { bg.style.transform='scale(0) rotate(-45deg)'; bg.style.opacity='0'; }, 500);
+                }
+                else if(fxId === 'fx8') { 
+                    pt(() => { p.style.transition='all 1s'; p.style.opacity='0'; p.style.filter='blur(2px)'; }, 200);
+                    for(let i=0; i<15; i++) {
+                        pt(() => {
+                            const ash = document.createElement('div');
+                            ash.style.cssText = `position:absolute; width:3px; height:3px; background:${activeClr.startsWith('data')?'#00ff88':activeClr}; left:${cx-10+Math.random()*20}px; top:${cy-10+Math.random()*20}px; z-index:101; transition:all 1s ease-out;`;
+                            canvas.appendChild(ash);
+                            setTimeout(() => { ash.style.top = (parseInt(ash.style.top)-30)+'px'; ash.style.left = (parseInt(ash.style.left)+20)+'px'; ash.style.opacity='0'; }, 50);
+                        }, 200 + i*40);
+                    }
+                }
+                else if(fxId === 'fx9') { 
+                    pt(() => { p.style.opacity='0'; }, 300);
+                    for(let i=0; i<12; i++) {
+                        pt(() => {
+                            const sh = document.createElement('div');
+                            sh.style.cssText = `position:absolute; width:5px; height:5px; background:${activeClr.startsWith('data')?'#00ff88':activeClr}; left:${cx}px; top:${cy}px; z-index:101; transition:all 0.5s ease-out;`;
+                            canvas.appendChild(sh);
+                            setTimeout(() => { sh.style.top = (cy - 30 + Math.random()*60)+'px'; sh.style.left = (cx - 30 + Math.random()*60)+'px'; sh.style.opacity='0'; }, 50);
+                        }, 300);
+                    }
+                }
+                else if(fxId === 'fx10') { 
+                    pt(() => { p.style.transition='all 0.3s ease-out'; p.style.top='10px'; p.style.transform='scaleX(0.5) scaleY(1.5)'; }, 200);
+                    pt(() => { p.style.opacity='0'; 
+                        for(let i=0; i<10; i++) {
+                            const sp = document.createElement('div');
+                            sp.style.cssText = `position:absolute; width:4px; height:4px; background:#fff; border-radius:50%; left:${cx}px; top:15px; z-index:101; transition:all 0.4s ease-out;`;
+                            canvas.appendChild(sp);
+                            setTimeout(() => { sp.style.top = (15 - 20 + Math.random()*40)+'px'; sp.style.left = (cx - 20 + Math.random()*40)+'px'; sp.style.opacity='0'; }, 50);
+                        }
+                    }, 500);
+                }
+                else if(fxId === 'fx11') { 
+                    p.style.transformOrigin = 'bottom center';
+                    const puddle = document.createElement('div');
+                    puddle.style.cssText = `position:absolute; width:0px; height:0px; background:${activeClr.startsWith('data')?'#00ff88':activeClr}; border-radius:50%; left:${cx}px; top:${cy+10}px; opacity:0; transition:all 0.5s ease-out; z-index:90;`;
+                    canvas.appendChild(puddle);
+                    pt(() => { p.style.transition='all 0.5s'; p.style.transform='scaleY(0.1) scaleX(1.5)'; p.style.borderRadius='50%'; puddle.style.opacity='1'; puddle.style.width='40px'; puddle.style.height='15px'; puddle.style.left=(cx-20)+'px'; puddle.style.top=(cy+5)+'px'; }, 300);
+                    pt(() => { p.style.opacity='0'; puddle.style.opacity='0'; }, 1000);
+                }
+                else if(fxId === 'fx12') { 
+                    pt(() => { p.style.transition='all 0.1s'; p.style.transform='translate(-5px, 5px)'; p.style.filter='hue-rotate(90deg)'; }, 200);
+                    pt(() => { p.style.transform='translate(5px, -5px)'; }, 300);
+                    pt(() => { p.style.opacity='0'; 
+                        for(let i=0; i<15; i++) {
+                            const dt = document.createElement('div');
+                            dt.style.cssText = `position:absolute; width:3px; height:3px; background:${activeClr.startsWith('data')?'#00ff88':activeClr}; left:${cx}px; top:${cy}px; z-index:99; transition:all 0.3s ease-out;`;
+                            canvas.appendChild(dt);
+                            setTimeout(() => { dt.style.top = (cy - 20 + Math.random()*40)+'px'; dt.style.left = (cx - 20 + Math.random()*40)+'px'; dt.style.opacity='0'; }, 50);
+                        }
+                    }, 400);
+                }
+            };
+            runAnim();
+            previewInterval = setInterval(runAnim, 1800); 
+        }
+        // --- MARKET CANLI ÖNİZLEME MOTORU BİTİŞ ---
+
         function getCell(x, y) { if (x < 0 || x >= activeGridSize || y < 0 || y >= activeGridSize) return null; return cells[y * activeGridSize + x]; }
 
         function saveProgress() { if(user.name && !user.name.startsWith("Misafir_")) { db.collection("users").doc(user.name).set(user, {merge: true}).catch(e=>console.log(e)); } }
@@ -787,7 +899,7 @@
             } catch(e) {}
         }
 
-        async function fetchOnlineCharacters() { try { const qs = await db.collection("market_characters").get(); let baseChars = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price:0}]; let fetchedChars = []; qs.forEach(doc => { fetchedChars.push({id: doc.id, ...doc.data()}); }); fetchedChars.sort((a,b) => b.ts - a.ts); characters = baseChars.concat(fetchedChars); if(currentMarketTab === 'chars') renderMarket(); } catch(e) {} }
+        async function fetchOnlineCharacters() { try { const qs = await db.collection("market_characters").get(); let baseChars = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price:0}]; let fetchedChars = []; qs.forEach(doc => { fetchedChars.push({id: doc.id, ...doc.data()}); }); fetchedChars.sort((a,b) => b.ts - a.ts); characters = baseChars.concat(fetchedChars); if(currentMarketTab === 'chars') setMarketTab(currentMarketTab); } catch(e) {} }
 
         function toggleGhost() {
             if(!gameActive) return; const ch = characters.find(c => c.id === user.activeChar) || characters[0]; if (ch.perk !== 'ghost') return;
@@ -1022,9 +1134,19 @@
             }); 
         }
 
-       function setMarketTab(t){ 
+        function setMarketTab(t){ 
             currentMarketTab = t; document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active');
             const g = document.getElementById('market-grid'); g.innerHTML=''; 
+            
+            const stage = document.getElementById('effect-preview-stage');
+            if(t === 'effects') {
+                stage.classList.remove('hidden');
+                playEffectPreview(user.activeEffect || 'fx0');
+            } else {
+                stage.classList.add('hidden');
+                clearPreview();
+            }
+
             let items = t==='colors' ? db_colors : (t==='faces' ? db_faces : (t==='effects' ? db_effects : characters));
             let userOwned = t==='colors' ? user.colors : (t==='faces' ? user.faces : (t==='effects' ? user.effects : user.chars));
             let userActive = t==='colors' ? user.activeColor : (t==='faces' ? user.activeFace : (t==='effects' ? user.activeEffect : user.activeChar));
@@ -1039,7 +1161,7 @@
                 if(t==='colors') prev = `<div class="skin-prev" style="background:${(item.val.startsWith('data')?`url(${item.val}) center/cover`:item.val)};"></div>`;
                 else if(t==='faces') { if(item.url && item.url !== 'none') prev = `<div class="skin-prev" style="background:url(${item.url}) center/cover, #fff;"></div>`; else prev = `<div class="skin-prev" style="background:#fff; overflow:hidden;"><div class="kare-yuz ${item.cls}" style="transform:scale(0.6);"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div></div>`; }
                 else if(t==='effects') {
-                    let fxIcon = '✨'; // Varsayılan
+                    let fxIcon = '✨';
                     if(item.id==='fx0') fxIcon='🚪';
                     else if(item.id==='fx1') fxIcon='<div style="width:20px;height:20px;background:#000;border-radius:50%;box-shadow:0 0 10px #8a008a;animation:breathe 1s infinite alternate;"></div>';
                     else if(item.id==='fx2') fxIcon='🕸️';
@@ -1053,7 +1175,6 @@
                     else if(item.id==='fx10') fxIcon='🎇';
                     else if(item.id==='fx11') fxIcon='🫠';
                     else if(item.id==='fx12') fxIcon='👾';
-                    
                     prev = `<div class="skin-prev" style="background:#111; font-size:1.5rem; display:flex; align-items:center; justify-content:center;">${fxIcon}</div>`;
                 }
                 else { let bStyle = item.body.startsWith('data') ? `url(${item.body}) center/cover` : item.body; let fStyle = item.faceUrl && item.faceUrl !== 'none' ? `<div class="layer" style="background-image:url(${item.faceUrl})"></div>` : `<div class="kare-yuz ${item.face}"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div>`; prev = `<div class="skin-prev" style="background:${bStyle}; overflow:hidden;">${fStyle}</div>`; }
@@ -1061,17 +1182,23 @@
                 
                 let perkTag = '';
                 if (t === 'chars') { let pObj = perks.find(p => p.type === item.perk); if (pObj && pObj.type !== 'none') { perkTag = `<div style="font-size:0.65rem; color:#f1c40f; margin-bottom:5px; background:rgba(0,0,0,0.5); padding:4px 6px; border-radius:6px;">✨ ${pObj.name}: ${i18n[curLang].perks[pObj.type]}</div>`; } }
-                if (t === 'effects') { perkTag = `<div style="font-size:0.65rem; color:#00ff88; margin-bottom:5px;">${item.name}</div>`; }
+                if (t === 'effects') { perkTag = `<div style="font-size:0.65rem; color:#00ff88; margin-bottom:5px; cursor:pointer; background:#222; padding:3px; border-radius:4px;" onclick="event.stopPropagation(); playEffectPreview('${item.id}');">👁️ İZLE</div>`; }
 
                 c.innerHTML=`${delBtn}${prev}<b style="font-size:0.8rem; margin-bottom:5px;">${item.name}</b>${creatorTag}${perkTag}<div class="action-btn ${active?'':'orange-btn'}" style="padding:8px; font-size:0.7rem; margin-top:auto; cursor:pointer;" onclick="buyItem('${item.id}','${t}', ${item.price||0})">${active?'SEÇİLDİ':(owned?'SEÇ':(item.price||0)+' 💰')}</div>`; 
+                
+                if(t === 'effects') { c.style.cursor = 'pointer'; c.onclick = () => playEffectPreview(item.id); }
                 g.appendChild(c); 
             }); 
-        }        
+        }
 
         function buyItem(id, t_type, p){ 
             if(t_type==='colors') { if(user.colors.includes(id)) { user.activeColor=id; user.activeChar='none'; } else if(user.score>=p){ user.score-=p; user.colors.push(id); user.activeColor=id; user.activeChar='none'; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } } 
             else if(t_type==='faces') { if(user.faces.includes(id)) { user.activeFace=id; user.activeChar='none'; } else if(user.score>=p){ user.score-=p; user.faces.push(id); user.activeFace=id; user.activeChar='none'; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } }
-            else if(t_type==='effects') { if(user.effects.includes(id)) { user.activeEffect=id; } else if(user.score>=p){ user.score-=p; user.effects.push(id); user.activeEffect=id; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } }
+            else if(t_type==='effects') { 
+                if(user.effects.includes(id)) { user.activeEffect=id; playEffectPreview(id); }
+                else if(user.score>=p){ user.score-=p; user.effects.push(id); user.activeEffect=id; updatePoints(); saveProgress(); playEffectPreview(id); } 
+                else { alert(t('low_gold')); return; } 
+            }
             else { if(user.chars.includes(id)) user.activeChar=id; else if(user.score>=p){ user.score-=p; user.chars.push(id); user.activeChar=id; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } } 
             setMarketTab(t_type); 
         }
@@ -1215,7 +1342,6 @@
         }
 
         function loadLevel(d){
-            // ARC 2 BÖLÜM 1 EĞİTİM MODALI HATASI ÇÖZÜLDÜ (Modal kapanmadan oyun başlamaz)
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
             document.getElementById('status-msg').innerHTML = ""; document.getElementById('next-lvl-btn').style.display = 'none'; document.getElementById('edit-lvl-btn').style.display = isTestMode ? 'flex' : 'none'; 
 
@@ -1272,7 +1398,7 @@
                 timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100);
                 startCycles(); 
             } else {
-                gameActive = false; // Eğitim kapanana kadar oyun başlamaz.
+                gameActive = false; 
                 document.getElementById('timer-display').innerText = "0.0";
             }
 
@@ -1287,7 +1413,8 @@
         }
 
         function checkWin(){ if(cells.filter(c=> c && (c.type==='floor' || c.type==='break' || c.type==='laser')).every(c=>c.painted)){ gameActive=false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); celebrate(); } }
-function celebrate(){ 
+
+        function celebrate(){ 
             const dur = parseFloat(((Date.now() - levelStartTime) / 1000).toFixed(1));
             const ch = characters.find(x => x.id === user.activeChar) || {perk:'none'};
             let baseEarned = (currentIdx + 1) * 100; let timeBonus = Math.max(50, Math.floor(2000 / (dur + 1))); let earned = baseEarned + timeBonus;
@@ -1303,7 +1430,6 @@ function celebrate(){
             const centerX = currentX + currentCellSize / 2;
             const centerY = currentY + currentCellSize / 2;
             
-            // Çakışmaları önlemek için z-index ayarı
             pContainer.style.zIndex = "999";
 
             if (fxId === 'fx0') { // 0. KLASİK GEÇİŞ
@@ -1324,7 +1450,7 @@ function celebrate(){
                 } else {
                     portalWrapper.style.width = '8px'; portalWrapper.style.height = '120px';
                     portalWrapper.style.left = (currentX + currentCellSize + 10) + 'px'; portalWrapper.style.top = (centerY - 60) + 'px';
-                    portalWrapper.style.background = '#fff'; portalWrapper.style.borderRadius = '50%';
+                    portalWrapper.style.background = 'cyan'; portalWrapper.style.borderRadius = '50%';
                     portalWrapper.style.boxShadow = '0 0 20px cyan, 0 0 40px cyan, inset 0 0 10px #fff';
                 }
                 gameBox.appendChild(portalWrapper);
@@ -1345,7 +1471,7 @@ function celebrate(){
                     }, 500);
                 }, 200);
             }
-            else if (fxId === 'fx2') { // 2. AĞLA KAÇIŞ (Sinematik Kavisli SVG)
+            else if (fxId === 'fx2') { // 2. AĞLA KAÇIŞ
                 const svgNS = "http://www.w3.org/2000/svg";
                 const svg = document.createElementNS(svgNS, "svg");
                 svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
@@ -1362,7 +1488,7 @@ function celebrate(){
                     pathL.setAttribute('d', `M ${px} ${py} Q ${px/2} ${py/2 + bend} 0 0`);
                     pathR.setAttribute('d', `M ${px} ${py} Q ${(gameBox.offsetWidth+px)/2} ${py/2 + bend} ${gameBox.offsetWidth} 0`);
                 };
-                updatePaths(60); // İlk kavis
+                updatePaths(60);
 
                 setTimeout(() => {
                     pathL.style.strokeDashoffset = '0'; pathR.style.strokeDashoffset = '0';
@@ -1376,7 +1502,7 @@ function celebrate(){
                             
                             let animFrame;
                             const animate = () => {
-                                updatePaths(-10); // Gergin
+                                updatePaths(-10);
                                 if(pContainer.getBoundingClientRect().top > -50) animFrame = requestAnimationFrame(animate);
                                 else { cancelAnimationFrame(animFrame); pathL.style.opacity = '0'; pathR.style.opacity = '0'; }
                             };
@@ -1385,7 +1511,7 @@ function celebrate(){
                     }, 300);
                 }, 100);
             }
-            else if (fxId === 'fx3') { // 3. GİZLİ GEÇİT (Tuzak Kapısı)
+            else if (fxId === 'fx3') { // 3. GİZLİ GEÇİT
                 const trapdoor = document.createElement('div');
                 trapdoor.style.cssText = `position:absolute; width:${currentCellSize+20}px; height:${currentCellSize+20}px; background:#050505; box-shadow:inset 0 0 20px #000; z-index:10; top:${currentY-10}px; left:${currentX-10}px; perspective:1000px;`;
                 const wingL = document.createElement('div'); const wingR = document.createElement('div');
@@ -1402,7 +1528,7 @@ function celebrate(){
                     }, 300);
                 }, 200);
             }
-            else if (fxId === 'fx4') { // 4. DUVARDAN FIRLAMA (Grapple & Matematiksel Swing)
+            else if (fxId === 'fx4') { // 4. DUVARDAN FIRLAMA
                 const svgNS = "http://www.w3.org/2000/svg";
                 const svg = document.createElementNS(svgNS, "svg");
                 svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
@@ -1424,8 +1550,8 @@ function celebrate(){
                         pContainer.style.transition = 'all 0.4s cubic-bezier(0.5, 0, 0.5, 1)';
                         
                         // TAM DUVARA YAPIŞMA HESAPLAMASI
-                        const wallX = 0; // Sol kenara tam yapışır
-                        const wallY = Math.max(0, currentY - 80); // Bulunduğu noktanın biraz sol üst çaprazı
+                        const wallX = 0; 
+                        const wallY = Math.max(0, currentY - 80); 
                         pContainer.style.transform = `translate3d(${wallX}px, ${wallY}px, 0) rotate(-90deg) scaleY(0.7)`;
                         
                         let pullInt = setInterval(() => { 
@@ -1440,7 +1566,7 @@ function celebrate(){
                             burst.style.transform = 'scale(2)'; burst.style.opacity = '0';
 
                             let startTime = Date.now(); const duration = 700;
-                            pContainer.style.transition = 'none'; // Matematiksel kontrol devrede
+                            pContainer.style.transition = 'none'; 
                             function swing() {
                                 let t = (Date.now() - startTime) / duration;
                                 if (t <= 1) {
@@ -1455,7 +1581,7 @@ function celebrate(){
                         }, 500);
                     }, 300);
                 }, 100);
-            }            
+            }
             else if (fxId === 'fx6') { // 6. SİBER DASH
                 pContainer.style.transition = 'transform 0.3s cubic-bezier(0.5, 0, 1, 1), opacity 0.3s';
                 const trail = document.createElement('div'); 
@@ -1466,7 +1592,7 @@ function celebrate(){
                     pContainer.style.opacity = '0'; 
                 }, 50);
             } 
-            else if (fxId === 'fx7') { // 7. EVRENSEL ÇÖKÜŞ (Tüm Mimari İmhası)
+            else if (fxId === 'fx7') { // 7. EVRENSEL ÇÖKÜŞ
                 const hole = document.createElement('div');
                 hole.style.cssText = `position:absolute; width:120px; height:120px; background:#000; border-radius:50%; z-index:200; opacity:0; transform:scale(0); left:${centerX - 60}px; top:${centerY - 60}px; box-shadow:0 0 50px 20px #4b0082, inset 0 0 20px #fff; transition:all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
                 const aura = document.createElement('div');
@@ -1488,7 +1614,7 @@ function celebrate(){
                     }, 400);
                 }, 100);
             } 
-            else if (fxId === 'fx8') { // 8. KÜLLEŞME (The Snap - Gecikmeli Rüzgar Fiziği)
+            else if (fxId === 'fx8') { // 8. KÜLLEŞME (The Snap)
                 pContainer.style.transition = 'opacity 1.5s ease-out, filter 1.5s ease-out';
                 pContainer.style.opacity = '0'; pContainer.style.filter = 'blur(2px)';
                 for (let i = 0; i < 60; i++) {
@@ -1525,7 +1651,7 @@ function celebrate(){
                         const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
                         let posX = centerX, posY = centerY, op = 1, curVy = vy;
                         function anim() { 
-                            posX += vx; curVy += 0.3; posY += curVy; op -= 0.02; // Güçlü ivme ve yerçekimi
+                            posX += vx; curVy += 0.3; posY += curVy; op -= 0.02; 
                             shard.style.left = posX + 'px'; shard.style.top = posY + 'px'; 
                             shard.style.opacity = op; shard.style.transform = `rotate(${posX * 2}deg)`; 
                             if(op > 0) requestAnimationFrame(anim); else shard.remove(); 
@@ -1536,7 +1662,7 @@ function celebrate(){
             } 
             else if (fxId === 'fx10') { // 10. HAVAİ FİŞEK
                 pContainer.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                const burstY = currentY - 120; // Hızla yukarı fırla
+                const burstY = currentY - 120; 
                 pContainer.style.transform = `translate3d(${currentX}px, ${burstY}px, 0) scaleX(0.7) scaleY(1.3)`;
                 setTimeout(() => {
                     pContainer.style.opacity = '0';
@@ -1550,7 +1676,7 @@ function celebrate(){
                         const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
                         let posX = centerX, posY = burstY + currentCellSize/2, op = 1, curVy = vy;
                         function anim() { 
-                            posX += vx; curVy += 0.15; posY += curVy; op -= 0.015; // Yavaşça sönen kıvılcımlar
+                            posX += vx; curVy += 0.15; posY += curVy; op -= 0.015; 
                             spark.style.left = posX + 'px'; spark.style.top = posY + 'px'; 
                             spark.style.opacity = op; spark.style.transform = `scale(${op})`; 
                             if(op > 0) requestAnimationFrame(anim); else spark.remove(); 
@@ -1586,7 +1712,7 @@ function celebrate(){
                     setTimeout(() => { pContainer.style.transition = 'opacity 0.8s'; pContainer.style.opacity = '0'; puddle.style.opacity = '0'; puddle.style.transform = 'scale(1.5)'; }, 1200);
                 }, 50);
             } 
-            else if (fxId === 'fx12') { // 12. SİSTEM ÇÖKÜŞÜ (Glitch to Dust)
+            else if (fxId === 'fx12') { // 12. SİSTEM ÇÖKÜŞÜ (Glitch)
                 const style = document.createElement('style');
                 style.innerHTML = `@keyframes fx12-glitch { 0% { transform: translate3d(${currentX}px, ${currentY}px, 0); clip-path: inset(10% 0 30% 0); } 20% { transform: translate3d(${currentX-5}px, ${currentY+5}px, 0); clip-path: inset(40% 0 10% 0); } 40% { transform: translate3d(${currentX+5}px, ${currentY-2}px, 0); box-shadow: -5px 0 red, 5px 0 blue; } 60% { transform: translate3d(${currentX-2}px, ${currentY-5}px, 0); clip-path: inset(0% 0 50% 0); } 80% { transform: translate3d(${currentX+5}px, ${currentY+2}px, 0); } 100% { transform: translate3d(${currentX}px, ${currentY}px, 0); } }`;
                 document.head.appendChild(style);
@@ -1652,6 +1778,6 @@ function celebrate(){
         pixelGridEl.addEventListener('touchmove', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
 
         initGame();
-    </script> 
+    </script>
 </body>
 </html>
