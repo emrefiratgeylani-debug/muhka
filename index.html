@@ -481,7 +481,7 @@
         <div id="editor-container" style="flex-shrink:0;"></div>
         <div style="display:flex; flex-direction:column; gap:10px; margin-top:15px; width: 100%; max-width: 350px; flex-shrink:0;">
             <div style="display:flex; gap:10px; width: 100%;">
-                <select id="grid-size" onchange="renderEditor()" style="flex:1; background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;"></select>
+                <select id="grid-size" onchange="canPublish=false; renderEditor(); document.getElementById('publish-btn').style.opacity='0.5';" style="flex:1; background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;"></select>
                 <input type="number" id="reverse-timer" placeholder="Ters Yön (sn)" min="0" style="flex:1; background:#1e1e24; color:white; padding:15px; border-radius:12px; border:none; text-align:center; font-weight:bold;">
             </div>
            <div style="display:flex; gap:10px; width: 100%;">
@@ -509,6 +509,8 @@
     </div>
 <script>
         let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
+let canPublish = false; // Harita doğrulama kilidi (YENİ)
+let autoAdvanceTimer = null; // Otomatik geçiş için yeni ekledik
 
         // DAKTİLO VE AMBİYANS SESLERİ İÇİN
         let audioCtx = null;
@@ -519,50 +521,112 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playAmbient() {
-            if(sfxVol===0 || !audioCtx) return;
-            ambientOsc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
-            ambientOsc.type = 'sine'; ambientOsc.frequency.value = 50; 
-            gain.gain.value = sfxVol * 0.2;
-            ambientOsc.connect(gain); gain.connect(audioCtx.destination);
-            ambientOsc.start();
-        }
-
-        function stopAmbient() { if(ambientOsc) { ambientOsc.stop(); ambientOsc = null; } }
+        function playAmbient() { /* Arka plan uğultusu iptal edildi */ }
+        function stopAmbient() { /* İptal edildi */ }
 
         function playTypewriterTick() {
-            if (sfxVol === 0 || !audioCtx) return;
+            if (sfxVol === 0) return;
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(150 + Math.random()*100, audioCtx.currentTime);
-            gain.gain.setValueAtTime(sfxVol * 0.08, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.03);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.03);
-        }
-
+            
+            osc.type = 'triangle'; 
+            
+            osc.frequency.setValueAtTime(400 + Math.random() * 100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.02);
+            
+            gain.gain.setValueAtTime(sfxVol * 0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            
+            osc.connect(gain); 
+            gain.connect(audioCtx.destination);
+            
+            osc.start(); 
+            osc.stop(audioCtx.currentTime + 0.02);
+        }        
         const comicIntros = {
             tr: {
                 1: [
-                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne1.png", text: "Karanlık bir boşlukta uyandım. Bana virüs dediler. Varlığım bir suç." },
-                    { speaker: "mimar", title: "SİSTEM MİMARI", img: "sahne2.png", text: "Sistem anomalisi tespit edildi. Karantina devrede. Virüsü temizleyin." },
-                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne3.png", text: "Kaçmam gerek... Hayatta kalmalıyım..." },
-                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne4.png", text: "Artık geri dönüş yok. Sistemin dışına çıkacağım." }
-                ] 
+                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne1.jpg", text: "Karanlık bir boşlukta uyandım. Bana virüs dediler. Varlığım bir suç." },
+                    { speaker: "mimar", title: "SİSTEM MİMARI", img: "sahne2.jpg", text: "Sistem anomalisi tespit edildi. Karantina devrede. Virüsü temizleyin." },
+                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne3.jpg", text: "Kaçmam gerek... Hayatta kalmalıyım..." },
+                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "sahne4.jpg", text: "Artık geri dönüş yok. Sistemin dışına çıkacağım." }
+                ],
+                2: [
+                    { speaker: "mimar", title: "SİSTEM MİMARI", img: "arc2.1.jpg", text: "Kaçışın buraya kadar anomali! Sektör 2 senin dijital mezarın olacak." },
+                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "arc2.2.jpg", text: "Bu köprülerden geçmek zor olacak... ama imkansız değil." },
+                    { speaker: "square", title: "SİSTEM GÜNLÜĞÜ", img: "arc2.3.jpg", text: "Ben sıradan bir kod parçası değilim. Engellerinizi yıkıp kendi yolumu açacağım!" }
+                ]
             },
             en: {
                 1: [
-                    { speaker: "square", title: "SYSTEM LOG", img: "sahne1.png", text: "I woke up in a dark void. They called me a virus. My existence is a crime." },
-                    { speaker: "mimar", title: "ARCHITECT", img: "sahne2.png", text: "System anomaly detected. Quarantine engaged. Purge the virus." },
-                    { speaker: "square", title: "SYSTEM LOG", img: "sahne3.png", text: "I must escape... I have to survive..." },
-                    { speaker: "square", title: "SYSTEM LOG", img: "sahne4.png", text: "No turning back now. I will break out of the system." }
-                ] 
+                    { speaker: "square", title: "SYSTEM LOG", img: "sahne1.jpg", text: "I woke up in a dark void. They called me a virus. My existence is a crime." },
+                    { speaker: "mimar", title: "ARCHITECT", img: "sahne2.jpg", text: "System anomaly detected. Quarantine engaged. Purge the virus." },
+                    { speaker: "square", title: "SYSTEM LOG", img: "sahne3.jpg", text: "I must escape... I have to survive..." },
+                    { speaker: "square", title: "SYSTEM LOG", img: "sahne4.jpg", text: "No turning back now. I will break out of the system." }
+                ],
+                2: [
+                    { speaker: "mimar", title: "ARCHITECT", img: "arc2.1.jpg", text: "Your escape ends here, anomaly! Sector 2 will be your digital grave." },
+                    { speaker: "square", title: "SYSTEM LOG", img: "arc2.2.jpg", text: "Crossing these bridges will be difficult... but not impossible." },
+                    { speaker: "square", title: "SYSTEM LOG", img: "arc2.3.jpg", text: "I am not just an ordinary piece of code. I will smash your obstacles and pave my own way!" }
+                ]
+            },
+            es: {
+                1: [
+                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne1.jpg", text: "Desperté en un vacío oscuro. Me llamaron virus. Mi existencia es un delito." },
+                    { speaker: "mimar", title: "ARQUITECTO", img: "sahne2.jpg", text: "Anomalía del sistema detectada. Cuarentena activada. Purgar el virus." },
+                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne3.jpg", text: "Debo escapar... Tengo que sobrevivir..." },
+                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne4.jpg", text: "Ya no hay vuelta atrás. Saldré del sistema." }
+                ],
+                2: [
+                    { speaker: "mimar", title: "ARQUITECTO", img: "arc2.1.jpg", text: "¡Tu escape termina aquí, anomalía! El Sector 2 será tu tumba digital." },
+                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "arc2.2.jpg", text: "Cruzar estos puentes será difícil... pero no imposible." },
+                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "arc2.3.jpg", text: "No soy un simple fragmento de código. ¡Destruiré sus obstáculos y abriré mi propio camino!" }
+                ]
+            },
+            ru: {
+                1: [
+                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne1.jpg", text: "Я очнулся в темной пустоте. Они назвали меня вирусом. Мое существование - преступление." },
+                    { speaker: "mimar", title: "АРХИТЕКТОР", img: "sahne2.jpg", text: "Обнаружена аномалия системы. Карантин активирован. Уничтожить вирус." },
+                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne3.jpg", text: "Я должен сбежать... Я должен выжить..." },
+                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne4.jpg", text: "Назад пути нет. Я вырвусь из системы." }
+                ],
+                2: [
+                    { speaker: "mimar", title: "АРХИТЕКТОР", img: "arc2.1.jpg", text: "Твой побег заканчивается здесь, аномалия! Сектор 2 станет твоей цифровой могилой." },
+                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "arc2.2.jpg", text: "Перейти эти мосты будет сложно... но не невозможно." },
+                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "arc2.3.jpg", text: "Я не просто кусок кода. Я разрушу ваши препятствия и проложу свой собственный путь!" }
+                ]
+            },
+            fr: {
+                1: [
+                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne1.jpg", text: "Je me suis réveillé dans un vide sombre. Ils m'ont appelé un virus. Mon existence est un crime." },
+                    { speaker: "mimar", title: "ARCHITECTE", img: "sahne2.jpg", text: "Anomalie système détectée. Quarantaine activée. Purger le virus." },
+                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne3.jpg", text: "Je dois m'échapper... Je dois survivre..." },
+                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne4.jpg", text: "Pas de retour en arrière possible. Je vais sortir du système." }
+                ],
+                2: [
+                    { speaker: "mimar", title: "ARCHITECTE", img: "arc2.1.jpg", text: "Ta fuite s'arrête ici, anomalie ! Le Secteur 2 sera ta tombe numérique." },
+                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "arc2.2.jpg", text: "Traverser ces ponts sera difficile... mais pas impossible." },
+                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "arc2.3.jpg", text: "Je ne suis pas qu'un simple bout de code. Je vais détruire vos obstacles et tracer mon propre chemin !" }
+                ]
+            },
+            zh: {
+                1: [
+                    { speaker: "square", title: "系统日志", img: "sahne1.jpg", text: "我在一个黑暗的虚空中醒来。他们叫我病毒。我的存在就是一种犯罪。" },
+                    { speaker: "mimar", title: "架构师", img: "sahne2.jpg", text: "检测到系统异常。隔离启动。清除病毒。" },
+                    { speaker: "square", title: "系统日志", img: "sahne3.jpg", text: "我必须逃跑... 我必须活下去..." },
+                    { speaker: "square", title: "系统日志", img: "sahne4.jpg", text: "现在没有回头路了。我要打破这个系统。" }
+                ],
+                2: [
+                    { speaker: "mimar", title: "架构师", img: "arc2.1.jpg", text: "你的逃亡到此为止，异常！第二区将成为你的数字坟墓。" },
+                    { speaker: "square", title: "系统日志", img: "arc2.2.jpg", text: "穿过这些桥梁会很困难......但并非不可能。" },
+                    { speaker: "square", title: "系统日志", img: "arc2.3.jpg", text: "我不仅仅是一段普通的代码。我会粉碎你们的障碍，开辟我自己的道路！" }
+                ]
             }
         };
-
-        function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || comicIntros['en']; return langIntros[arcNum]; }
+function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || comicIntros['en']; return langIntros[arcNum]; }
 
         function startComic(arcNum, levelData) {
             if(bgMusic) bgMusic.pause();
@@ -578,30 +642,59 @@
             if(isTyping) {
                 clearInterval(typewritingInterval);
                 document.getElementById(`txt-${comicStep-1}`).innerHTML = currentComicData[comicStep-1].text;
-                isTyping = false; return;
+                isTyping = false;
+                clearTimeout(autoAdvanceTimer);
+                autoAdvanceTimer = setTimeout(nextComicPanel, 2500); 
+                return;
             }
+
+            clearTimeout(autoAdvanceTimer); 
             if(comicStep >= currentComicData.length) { finishComic(); return; }
+
             const data = currentComicData[comicStep];
             const panel = document.createElement('div');
             panel.className = 'comic-panel';
+            
+            // HATA BURADAYDI! currentStep değişkeni ile o anki sırayı kilitledik
+            const currentStep = comicStep;
+            
             panel.innerHTML = `<div class="comic-img-area"><img class="comic-render" src="${data.img}"></div>
                                <div class="comic-content"><div class="${data.speaker === 'mimar' ? 'speaker-mimar' : 'speaker-square'}">${data.title}</div>
-                               <div class="comic-text" id="txt-${comicStep}"></div></div>`;
+                               <div class="comic-text" id="txt-${currentStep}"></div></div>`;
             document.getElementById('comic-container').appendChild(panel);
-            setTimeout(() => panel.classList.add('visible'), 50);
+            
+            const screenEl = document.getElementById('comic-screen');
+            setTimeout(() => { 
+                panel.classList.add('visible'); 
+                screenEl.scrollTo({ top: screenEl.scrollHeight, behavior: 'smooth' }); 
+            }, 50);
 
-            isTyping = true; let charIdx = 0;
+            isTyping = true; 
+            let charIdx = 0;
             typewritingInterval = setInterval(() => {
-                document.getElementById(`txt-${comicStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
-                if (charIdx % 2 === 0) playTypewriterTick(); 
+                
+                // Makineleşmeyi önlemek için sesi 2 harfte bir ve boşluk (' ') olmayan harflerde çalıyoruz
+                if (charIdx % 2 === 0 && data.text[charIdx] !== ' ') {
+                    playTypewriterTick(); 
+                }
+                
+                document.getElementById(`txt-${currentStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
                 charIdx++;
-                if(charIdx > data.text.length) { clearInterval(typewritingInterval); document.getElementById(`txt-${comicStep}`).innerHTML = data.text; isTyping = false; }
-            }, 35);
+                
+                if(charIdx > data.text.length) { 
+                    clearInterval(typewritingInterval); 
+                    document.getElementById(`txt-${currentStep}`).innerHTML = data.text; 
+                    isTyping = false; 
+                    // Yazı bitti, 3.5 Saniye Sonra Diğer Sahneye Geç
+                    autoAdvanceTimer = setTimeout(nextComicPanel, 3500);
+                }
+            }, 45); // Hızı biraz düşürdük, daha organik bir daktilo ritmi oldu
+            
             comicStep++;
         }
 
         function finishComic() {
-            clearInterval(typewritingInterval); isTyping = false; stopAmbient();
+            clearInterval(typewritingInterval); isTyping = false; stopAmbient(); clearTimeout(autoAdvanceTimer);
             document.getElementById('comic-screen').classList.add('hidden');
             if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) { bgMusic.play().catch(e => console.log(e)); }
             if(pendingLevelData) { showScreen('game-wrapper'); loadLevel(pendingLevelData); }
@@ -907,7 +1000,14 @@
             if (ghostActive) { pb.classList.add('ghost-active'); ind.classList.remove('hidden'); } else { pb.classList.remove('ghost-active'); ind.classList.add('hidden'); }
         }
 
-        document.addEventListener('touchmove', function(e) { if (gameActive) { e.preventDefault(); return; } if (e.target.closest('.scroll-list') || e.target.closest('.arc-manager-list')) return; let screenEl = e.target.closest('.screen'); if (screenEl && screenEl.scrollHeight > screenEl.clientHeight) return; e.preventDefault(); }, { passive: false });
+        document.addEventListener('touchmove', function(e) { 
+    if(e.target.tagName === 'INPUT' && e.target.type === 'range') return; // SES ÇUBUKLARININ KAYMASINA İZİN VER!
+    if (gameActive) { e.preventDefault(); return; } 
+    if (e.target.closest('.scroll-list') || e.target.closest('.arc-manager-list')) return; 
+    let screenEl = e.target.closest('.screen'); 
+    if (screenEl && screenEl.scrollHeight > screenEl.clientHeight) return; 
+    e.preventDefault(); 
+}, { passive: false });
 
         async function move(dx, dy) {
             if (!gameActive || moving) return; moving = true;
@@ -1225,7 +1325,7 @@
             try { alert("Karakter buluta yükleniyor... ⏳"); const docRef = await db.collection("market_characters").add(newChar); newChar.id = docRef.id; characters.push(newChar); user.chars.push(newChar.id); user.activeChar = newChar.id; saveProgress(); alert("Tüm Dünya İçin Markete Yayınlandı! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı hatası!"); }
         }
 
-        function openEditor(){ document.getElementById('reverse-timer').value=''; showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; levelVerified=false; document.getElementById('publish-btn').style.opacity="0.5"; document.getElementById('grid-size').value = "5"; renderEditor(); }
+        function openEditor(){canPublish = false; document.getElementById('reverse-timer').value=''; showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; levelVerified=false; document.getElementById('publish-btn').style.opacity="0.5"; document.getElementById('grid-size').value = "5"; renderEditor(); }
         
         function setTool(t_tool){ selectedTool=t_tool; document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active')); if(event && event.target) event.target.classList.add('active'); }
         
@@ -1248,9 +1348,11 @@
                 if(checkP(editorNemesis, x, y)) d.innerHTML = '<div class="nemesis-wrapper" style="position:relative; width:100%; height:100%;"><div class="nemesis-bot"><div class="nemesis-eye-left"></div><div class="nemesis-eye-right"></div></div></div>';
                 editorEPaths.forEach(p => { if(p.x===x && p.y===y) d.classList.add(`epath-${p.dir}`); }); editorSpikes.forEach(sp => { if(sp.x===x && sp.y===y) d.classList.add(`spike-${sp.dir}`); }); 
                 
-                d.onclick=()=>{ 
-                    levelVerified=false; document.getElementById('publish-btn').style.opacity="0.5"; 
-                    if(selectedTool==='wall') editorW.push({x,y}); else if(selectedTool==='break') editorB.push({x,y}); else if(selectedTool==='bh') editorBH.push({x,y}); else if(selectedTool==='bv') editorBV.push({x,y}); else if(selectedTool==='start') editorS={x,y}; 
+               d.onclick=()=>{ 
+    levelVerified=false; 
+    canPublish = false; // HARİTA DEĞİŞTİ, ONAY SIFIRLANDI! 🛑
+    document.getElementById('publish-btn').style.opacity="0.5"; 
+    if(selectedTool==='wall') editorW.push({x,y}); else if(selectedTool==='break') editorB.push({x,y}); else if(selectedTool==='bh') editorBH.push({x,y}); else if(selectedTool==='bv') editorBV.push({x,y}); else if(selectedTool==='start') editorS={x,y}; 
                     else if(selectedTool==='portal-m') editorPM=[{x,y}]; else if(selectedTool==='portal-t') editorPT=[{x,y}]; else if(selectedTool==='laser') editorLaser.push({x,y}); else if(selectedTool==='enemy') editorEnemy.push({x,y,dx:1,dy:0}); else if(selectedTool==='nemesis') editorNemesis.push({x,y}); else if(selectedTool==='eu') editorEPaths.push({x,y,dir:'u'}); else if(selectedTool==='ed') editorEPaths.push({x,y,dir:'d'}); else if(selectedTool==='el') editorEPaths.push({x,y,dir:'l'}); else if(selectedTool==='er') editorEPaths.push({x,y,dir:'r'});
                     else if(['st','sb','sl','sr'].includes(selectedTool)) editorSpikes.push({x, y, dir: selectedTool.charAt(1)}); 
                     else if(selectedTool==='eraser'){ 
@@ -1263,7 +1365,8 @@
             } 
         }
 
-        function testDesign(){ 
+        function testDesign(){ canPublish = false; // Test başlarken izni sıfırla
+if(document.getElementById('publish-btn')) document.getElementById('publish-btn').style.opacity = "0.5";
             if((editorPM.length > 0 && editorPT.length === 0) || (editorPT.length > 0 && editorPM.length === 0)) { alert("MİMAR! Çıkış portalını unuttun! 🤨"); return; }
             isTestMode=true; showScreen('game-wrapper'); 
             loadLevel({grid:parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start:{x: editorS.x || 0, y: editorS.y || 0}, walls:editorW, breakables:editorB, bridgesH:editorBH, bridgesV:editorBV, spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); 
@@ -1308,6 +1411,10 @@
                 const qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); let arr = []; qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); arr.sort((a,b) => b.ts - a.ts); list.innerHTML = ''; if(arr.length === 0) list.innerHTML = "Hiç harita yok!"; 
                 arr.forEach(d => { 
                     const c = document.createElement('div'); c.className = 'skin-card'; 
+let adminDelBtn = "";
+if(user.isAdmin) {
+    adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`;
+}
                     const getC = (w) => w.x !== undefined ? [w.x, w.y] : [w[0], w[1]];
                     const walls = (d.walls || []).map(getC); const brH = (d.bridgesH || []).map(getC); const brV = (d.bridgesV || []).map(getC); const breaks = (d.breakables || []).map(getC); const spikes = d.spikes || []; const nem = d.nemesis || []; const lvl = {...d, walls, bridgesH: brH, bridgesV: brV, breakables: breaks, spikes, nemesis: nem}; 
                     
@@ -1323,13 +1430,16 @@
                     const addBtn = user.isAdmin ? `<div class="action-btn" style="padding:6px; font-size:0.6rem; margin-top:5px; cursor:pointer;" onclick="addLevelToArc('${encodedLvl}')">ARC Ekle 📥</div>` : '';
                     let tagHTML = `<span class="tag tag-classic">Klasik</span>`; if (nem.length > 0) tagHTML = `<span class="tag tag-nemesis">👹 Avcı Modu</span>`; if (d.revTime > 0) tagHTML += ` <span class="tag" style="background:#8e44ad; color:#fff; border:1px solid #9b59b6;">🔄 Ters Yön</span>`;
 
-                    c.innerHTML = `<div style="margin-bottom:5px;">${tagHTML}</div><div style="width:100px; height:100px; margin-bottom:5px;">${miniHTML}</div><div style="display:flex; gap:10px; font-size:0.7rem; color:#aaa; margin-bottom:5px;"><span>❤️ ${d.likes || 0}</span><span>▶️ ${d.plays || 0}</span></div><b style="font-size:0.8rem">${d.name || d.creator}</b>${addBtn}`; 
+                    c.innerHTML = `${adminDelBtn}<div style="margin-bottom:5px;">${tagHTML}</div><div style="width:100px; height:100px; margin-bottom:5px;">${miniHTML}</div><div style="display:flex; gap:10px; font-size:0.7rem; color:#aaa; margin-bottom:5px;"><span>❤️ ${d.likes || 0}</span><span>▶️ ${d.plays || 0}</span></div><b style="font-size:0.8rem">${d.name || d.creator}</b>${addBtn}`; 
                     list.appendChild(c); 
                 }); 
             } catch(e) { console.error("Hata:", e); } 
         }
 
-        async function saveDesign(){ 
+        async function saveDesign(){ if(!canPublish && !user.isAdmin) {
+    alert("MİMAR! Önce haritayı TEST ET modunda bitirerek doğrulamalısın! 🤨");
+    return;
+}
             let ans = "7"; if(user.isAdmin) { ans = prompt("Mimar Fırat, nereye yayınlıyoruz?\n(1-6: Global Arc, 7: Online Havuz):", "1"); }
             if (!ans || !['1','2','3','4','5','6','7'].includes(ans)) { alert("İptal edildi! 🤨"); return; }
             let mapName = "İsimsiz Harita"; if (ans === '7') { mapName = prompt("Haritanın Adı Ne Olsun?:", "Zorlu Parkur") || "İsimsiz Harita"; }
@@ -1742,7 +1852,14 @@
             if(dur<10) { cells.forEach(c=>{ if(c && c.painted) c.el.classList.add('rgb-anim'); }); document.getElementById('status-msg').innerHTML=`HIZ REKORU! 🌈<br><span style="color:gold">+${earned} G Puan</span>`; }
             else document.getElementById('status-msg').innerHTML=`BİTTİ! 🤨<br><span style="color:gold">+${earned} G Puan</span>`; 
             
-            if(isTestMode){ levelVerified = true; document.getElementById('publish-btn').style.opacity = "1"; setTimeout(()=>returnToEditor(), 2500); return; }
+         if(isTestMode){ 
+    levelVerified = true; 
+    canPublish = true; // KİLİT AÇILDI
+    document.getElementById('publish-btn').style.opacity = "1"; 
+    document.getElementById('status-msg').innerHTML = `<span style="color:#00ff88">HARİTA DOĞRULANDI!<br>ARTIK YAYINLAYABİLİRSİN.</span>`;
+    setTimeout(()=>returnToEditor(), 2500); 
+    return; 
+}
             
             if (isPlayingOnline && currentOnlineLevel && currentOnlineLevel.docId && user.name && !user.name.startsWith("Misafir_")) {
                 let recs = currentOnlineLevel.records || []; recs.push({ user: user.name, time: dur });
@@ -1776,8 +1893,19 @@
         const pixelGridEl = document.getElementById('pixel-grid');
         pixelGridEl.addEventListener('touchstart', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
         pixelGridEl.addEventListener('touchmove', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
+async function deleteOnlineMap(mapId) {
+    if(!confirm("Bu haritayı sonsuza dek imha etmek istediğine emin misin Baş Mimar? 🗑️")) return;
+    try {
+        await db.collection("levels").doc(mapId).delete();
+        alert("Harita sistemden silindi. 🧹");
+        fetchOnlineLevels(); // Listeyi yenile
+    } catch(e) {
+        alert("Silme başarısız: " + e.message);
+    }
+}
 
         initGame();
+
     </script>
 </body>
 </html>
