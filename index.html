@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yeşil Kare: Global Architect V54.1 - NOIR EDITION</title>
-    <!-- YANDEX SDK BURAYA EKLENDİ -->
     <script src="https://yandex.ru/games/sdk/v2"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+    
+    <script src="firebase-app-compat.js"></script>
+    <script src="firebase-firestore-compat.js"></script>
+    
     <style>
         :root { --current-color: #00ff88; --bg: #0a0a0c; --cell-bg: #ecf0f1; --wall: #222; --orange: #ff9f43; --bridge: #000000; --meat-red: #e74c3c; --gap: 2px; --cell-sz: 32px; }
         
@@ -91,9 +92,37 @@
         .cell.wall { background: var(--wall); border: 1px solid #444; }
         .cell.painted { opacity: 0.9; transform: scale(0.95); transition: transform 0.1s; z-index: 2; }
         .spike-t, .spike-b, .spike-l, .spike-r { z-index: 10 !important; }
-        
-        .cell.bridge-h { border-top: 6px solid var(--bridge); border-bottom: 6px solid var(--bridge); }
-        .cell.bridge-v { border-left: 6px solid var(--bridge); border-right: 6px solid var(--bridge); }
+
+        .cell.bridge-h { 
+            display: block !important; /* Görünürlüğü zorla */
+            border-top: 4px solid #00f3ff !important; 
+            border-bottom: 4px solid #00f3ff !important; 
+            background-color: #111 !important;
+            background-image: linear-gradient(90deg, #222 0%, #222 40%, #00ff88 40%, #00ff88 50%, #0a0a0c 50%, #0a0a0c 100%) !important;
+            background-size: 30px 100% !important; 
+            box-shadow: inset 0 10px 10px rgba(0, 0, 0, 0.9), inset 0 -10px 10px rgba(0, 0, 0, 0.9);
+            animation: conveyorH 1s linear infinite;
+        }
+
+        .cell.bridge-v { 
+            display: block !important;
+            border-left: 4px solid #00f3ff !important; 
+            border-right: 4px solid #00f3ff !important; 
+            background-color: #111 !important;
+            background-image: linear-gradient(0deg, #222 0%, #222 40%, #00ff88 40%, #00ff88 50%, #0a0a0c 50%, #0a0a0c 100%) !important;
+            background-size: 100% 30px !important; 
+            box-shadow: inset 10px 0 10px rgba(0, 0, 0, 0.9), inset -10px 0 10px rgba(0, 0, 0, 0.9);
+            animation: conveyorV 1s linear infinite;
+        }
+
+        @keyframes conveyorH {
+            0% { background-position: 0 0; }
+            100% { background-position: 30px 0; }
+        }
+        @keyframes conveyorV {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 30px; }
+        }
         .cell.start-marker::before { content: 'S'; color: #2ecc71; font-weight: 900; position: absolute; left: 10%; top: 5%; }
 
         .cell.breakable { background-color: #1a0a00; border: 2px solid #ffaa00; box-shadow: 0 0 10px #ffaa00, inset 0 0 15px #ffaa00; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 170, 0, 0.2) 10px, rgba(255, 170, 0, 0.2) 20px); transition: all 0.2s ease; }
@@ -359,6 +388,8 @@
     <div id="market-screen" class="screen hidden">
         <h2 id="title-market" style="color: gold; margin-bottom:10px; font-size:1.8rem; flex-shrink: 0;">🛒 MAĞAZA</h2>
         
+        <div class="action-btn" style="background:#f1c40f; color:#000; margin-bottom:15px;" onclick="showRewarded()">🎬 REKLAM İZLE (+500 💰)</div>
+
         <div id="effect-preview-stage" class="hidden" style="width: 150px; height: 150px; background: #050505; border: 3px solid #333; border-radius: 12px; margin-bottom: 15px; position: relative; overflow: hidden; box-shadow: inset 0 0 20px #000, 0 5px 15px rgba(0,0,0,0.5); flex-shrink: 0;">
             <div id="preview-text" style="position:absolute; top:5px; width:100%; text-align:center; font-size:0.6rem; color:#888; font-weight:bold; z-index:10;">CANLI ÖNİZLEME</div>
             <div id="preview-canvas" style="width:100%; height:100%; position:relative;"></div>
@@ -516,26 +547,23 @@
 
         YaGames.init().then(_sdk => {
             ysdk = _sdk;
-            // Yandex'e yükleme bittiğini haber veriyoruz (Önemli!)
             ysdk.features.LoadingProgress.report(100);
             
             ysdk.getPlayer().then(_player => {
                 player = _player;
-                initGame(); // Her şey hazır, oyunu başlat!
+                initGame(); 
             }).catch(err => {
-                initGame(); // Oyuncu misafirse yine de başlat
+                initGame(); 
             });
         }).catch(err => {
-            // Yandex dışı lokal testler için (Github vb.) çökme önleyici
             initGame(); 
         });
 
         // --- MEVCUT OYUN DEĞİŞKENLERİ ---
         let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
-        let canPublish = false; // Harita doğrulama kilidi (YENİ)
-        let autoAdvanceTimer = null; // Otomatik geçiş için yeni ekledik
+        let canPublish = false; 
+        let autoAdvanceTimer = null; 
 
-        // DAKTİLO VE AMBİYANS SESLERİ İÇİN
         let audioCtx = null;
         let ambientOsc = null;
 
@@ -544,8 +572,8 @@
             if (audioCtx.state === 'suspended') audioCtx.resume();
         }
 
-        function playAmbient() { /* Arka plan uğultusu iptal edildi */ }
-        function stopAmbient() { /* İptal edildi */ }
+        function playAmbient() { }
+        function stopAmbient() { }
 
         function playTypewriterTick() {
             if (sfxVol === 0) return;
@@ -556,19 +584,17 @@
             const gain = audioCtx.createGain();
             
             osc.type = 'triangle'; 
-            
             osc.frequency.setValueAtTime(400 + Math.random() * 100, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.02);
-            
             gain.gain.setValueAtTime(sfxVol * 0.4, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-            
             osc.connect(gain); 
             gain.connect(audioCtx.destination);
             
             osc.start(); 
             osc.stop(audioCtx.currentTime + 0.02);
         }        
+        
         const comicIntros = {
             tr: {
                 1: [
@@ -649,7 +675,8 @@
                 ]
             }
         };
-function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || comicIntros['en']; return langIntros[arcNum]; }
+
+        function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || comicIntros['en']; return langIntros[arcNum]; }
 
         function startComic(arcNum, levelData) {
             if(bgMusic) bgMusic.pause();
@@ -694,11 +721,9 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
             isTyping = true; 
             let charIdx = 0;
             typewritingInterval = setInterval(() => {
-                
                 if (charIdx % 2 === 0 && data.text[charIdx] !== ' ') {
                     playTypewriterTick(); 
                 }
-                
                 document.getElementById(`txt-${currentStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
                 charIdx++;
                 
@@ -720,6 +745,37 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
             if(pendingLevelData) { showScreen('game-wrapper'); loadLevel(pendingLevelData); }
         }
 
+        // --- REKLAM FONKSİYONLARI BURADA ---
+        function showInterstitial() {
+            if (typeof ysdk !== 'undefined') {
+                ysdk.adv.showFullscreenAdv({
+                    callbacks: {
+                        onOpen: () => { if(bgMusic) bgMusic.pause(); }, 
+                        onClose: (wasShown) => { if(bgMusic && bgmVol > 0) bgMusic.play(); }, 
+                        onError: (error) => { console.log("Reklam hatası"); }
+                    }
+                });
+            }
+        }
+
+        function showRewarded() {
+            if (typeof ysdk !== 'undefined') {
+                ysdk.adv.showRewardedVideo({
+                    callbacks: {
+                        onOpen: () => { if(bgMusic) bgMusic.pause(); },
+                        onRewarded: () => {
+                            user.score += 500; 
+                            updatePoints();
+                            saveProgress();
+                            alert("Tebrikler! 500 G Puan kazandın. 💰");
+                        },
+                        onClose: () => { if(bgMusic && bgmVol > 0) bgMusic.play(); },
+                        onError: (e) => { console.log('Hata:', e); }
+                    }
+                });
+            }
+        }
+
         const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
         firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
 
@@ -728,13 +784,12 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
         const sfxWin = document.getElementById('sfx-win');
         
         const musicTracks = {
-            default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
-            asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
-            phonk: "https://cdn.pixabay.com/download/audio/2022/02/22/audio_d1718ab41b.mp3",  
-            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
-            taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
-        };
-
+    default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
+    asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
+    phonk: "phonk.mp3",  // <--- İşte burayı yerel dosya yaptık! 🔥
+    lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
+    taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
+};
         const tutorials = {
             arc2_bridge: { title: "ARC 2: KÖPRÜLER", anim: `<div style="position:relative; width: 140px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="cell bridge-v" style="position:absolute; width:40px; height:40px; z-index:2;"></div><div style="position:absolute; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutBridgeMove 2.5s infinite ease-in-out; z-index:1;"></div></div>`, desc: "🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden süzülerek geçebilirsin. Yanlardan girmeye çalışırsan seni duvar gibi durdurur." },
             arc2_hammer: { title: "BİLGİ: KIRILGAN DUVARLAR", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center;"><div class="cell breakable" style="position:absolute; left:60px; width:40px; height:40px; animation: tutWallBreak 2.5s infinite;"></div><div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutHammerMove 2.5s infinite;"></div></div>`, desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. İlk çarptığında duvar çatlar ve durdurur, ikinci çarpışında tamamen kırılır." },
@@ -742,8 +797,7 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
             arc3_bot: { title: "BİLGİ: DEVRİYE BOTLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="enemy-bot" style="position:absolute; width:30px; height:30px; animation: tutBotMove 2s infinite alternate linear;"><div class="bot-visor"><div class="bot-scanner"></div></div></div></div>`, desc: "🤖 <b>Devriye Botları:</b> Haritada belirli bir rotayı izlerler. Çarparsan yanarsın!" },
             arc3_laser: { title: "BİLGİ: LAZER AĞLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div style="width:40px; height:40px; position:relative; display:flex; align-items:center;"><div class="laser-base" style="width:100%;"></div><div class="laser-beam" style="width:100%; height:8px; background:var(--meat-red); animation: tutLaserPulse 1.4s infinite;"></div></div></div>`, desc: "⚡ <b>Lazerler:</b> Kırmızı renkte parladıklarında üzerlerinde olursan ölürsün." }
         };
-
-        let savedBgmVol = localStorage.getItem('yesilkare_bgm');
+let savedBgmVol = localStorage.getItem('yesilkare_bgm');
         let savedSfxVol = localStorage.getItem('yesilkare_sfx');
         let savedGenre = localStorage.getItem('yesilkare_genre') || 'default';
         
@@ -1021,13 +1075,13 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
         }
 
         document.addEventListener('touchmove', function(e) { 
-    if(e.target.tagName === 'INPUT' && e.target.type === 'range') return; // SES ÇUBUKLARININ KAYMASINA İZİN VER!
-    if (gameActive) { e.preventDefault(); return; } 
-    if (e.target.closest('.scroll-list') || e.target.closest('.arc-manager-list')) return; 
-    let screenEl = e.target.closest('.screen'); 
-    if (screenEl && screenEl.scrollHeight > screenEl.clientHeight) return; 
-    e.preventDefault(); 
-}, { passive: false });
+            if(e.target.tagName === 'INPUT' && e.target.type === 'range') return; 
+            if (gameActive) { e.preventDefault(); return; } 
+            if (e.target.closest('.scroll-list') || e.target.closest('.arc-manager-list')) return; 
+            let screenEl = e.target.closest('.screen'); 
+            if (screenEl && screenEl.scrollHeight > screenEl.clientHeight) return; 
+            e.preventDefault(); 
+        }, { passive: false });
 
         async function move(dx, dy) {
             if (!gameActive || moving) return; moving = true;
@@ -1386,11 +1440,12 @@ function getLocalizedIntro(arcNum) { let langIntros = comicIntros[curLang] || co
         }
 
         function testDesign(){ canPublish = false; // Test başlarken izni sıfırla
-if(document.getElementById('publish-btn')) document.getElementById('publish-btn').style.opacity = "0.5";
+            if(document.getElementById('publish-btn')) document.getElementById('publish-btn').style.opacity = "0.5";
             if((editorPM.length > 0 && editorPT.length === 0) || (editorPT.length > 0 && editorPM.length === 0)) { alert("MİMAR! Çıkış portalını unuttun! 🤨"); return; }
             isTestMode=true; showScreen('game-wrapper'); 
             loadLevel({grid:parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start:{x: editorS.x || 0, y: editorS.y || 0}, walls:editorW, breakables:editorB, bridgesH:editorBH, bridgesV:editorBV, spikes:editorSpikes, portalsM:editorPM, portalsT:editorPT, lasers:editorLaser, enemies:editorEnemy, nemesis:editorNemesis, enemyPaths:editorEPaths}); 
         }
+        
         function returnToEditor() { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); showScreen('editor-screen'); }
 
         function openLevelDetail(lvlString, docId) {
@@ -1431,10 +1486,10 @@ if(document.getElementById('publish-btn')) document.getElementById('publish-btn'
                 const qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); let arr = []; qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); arr.sort((a,b) => b.ts - a.ts); list.innerHTML = ''; if(arr.length === 0) list.innerHTML = "Hiç harita yok!"; 
                 arr.forEach(d => { 
                     const c = document.createElement('div'); c.className = 'skin-card'; 
-let adminDelBtn = "";
-if(user.isAdmin) {
-    adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`;
-}
+                    let adminDelBtn = "";
+                    if(user.isAdmin) {
+                        adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`;
+                    }
                     const getC = (w) => w.x !== undefined ? [w.x, w.y] : [w[0], w[1]];
                     const walls = (d.walls || []).map(getC); const brH = (d.bridgesH || []).map(getC); const brV = (d.bridgesV || []).map(getC); const breaks = (d.breakables || []).map(getC); const spikes = d.spikes || []; const nem = d.nemesis || []; const lvl = {...d, walls, bridgesH: brH, bridgesV: brV, breakables: breaks, spikes, nemesis: nem}; 
                     
@@ -1456,10 +1511,11 @@ if(user.isAdmin) {
             } catch(e) { console.error("Hata:", e); } 
         }
 
-        async function saveDesign(){ if(!canPublish && !user.isAdmin) {
-    alert("MİMAR! Önce haritayı TEST ET modunda bitirerek doğrulamalısın! 🤨");
-    return;
-}
+        async function saveDesign(){ 
+            if(!canPublish && !user.isAdmin) {
+                alert("MİMAR! Önce haritayı TEST ET modunda bitirerek doğrulamalısın! 🤨");
+                return;
+            }
             let ans = "7"; if(user.isAdmin) { ans = prompt("Mimar Fırat, nereye yayınlıyoruz?\n(1-6: Global Arc, 7: Online Havuz):", "1"); }
             if (!ans || !['1','2','3','4','5','6','7'].includes(ans)) { alert("İptal edildi! 🤨"); return; }
             let mapName = "İsimsiz Harita"; if (ans === '7') { mapName = prompt("Haritanın Adı Ne Olsun?:", "Zorlu Parkur") || "İsimsiz Harita"; }
@@ -1535,14 +1591,49 @@ if(user.isAdmin) {
             if (d.revTime && d.revTime > 0) { reverseIntervalObj = setInterval(() => { if(!gameActive) return; reverseActive = !reverseActive; const pb = document.getElementById('player-body'); if(pb) { if(reverseActive) pb.classList.add('reverse-active'); else pb.classList.remove('reverse-active'); } }, d.revTime * 1000); }
         }
 
+        // --- TAMİR EDİLMİŞ, TEMİZ ÖLME FONKSİYONU ---
         function die() {
-            gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
-            const gameBox = document.getElementById('game-container'); gameBox.classList.add('shake-screen'); setTimeout(() => gameBox.classList.remove('shake-screen'), 300);
-            document.getElementById('player-body').classList.add('dead-player'); document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">ÖLDÜN! 🩸</span>`;
+            showInterstitial(); 
+            
+            gameActive = false; 
+            moving = false;
+            clearInterval(timerInterval); 
+            clearInterval(cycleInterval); 
+            clearInterval(enemyInterval); 
+            clearInterval(nemesisInterval); 
+            clearInterval(reverseIntervalObj);
+            
+            const gameBox = document.getElementById('game-container'); 
+            gameBox.classList.add('shake-screen'); 
+            setTimeout(() => gameBox.classList.remove('shake-screen'), 300);
+            
+            document.getElementById('player-body').classList.add('dead-player'); 
+            document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">ÖLDÜN! 🩸</span>`;
+            
             setTimeout(() => { if(isTestMode) testDesign(); else resetLevel(); }, 1200);
         }
 
-        function checkWin(){ if(cells.filter(c=> c && (c.type==='floor' || c.type==='break' || c.type==='laser')).every(c=>c.painted)){ gameActive=false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); celebrate(); } }
+            function checkWin() {
+            if (!gameActive) return;
+            
+            // 1. Boyanmamış normal zemin (floor) kaldı mı bak
+            const unpaintedFloor = cells.filter(c => c && c.type === 'floor' && !c.painted).length;
+            
+            // 2. Hala kırılmamış kırılabilir duvar (break) kaldı mı bak
+            const breakables = cells.filter(c => c && c.type === 'break').length;
+
+            // Eğer ikisi de sıfırsa, zafer vakti!
+            if (unpaintedFloor === 0 && breakables === 0) {
+                gameActive = false;
+                moving = false;
+                clearInterval(timerInterval);
+                clearInterval(cycleInterval);
+                clearInterval(enemyInterval);
+                clearInterval(nemesisInterval);
+                clearInterval(reverseIntervalObj);
+                celebrate();
+            }
+        }
 
         function celebrate(){ 
             const dur = parseFloat(((Date.now() - levelStartTime) / 1000).toFixed(1));
@@ -1554,7 +1645,6 @@ if(user.isAdmin) {
             const gameBox = document.getElementById('game-container');
             const pContainer = document.getElementById('player-container');
             
-            // 🎯 OYUN MOTORU KORDİNAT SİSTEMİ (offsetLeft Hataları Giderildi)
             const currentX = pos.x * (currentCellSize + 2) + 2;
             const currentY = pos.y * (currentCellSize + 2) + 2;
             const centerX = currentX + currentCellSize / 2;
@@ -1679,7 +1769,6 @@ if(user.isAdmin) {
                     setTimeout(() => {
                         pContainer.style.transition = 'all 0.4s cubic-bezier(0.5, 0, 0.5, 1)';
                         
-                        // TAM DUVARA YAPIŞMA HESAPLAMASI
                         const wallX = 0; 
                         const wallY = Math.max(0, currentY - 80); 
                         pContainer.style.transform = `translate3d(${wallX}px, ${wallY}px, 0) rotate(-90deg) scaleY(0.7)`;
@@ -1872,14 +1961,14 @@ if(user.isAdmin) {
             if(dur<10) { cells.forEach(c=>{ if(c && c.painted) c.el.classList.add('rgb-anim'); }); document.getElementById('status-msg').innerHTML=`HIZ REKORU! 🌈<br><span style="color:gold">+${earned} G Puan</span>`; }
             else document.getElementById('status-msg').innerHTML=`BİTTİ! 🤨<br><span style="color:gold">+${earned} G Puan</span>`; 
             
-         if(isTestMode){ 
-    levelVerified = true; 
-    canPublish = true; // KİLİT AÇILDI
-    document.getElementById('publish-btn').style.opacity = "1"; 
-    document.getElementById('status-msg').innerHTML = `<span style="color:#00ff88">HARİTA DOĞRULANDI!<br>ARTIK YAYINLAYABİLİRSİN.</span>`;
-    setTimeout(()=>returnToEditor(), 2500); 
-    return; 
-}
+            if(isTestMode){ 
+                levelVerified = true; 
+                canPublish = true; 
+                document.getElementById('publish-btn').style.opacity = "1"; 
+                document.getElementById('status-msg').innerHTML = `<span style="color:#00ff88">HARİTA DOĞRULANDI!<br>ARTIK YAYINLAYABİLİRSİN.</span>`;
+                setTimeout(()=>returnToEditor(), 2500); 
+                return; 
+            }
             
             if (isPlayingOnline && currentOnlineLevel && currentOnlineLevel.docId && user.name && !user.name.startsWith("Misafir_")) {
                 let recs = currentOnlineLevel.records || []; recs.push({ user: user.name, time: dur });
@@ -1913,16 +2002,17 @@ if(user.isAdmin) {
         const pixelGridEl = document.getElementById('pixel-grid');
         pixelGridEl.addEventListener('touchstart', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
         pixelGridEl.addEventListener('touchmove', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
-async function deleteOnlineMap(mapId) {
-    if(!confirm("Bu haritayı sonsuza dek imha etmek istediğine emin misin Baş Mimar? 🗑️")) return;
-    try {
-        await db.collection("levels").doc(mapId).delete();
-        alert("Harita sistemden silindi. 🧹");
-        fetchOnlineLevels(); // Listeyi yenile
-    } catch(e) {
-        alert("Silme başarısız: " + e.message);
-    }
-}
+        
+        async function deleteOnlineMap(mapId) {
+            if(!confirm("Bu haritayı sonsuza dek imha etmek istediğine emin misin Baş Mimar? 🗑️")) return;
+            try {
+                await db.collection("levels").doc(mapId).delete();
+                alert("Harita sistemden silindi. 🧹");
+                fetchOnlineLevels(); 
+            } catch(e) {
+                alert("Silme başarısız: " + e.message);
+            }
+        }
     </script>
 </body>
 </html>
