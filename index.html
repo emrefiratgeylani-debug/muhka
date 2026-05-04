@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Yeşil Kare: Global Architect V54.1 - NOIR EDITION</title>
+    <title>Yeşil Kare: Global Architect V55 - SİBER AĞ SÜRÜMÜ</title>
     <script src="https://yandex.ru/games/sdk/v2"></script>
     
     <script src="firebase-app-compat.js"></script>
@@ -89,12 +89,26 @@
         #game-container, #editor-container { position: relative; border: 4px solid #333; background: #2a2a32; display: grid; gap: var(--gap); padding: var(--gap); border-radius: 12px; margin: 0 auto; width: fit-content; max-width: 95vw; flex-shrink: 0; touch-action: none;}
         
         .cell { width: var(--cell-sz); height: var(--cell-sz); background: var(--cell-bg); border-radius: 4px; position: relative; z-index: 1; }
-        .cell.wall { background: var(--wall); border: 1px solid #444; }
+        
+        /* NOIR DUVAR CSS GÜNCELLEMESİ (SİBERPUNK SEÇENEĞİ EKLENDİ) */
+        .cell.wall { 
+            background: #111; 
+            border: 1px solid #00ff88; 
+            box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.2), 0 0 5px rgba(0, 255, 136, 0.3);
+            background-image: linear-gradient(rgba(0, 255, 136, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 136, 0.3) 1px, transparent 1px);
+            background-size: 8px 8px;
+            position: relative;
+        }
+        .cell.wall::after {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8));
+        }
+
         .cell.painted { opacity: 0.9; transform: scale(0.95); transition: transform 0.1s; z-index: 2; }
         .spike-t, .spike-b, .spike-l, .spike-r { z-index: 10 !important; }
 
         .cell.bridge-h { 
-            display: block !important; /* Görünürlüğü zorla */
+            display: block !important; 
             border-top: 4px solid #00f3ff !important; 
             border-bottom: 4px solid #00f3ff !important; 
             background-color: #111 !important;
@@ -115,14 +129,8 @@
             animation: conveyorV 1s linear infinite;
         }
 
-        @keyframes conveyorH {
-            0% { background-position: 0 0; }
-            100% { background-position: 30px 0; }
-        }
-        @keyframes conveyorV {
-            0% { background-position: 0 0; }
-            100% { background-position: 0 30px; }
-        }
+        @keyframes conveyorH { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }
+        @keyframes conveyorV { 0% { background-position: 0 0; } 100% { background-position: 0 30px; } }
         .cell.start-marker::before { content: 'S'; color: #2ecc71; font-weight: 900; position: absolute; left: 10%; top: 5%; }
 
         .cell.breakable { background-color: #1a0a00; border: 2px solid #ffaa00; box-shadow: 0 0 10px #ffaa00, inset 0 0 15px #ffaa00; background-image: repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255, 170, 0, 0.2) 10px, rgba(255, 170, 0, 0.2) 20px); transition: all 0.2s ease; }
@@ -182,11 +190,16 @@
         .skin-prev { width: 45px; height: 45px; border-radius: 8px; margin-bottom: 8px; display:flex; align-items:center; justify-content:center; position: relative; border: 2px solid #444; overflow:hidden;}
         .delete-btn { position:absolute; top:-8px; right:-8px; width:30px; height:30px; background:#e74c3c; border:2px solid #fff; border-radius:50%; display:flex; align-items:center; justify-content:center; z-index:20; cursor:pointer; font-size:0.9rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5); }
 
+        /* YENİ: SOSYAL AĞ BİLDİRİM NOKTASI EKLENDİ */
+        .notification-dot { position:absolute; top:-5px; right:-5px; width:16px; height:16px; background:#e74c3c; border-radius:50%; border:2px solid #111; animation: blink-text 1s infinite; z-index: 10; }
+
         .editor-toolbar { display: flex; flex-wrap: wrap; gap: 5px; width: 100%; max-width: 350px; background: #1e1e24; padding: 10px; border-radius: 10px; justify-content: center; flex-shrink: 0; border: 1px solid #333; margin-bottom: 10px; }
         .tool-btn { padding: 8px 4px; font-size: 0.7rem; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; flex: 1 1 20%; text-align: center; box-shadow: 0 3px 0 rgba(0,0,0,0.4); text-transform: uppercase; color: white; display: flex; align-items: center; justify-content: center; height: 35px; }
         .tool-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(0,0,0,0.4); }
         .tool-btn.active { outline: 2px solid var(--orange); outline-offset: 1px; }
 
+        @keyframes backflip { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.5); } 100% { transform: rotate(360deg) scale(1); } }
+        .do-flip { animation: backflip 0.6s ease-in-out forwards; }
         @keyframes rgbLoop { 0% { background: #f00; } 33% { background: #0f0; } 66% { background: #00f; } 100% { background: #f00; } }
         .rgb-anim { animation: rgbLoop 1s infinite linear !important; }
         @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); } }
@@ -249,7 +262,6 @@
     </div>
 
     <div id="lang-btn" style="position:fixed; top:15px; left:15px; width:40px; height:40px; background:rgba(0,0,0,0.8); border:2px solid #3498db; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.1rem; cursor:pointer; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="toggleLangMenu()">A/文</div>
-
     <div id="audio-btn" style="position:fixed; top:15px; right:15px; width:40px; height:40px; background:rgba(0,0,0,0.8); border:2px solid var(--orange); border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:1.2rem; cursor:pointer; z-index:10000; box-shadow: 0 0 10px rgba(0,0,0,0.5);" onclick="toggleAudioMenu()">🎵</div>
 
     <div id="lang-menu" class="screen hidden" style="background:rgba(10,10,15,0.95); z-index:10001;">
@@ -317,7 +329,7 @@
     </div>
 
     <div id="start-screen" class="screen">
-        <h1 style="color:#00ff88; text-align:center; font-size:2.5rem; text-shadow:0 0 20px rgba(0,255,136,0.5);">YEŞİL KARE<br><span style="font-size:1rem; color:white; opacity:0.7; letter-spacing:5px;">V54.1 NOIR EDITION</span></h1>
+        <h1 style="color:#00ff88; text-align:center; font-size:2.5rem; text-shadow:0 0 20px rgba(0,255,136,0.5);">YEŞİL KARE<br><span style="font-size:1rem; color:white; opacity:0.7; letter-spacing:5px;">V55 SİBER AĞ</span></h1>
         <div class="menu-container" style="margin-top:20px; width: 100%; max-width: 300px;">
             <div id="btn-guest" class="action-btn" onclick="loginAsGuest()">MİSAFİR GİRİŞİ 🚀</div>
             <div id="btn-login-reg" class="action-btn" style="background:#2a2a32; color:white; box-shadow:0 6px 0 #111;" onclick="showScreen('login-screen')">GİRİŞ YAP / KAYIT OL 👤</div>
@@ -342,11 +354,53 @@
     <div id="menu-screen" class="screen hidden">
         <div class="menu-container" style="width: 100%; max-width: 300px;">
             <div id="btn-play" class="action-btn" onclick="showScreen('play-menu-screen')">🎮 OYNA</div>
-            <div id="btn-online" class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9;" onclick="showScreen('online-menu-screen')">🌐 ONLİNE</div>
+            <!-- YENİ SOSYAL AĞ BUTONU -->
+            <div id="btn-online" class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9;" onclick="showScreen('online-menu-screen')">🌐 SİBER AĞ (ONLİNE)</div>
             <div id="btn-market" class="action-btn" style="background:#f1c40f; box-shadow:0 6px 0 #f39c12;" onclick="showScreen('market-screen')">🛒 MAĞAZA</div>
             <div id="admin-arc-btn" class="action-btn" style="background:#2ecc71; color:#000; box-shadow:0 6px 0 #27ae60; display:none;" onclick="showScreen('arc-manager-screen')">🛠️ ARC DÜZENLEYİCİ</div>
             <div id="admin-create-char-btn" class="action-btn" style="background:#9b59b6; color:white; box-shadow:0 6px 0 #8e44ad; display:none;" onclick="showScreen('admin-char-screen')">🎭 TASARIM ATÖLYESİ</div>
         </div>
+    </div>
+
+    <!-- YENİ SİBER AĞ (ONLINE) MENÜSÜ -->
+    <div id="online-menu-screen" class="screen hidden">
+        <h2 style="color: #3498db; margin-bottom:20px; margin-top:0;">SİBER AĞ</h2>
+        <div class="menu-container" style="width: 100%; max-width: 320px;">
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <div class="action-btn" style="background:#3498db; color:white; flex:1; margin:0;" onclick="openOnlineCategory('global')">🌍 GLOBAL AĞ</div>
+                <div class="action-btn" style="background:#f1c40f; color:#000; flex:1; margin:0;" onclick="openOnlineCategory('friends')">🤝 DOST SİNYALİ</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <div class="action-btn" style="background:#9b59b6; color:white; flex:1; margin:0;" onclick="openOnlineCategory('mine')">📁 ARŞİVİM</div>
+                <div class="action-btn" style="background:#e67e22; color:white; flex:1; margin:0;" onclick="showScreen('search-player-screen')">🔍 MİMAR BUL</div>
+            </div>
+            <div style="display:flex; gap:10px; margin-bottom:10px;">
+                <div class="action-btn" style="background:#2ecc71; color:#000; flex:2; margin:0;" onclick="openEditor()">✏️ HARİTA TASARLA</div>
+                <div class="action-btn" style="background:#34495e; color:white; flex:1; margin:0; position:relative;" onclick="showScreen('inbox-screen'); renderInbox();">
+                    ✉️ KUTU
+                    <div id="inbox-notif" class="notification-dot hidden"></div>
+                </div>
+            </div>
+            <div id="btn-back-online-m" class="action-btn" style="background:#e74c3c; color:white; margin-top:10px;" onclick="showScreen('menu-screen')">GERİ DÖN</div>
+        </div>
+    </div>
+
+    <!-- YENİ: MİMAR ARAMA EKRANI -->
+    <div id="search-player-screen" class="screen hidden">
+        <h2 style="color: #e67e22; margin-bottom:15px; flex-shrink:0;">🔍 MİMAR BUL</h2>
+        <div style="display:flex; width:100%; max-width:350px; gap:10px; margin-bottom:20px;">
+            <input type="text" id="search-player-input" placeholder="Mimar Adı..." style="flex:1; padding:12px; background:#111; color:white; border:2px solid #e67e22; border-radius:8px; font-weight:bold; outline:none;">
+            <div class="action-btn" style="background:#e67e22; color:white; margin:0; width:auto; padding:0 20px;" onclick="searchPlayer()">ARA</div>
+        </div>
+        <div id="search-results" style="width:100%; max-width:350px; display:flex; flex-direction:column; gap:10px;"></div>
+        <div class="action-btn" style="background:#e74c3c; color:white; max-width:350px; margin-top:auto;" onclick="showScreen('online-menu-screen')">GERİ</div>
+    </div>
+
+    <!-- YENİ: GELEN KUTUSU EKRANI -->
+    <div id="inbox-screen" class="screen hidden">
+        <h2 style="color: #34495e; margin-bottom:15px; flex-shrink:0;">✉️ SİNYAL KUTUSU</h2>
+        <div id="inbox-list" class="scroll-list" style="display:flex; flex-direction:column; width:100%; max-width:350px;"></div>
+        <div class="action-btn" style="background:#e74c3c; color:white; max-width:350px; margin-top:auto;" onclick="showScreen('online-menu-screen')">GERİ</div>
     </div>
 
     <div id="arc-manager-screen" class="screen hidden">
@@ -377,24 +431,13 @@
         </div>
     </div>
 
-    <div id="online-menu-screen" class="screen hidden">
-        <div class="menu-container" style="width: 100%; max-width: 300px;">
-            <div id="btn-map-pool" class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9;" onclick="showScreen('online-screen')">🌍 HARİTA HAVUZU</div>
-            <div id="btn-map-edit" class="action-btn" style="background:#2ecc71; color:#000; box-shadow:0 6px 0 #27ae60;" onclick="openEditor()">✏️ HARİTA TASARLA</div>
-            <div id="btn-back-online-m" class="action-btn" style="background:#e74c3c; color:white; box-shadow:0 6px 0 #c0392b; margin-top:10px;" onclick="showScreen('menu-screen')">GERİ DÖN</div>
-        </div>
-    </div>
-
     <div id="market-screen" class="screen hidden">
         <h2 id="title-market" style="color: gold; margin-bottom:10px; font-size:1.8rem; flex-shrink: 0;">🛒 MAĞAZA</h2>
-        
         <div class="action-btn" style="background:#f1c40f; color:#000; margin-bottom:15px;" onclick="showRewarded()">🎬 REKLAM İZLE (+500 💰)</div>
-
         <div id="effect-preview-stage" class="hidden" style="width: 150px; height: 150px; background: #050505; border: 3px solid #333; border-radius: 12px; margin-bottom: 15px; position: relative; overflow: hidden; box-shadow: inset 0 0 20px #000, 0 5px 15px rgba(0,0,0,0.5); flex-shrink: 0;">
             <div id="preview-text" style="position:absolute; top:5px; width:100%; text-align:center; font-size:0.6rem; color:#888; font-weight:bold; z-index:10;">CANLI ÖNİZLEME</div>
             <div id="preview-canvas" style="width:100%; height:100%; position:relative;"></div>
         </div>
-
         <div class="tab-container">
             <button id="tab-colors" class="tab-btn active" onclick="setMarketTab('colors')">🎨 RENKLER</button>
             <button id="tab-faces" class="tab-btn" onclick="setMarketTab('faces')">👁️ YÜZLER</button>
@@ -459,6 +502,7 @@
         </div> 
     </div>
 
+    <!-- YENİLENMİŞ SEVİYE DETAY (LİDERLİK) EKRANI -->
     <div id="level-detail-modal" class="screen hidden" style="background:rgba(10,10,15,0.98); z-index:10002;">
         <div class="creator-box" style="text-align:center;">
             <h2 id="detail-title" style="color:var(--orange); margin-top:0; font-size:1.5rem;">Harita Yükleniyor...</h2>
@@ -468,7 +512,7 @@
                 <span style="background:#222; padding:5px 10px; border-radius:5px; font-weight:bold; color:#fff; display:flex; align-items:center;">▶️ <span id="detail-plays" style="margin-left:5px;">0</span></span>
             </div>
             <div style="background:#111; border-radius:8px; padding:10px; margin-bottom:15px;">
-                <h3 id="title-records" style="color:#00ff88; margin:0 0 10px 0; font-size:1rem;">🏆 HIZ REKORLARI</h3>
+                <h3 id="title-records" style="color:#00ff88; margin:0 0 10px 0; font-size:1rem;">🏆 ŞEREF KÜRSÜSÜ</h3>
                 <div id="detail-leaderboard" style="color:#fff; font-size:0.85rem; display:flex; flex-direction:column; gap:5px;"></div>
             </div>
             <div id="btn-play-detail" class="action-btn" style="background:#3498db; color:white; box-shadow:0 6px 0 #2980b9;" onclick="startOnlineLevelFromDetail()">OYNA 🚀</div>
@@ -784,12 +828,12 @@
         const sfxWin = document.getElementById('sfx-win');
         
         const musicTracks = {
-    default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
-    asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
-    phonk: "phonk.mp3",  // <--- İşte burayı yerel dosya yaptık! 🔥
-    lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
-    taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
-};
+            default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
+            asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
+            phonk: "phonk.mp3",  
+            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
+            taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
+        };
         const tutorials = {
             arc2_bridge: { title: "ARC 2: KÖPRÜLER", anim: `<div style="position:relative; width: 140px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="cell bridge-v" style="position:absolute; width:40px; height:40px; z-index:2;"></div><div style="position:absolute; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutBridgeMove 2.5s infinite ease-in-out; z-index:1;"></div></div>`, desc: "🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden süzülerek geçebilirsin. Yanlardan girmeye çalışırsan seni duvar gibi durdurur." },
             arc2_hammer: { title: "BİLGİ: KIRILGAN DUVARLAR", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center;"><div class="cell breakable" style="position:absolute; left:60px; width:40px; height:40px; animation: tutWallBreak 2.5s infinite;"></div><div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutHammerMove 2.5s infinite;"></div></div>`, desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. İlk çarptığında duvar çatlar ve durdurur, ikinci çarpışında tamamen kırılır." },
@@ -797,7 +841,7 @@
             arc3_bot: { title: "BİLGİ: DEVRİYE BOTLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="enemy-bot" style="position:absolute; width:30px; height:30px; animation: tutBotMove 2s infinite alternate linear;"><div class="bot-visor"><div class="bot-scanner"></div></div></div></div>`, desc: "🤖 <b>Devriye Botları:</b> Haritada belirli bir rotayı izlerler. Çarparsan yanarsın!" },
             arc3_laser: { title: "BİLGİ: LAZER AĞLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div style="width:40px; height:40px; position:relative; display:flex; align-items:center;"><div class="laser-base" style="width:100%;"></div><div class="laser-beam" style="width:100%; height:8px; background:var(--meat-red); animation: tutLaserPulse 1.4s infinite;"></div></div></div>`, desc: "⚡ <b>Lazerler:</b> Kırmızı renkte parladıklarında üzerlerinde olursan ölürsün." }
         };
-let savedBgmVol = localStorage.getItem('yesilkare_bgm');
+        let savedBgmVol = localStorage.getItem('yesilkare_bgm');
         let savedSfxVol = localStorage.getItem('yesilkare_sfx');
         let savedGenre = localStorage.getItem('yesilkare_genre') || 'default';
         
@@ -834,12 +878,12 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
         }
 
         const i18n = {
-            tr: { play: "🎮 OYNA", online: "🌐 ONLİNE", market: "🛒 MAĞAZA", back: "GERİ DÖN", guest: "MİSAFİR GİRİŞİ 🚀", login_reg: "GİRİŞ YAP / KAYIT OL 👤", map_pool: "🌍 HARİTA HAVUZU", map_edit: "✏️ HARİTA TASARLA", colors: "🎨 RENKLER", faces: "👁️ YÜZLER", chars: "🎭 KARAKTER", effects: "✨ EFEKTLER", cancel: "İPTAL", logout: "ÇIKIŞ YAP", retry: "TEKRAR", quit: "ÇIK", score: "💰 PUAN:", buy_ok: "Eşya alındı! 🚀", low_gold: "Altın yetersiz! 🛑", del_conf: "Sileyim mi? 🗑️", perks: { none: "Özellik yok.", armor: "Dikenli telden korur.", breaker: "Duvarı tek atar.", rich: "Kazancı x2 yapar.", speed: "%30 hızlı.", hyperspeed: "Mermi hızı!", ghost: "Hayalet modu." }},
-            en: { play: "🎮 PLAY", online: "🌐 ONLINE", market: "🛒 MARKET", back: "BACK", guest: "GUEST LOGIN 🚀", login_reg: "LOGIN / REGISTER 👤", map_pool: "🌍 MAP POOL", map_edit: "✏️ MAP EDITOR", colors: "🎨 COLORS", faces: "👁️ FACES", chars: "🎭 CHARACTERS", effects: "✨ EFFECTS", cancel: "CANCEL", logout: "LOGOUT", retry: "RETRY", quit: "QUIT", score: "💰 SCORE:", buy_ok: "Bought! 🚀", low_gold: "Not enough gold! 🛑", del_conf: "Delete? 🗑️", perks: { none: "No perks.", armor: "Protects from spikes.", breaker: "One-shots walls.", rich: "2x Earnings.", speed: "30% faster.", hyperspeed: "Bullet speed!", ghost: "Ghost mode." }},
-            es: { play: "🎮 JUGAR", online: "🌐 ONLINE", market: "🛒 TIENDA", back: "VOLVER", guest: "INVITADO 🚀", login_reg: "INICIAR / REGISTRO 👤", map_pool: "🌍 MAPAS", map_edit: "✏️ EDITOR", colors: "🎨 COLORES", faces: "👁️ CARAS", chars: "🎭 PERSONAJES", effects: "✨ EFECTOS", cancel: "CANCELAR", logout: "SALIR", retry: "REINTENTAR", quit: "SALIR", score: "💰 PUNTOS:", buy_ok: "¡Comprado! 🚀", low_gold: "¡Oro insuficiente! 🛑", del_conf: "¿Eliminar? 🗑️", perks: { none: "Sin mejoras.", armor: "Protege de pinchos.", breaker: "Rompe paredes.", rich: "Ganancias x2.", speed: "30% rápido.", hyperspeed: "¡Velocidad bala!", ghost: "Modo fantasma." }},
-            ru: { play: "🎮 ИГРАТЬ", online: "🌐 ОНЛАЙН", market: "🛒 МАГАЗИН", back: "НАЗАД", guest: "ГОСТЬ 🚀", login_reg: "ВХОД / РЕГИСТРАЦИЯ 👤", map_pool: "🌍 КАРТЫ", map_edit: "✏️ РЕДАКТОР", colors: "🎨 ЦВЕТА", faces: "👁️ ЛИЦА", chars: "🎭 ПЕРСОНАЖИ", effects: "✨ ЭФФЕКТЫ", cancel: "ОТМЕНА", logout: "ВЫЙТИ", retry: "ПОВТОР", quit: "ВЫХОД", score: "💰 ОЧКИ:", buy_ok: "Куплено! 🚀", low_gold: "Мало золота! 🛑", del_conf: "Удалить? 🗑️", perks: { none: "Нет способностей.", armor: "Защита от шипов.", breaker: "Разрушает стены.", rich: "Доход х2.", speed: "На 30% быстрее.", hyperspeed: "Скорость!", ghost: "Режим призрака." }},
-            fr: { play: "🎮 JOUER", online: "🌐 EN LIGNE", market: "🛒 BOUTIQUE", back: "RETOUR", guest: "INVITÉ 🚀", login_reg: "CONNEXION / INSCRIPTION 👤", map_pool: "🌍 CARTES", map_edit: "✏️ ÉDITEUR", colors: "🎨 COULEURS", faces: "👁️ VISAGES", chars: "🎭 PERSONNAGES", effects: "✨ EFFETS", cancel: "ANNULER", logout: "QUITTER", retry: "RÉESSAYER", quit: "QUITTER", score: "💰 POINTS:", buy_ok: "Acheté! 🚀", low_gold: "Or insuffisant! 🛑", del_conf: "Supprimer? 🗑️", perks: { none: "Aucun bonus.", armor: "Protège des pointes.", breaker: "Casse les murs.", rich: "Gains x2.", speed: "30% plus vite.", hyperspeed: "Vitesse balle!", ghost: "Mode fantôme." }},
-            zh: { play: "🎮 玩", online: "🌐 在线", market: "🛒 市场", back: "返回", guest: "访客登录 🚀", login_reg: "登录 / 注册 👤", map_pool: "🌍 地图", map_edit: "✏️ 编辑器", colors: "🎨 颜色", faces: "👁️ 面部", chars: "🎭 角色", effects: "✨ 效果", cancel: "取消", logout: "登出", retry: "重试", quit: "退出", score: "💰 分数:", buy_ok: "买了! 🚀", low_gold: "金币不足! 🛑", del_conf: "删除? 🗑️", perks: { none: "没有能力.", armor: "保护.", breaker: "打破墙壁.", rich: "收入 x2.", speed: "快 30%.", hyperspeed: "子弹速度!", ghost: "幽灵模式." }}
+            tr: { play: "🎮 OYNA", online: "🌐 SİBER AĞ (ONLİNE)", market: "🛒 MAĞAZA", back: "GERİ DÖN", guest: "MİSAFİR GİRİŞİ 🚀", login_reg: "GİRİŞ YAP / KAYIT OL 👤", map_pool: "🌍 GLOBAL AĞ", map_edit: "✏️ HARİTA TASARLA", colors: "🎨 RENKLER", faces: "👁️ YÜZLER", chars: "🎭 KARAKTER", effects: "✨ EFEKTLER", cancel: "İPTAL", logout: "ÇIKIŞ YAP", retry: "TEKRAR", quit: "ÇIK", score: "💰 PUAN:", buy_ok: "Eşya alındı! 🚀", low_gold: "Altın yetersiz! 🛑", del_conf: "Sileyim mi? 🗑️", perks: { none: "Özellik yok.", armor: "Dikenli telden korur.", breaker: "Duvarı tek atar.", rich: "Kazancı x2 yapar.", speed: "%30 hızlı.", hyperspeed: "Mermi hızı!", ghost: "Hayalet modu." }},
+            en: { play: "🎮 PLAY", online: "🌐 CYBER NET (ONLINE)", market: "🛒 MARKET", back: "BACK", guest: "GUEST LOGIN 🚀", login_reg: "LOGIN / REGISTER 👤", map_pool: "🌍 GLOBAL NET", map_edit: "✏️ MAP EDITOR", colors: "🎨 COLORS", faces: "👁️ FACES", chars: "🎭 CHARACTERS", effects: "✨ EFFECTS", cancel: "CANCEL", logout: "LOGOUT", retry: "RETRY", quit: "QUIT", score: "💰 SCORE:", buy_ok: "Bought! 🚀", low_gold: "Not enough gold! 🛑", del_conf: "Delete? 🗑️", perks: { none: "No perks.", armor: "Protects from spikes.", breaker: "One-shots walls.", rich: "2x Earnings.", speed: "30% faster.", hyperspeed: "Bullet speed!", ghost: "Ghost mode." }},
+            es: { play: "🎮 JUGAR", online: "🌐 RED CIBER (ONLINE)", market: "🛒 TIENDA", back: "VOLVER", guest: "INVITADO 🚀", login_reg: "INICIAR / REGISTRO 👤", map_pool: "🌍 RED GLOBAL", map_edit: "✏️ EDITOR", colors: "🎨 COLORES", faces: "👁️ CARAS", chars: "🎭 PERSONAJES", effects: "✨ EFECTOS", cancel: "CANCELAR", logout: "SALIR", retry: "REINTENTAR", quit: "SALIR", score: "💰 PUNTOS:", buy_ok: "¡Comprado! 🚀", low_gold: "¡Oro insuficiente! 🛑", del_conf: "¿Eliminar? 🗑️", perks: { none: "Sin mejoras.", armor: "Protege de pinchos.", breaker: "Rompe paredes.", rich: "Ganancias x2.", speed: "30% rápido.", hyperspeed: "¡Velocidad bala!", ghost: "Modo fantasma." }},
+            ru: { play: "🎮 ИГРАТЬ", online: "🌐 КИБЕР СЕТЬ (ОНЛАЙН)", market: "🛒 МАГАЗИН", back: "НАЗАД", guest: "ГОСТЬ 🚀", login_reg: "ВХОД / РЕГИСТРАЦИЯ 👤", map_pool: "🌍 ГЛОБАЛЬНАЯ СЕТЬ", map_edit: "✏️ РЕДАКТОР", colors: "🎨 ЦВЕТА", faces: "👁️ ЛИЦА", chars: "🎭 ПЕРСОНАЖИ", effects: "✨ ЭФФЕКТЫ", cancel: "ОТМЕНА", logout: "ВЫЙТИ", retry: "ПОВТОР", quit: "ВЫХОД", score: "💰 ОЧКИ:", buy_ok: "Куплено! 🚀", low_gold: "Мало золота! 🛑", del_conf: "Удалить? 🗑️", perks: { none: "Нет способностей.", armor: "Защита от шипов.", breaker: "Разрушает стены.", rich: "Доход х2.", speed: "На 30% быстрее.", hyperspeed: "Скорость!", ghost: "Режим призрака." }},
+            fr: { play: "🎮 JOUER", online: "🌐 CYBER RÉSEAU", market: "🛒 BOUTIQUE", back: "RETOUR", guest: "INVITÉ 🚀", login_reg: "CONNEXION / INSCRIPTION 👤", map_pool: "🌍 RÉSEAU GLOBAL", map_edit: "✏️ ÉDITEUR", colors: "🎨 COULEURS", faces: "👁️ VISAGES", chars: "🎭 PERSONNAGES", effects: "✨ EFFETS", cancel: "ANNULER", logout: "QUITTER", retry: "RÉESSAYER", quit: "QUITTER", score: "💰 POINTS:", buy_ok: "Acheté! 🚀", low_gold: "Or insuffisant! 🛑", del_conf: "Supprimer? 🗑️", perks: { none: "Aucun bonus.", armor: "Protège des pointes.", breaker: "Casse les murs.", rich: "Gains x2.", speed: "30% plus vite.", hyperspeed: "Vitesse balle!", ghost: "Mode fantôme." }},
+            zh: { play: "🎮 玩", online: "🌐 网络", market: "🛒 市场", back: "返回", guest: "访客登录 🚀", login_reg: "登录 / 注册 👤", map_pool: "🌍 全球网络", map_edit: "✏️ 编辑器", colors: "🎨 颜色", faces: "👁️ 面部", chars: "🎭 角色", effects: "✨ 效果", cancel: "取消", logout: "登出", retry: "重试", quit: "退出", score: "💰 分数:", buy_ok: "买了! 🚀", low_gold: "金币不足! 🛑", del_conf: "删除? 🗑️", perks: { none: "没有能力.", armor: "保护.", breaker: "打破墙壁.", rich: "收入 x2.", speed: "快 30%.", hyperspeed: "子弹速度!", ghost: "幽灵模式." }}
         };
         let curLang = 'tr'; 
         const t = (key) => i18n[curLang][key] || key;
@@ -854,9 +898,9 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             setHtml('tab-colors', lang.colors); setHtml('tab-faces', lang.faces); setHtml('tab-chars', lang.chars); setHtml('tab-effects', lang.effects);
             setHtml('btn-back-arc', lang.back); setHtml('btn-back-play', lang.back); setHtml('btn-back-online-m', lang.back); setHtml('btn-back-market', lang.back);
             setHtml('btn-back-char', lang.quit); setHtml('btn-back-lvl', lang.back); setHtml('btn-back-onl', lang.back);
-            setHtml('btn-map-pool', lang.map_pool); setHtml('btn-map-edit', lang.map_edit); setHtml('btn-logout', lang.logout);
+            setHtml('btn-logout', lang.logout);
             setHtml('btn-retry', lang.retry); setHtml('btn-quit', lang.quit); setHtml('btn-cancel-pixel', lang.cancel + " / ÇIK");
-            setHtml('title-profile', "PROFİL"); setHtml('title-market', lang.market); setHtml('title-levels', "BÖLÜMLER"); setHtml('title-online', lang.map_pool);
+            setHtml('title-profile', "PROFİL"); setHtml('title-market', lang.market); setHtml('title-levels', "BÖLÜMLER"); 
             if(!document.getElementById('market-screen').classList.contains('hidden')) setMarketTab(currentMarketTab);
         }
 
@@ -907,12 +951,17 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
 
         let perks = [{name: 'Yok', type: 'none'}, {name: '🛡️ Zırh', type: 'armor'}, {name: '🧱 Balyoz', type: 'breaker'}, {name: '💰 Mıknatıs', type: 'rich'}, {name: '⚡ Hız', type: 'speed'}, {name: '🚀 Hırsız', type: 'hyperspeed'}, {name: '👻 Hayalet', type: 'ghost'}];
 
-        let user = { name: "Misafir", score: 0, unlocked1: 0, unlocked2: 0, unlocked3: 0, unlocked4: 0, unlocked5: 0, unlocked6: 0, colors: ['c1','c3'], faces: ['f0'], chars: ['chr0'], effects: ['fx0'], activeColor: 'c1', activeFace: 'f0', activeChar: 'chr0', activeEffect: 'fx0', isAdmin: false };
+        // --- YENİ V55: USER OBJESİNE "FRIENDS" EKLENDİ ---
+        let user = { name: "Misafir", score: 0, unlocked1: 0, unlocked2: 0, unlocked3: 0, unlocked4: 0, unlocked5: 0, unlocked6: 0, colors: ['c1','c3'], faces: ['f0'], chars: ['chr0'], effects: ['fx0'], activeColor: 'c1', activeFace: 'f0', activeChar: 'chr0', activeEffect: 'fx0', isAdmin: false, friends: [] };
         
         let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
         let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0, reverseActive = false, reverseIntervalObj = null;
         let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[], editorPM=[], editorPT=[], editorLaser=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], isTestMode=false, levelVerified=false;
         let idx = { colors:0, faces:0, perk:0 }, currentPixelColor = '#00ff88', editingTarget = 'colors', currentMarketTab = 'colors', shieldActive = false, ghostActive = false, currentCellSize = 32, currentManagerArc = 1, isPlayingOnline = false, currentOnlineLevel = null;
+
+        // --- YENİ V55 SİBER AĞ DEĞİŞKENLERİ ---
+        let currentOnlineView = 'global'; // 'global', 'friends', 'mine'
+        let inboxUnsubscribe = null;
 
         // --- MARKET CANLI ÖNİZLEME MOTORU ---
         let previewInterval = null;
@@ -1048,6 +1097,142 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             previewInterval = setInterval(runAnim, 1800); 
         }
         // --- MARKET CANLI ÖNİZLEME MOTORU BİTİŞ ---
+
+        // --- YENİ V55: AĞ İZLEYİCİ (GELEN KUTUSU CANLI GÜNCELLEME) ---
+        function startInboxListener() {
+            if(user.name.startsWith("Misafir_")) return;
+            if(inboxUnsubscribe) inboxUnsubscribe();
+            
+            inboxUnsubscribe = db.collection("friend_requests").where("to", "==", user.name).onSnapshot(snap => {
+                const notif = document.getElementById('inbox-notif');
+                if(!snap.empty) {
+                    notif.classList.remove('hidden');
+                } else {
+                    notif.classList.add('hidden');
+                }
+                if(!document.getElementById('inbox-screen').classList.contains('hidden')) {
+                    renderInbox(snap);
+                }
+            });
+        }
+
+        async function renderInbox(snapData = null) {
+            const list = document.getElementById('inbox-list');
+            list.innerHTML = "Sinyaller taranıyor... ⏳";
+            try {
+                let snap = snapData;
+                if(!snap) snap = await db.collection("friend_requests").where("to", "==", user.name).get();
+                
+                list.innerHTML = "";
+                if(snap.empty) { list.innerHTML = "<p style='color:#aaa; text-align:center;'>Ağında bekleyen sinyal yok.</p>"; return; }
+                
+                snap.forEach(doc => {
+                    const req = doc.data();
+                    list.innerHTML += `
+                        <div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:10px;">
+                            <div style="display:flex; align-items:center; gap:5px;">
+                                👤 <b style="color:var(--orange); font-size:0.9rem;">${req.from}</b>
+                            </div>
+                            <div style="display:flex; gap:5px;">
+                                <div class="action-btn" style="background:#2ecc71; color:#000; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="acceptRequest('${doc.id}', '${req.from}')">KABUL ✅</div>
+                                <div class="action-btn" style="background:#e74c3c; color:#fff; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="rejectRequest('${doc.id}')">RED ❌</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch(e) { list.innerHTML = "Veri akışı kesildi."; }
+        }
+
+        async function acceptRequest(docId, fromUser) {
+            try {
+                if(!user.friends) user.friends = [];
+                if(!user.friends.includes(fromUser)) {
+                    user.friends.push(fromUser);
+                    await db.collection("users").doc(user.name).update({ friends: user.friends });
+                }
+                
+                const theirDoc = await db.collection("users").doc(fromUser).get();
+                if(theirDoc.exists) {
+                    let theirFriends = theirDoc.data().friends || [];
+                    if(!theirFriends.includes(user.name)) {
+                        theirFriends.push(user.name);
+                        await db.collection("users").doc(fromUser).update({ friends: theirFriends });
+                    }
+                }
+                
+                await db.collection("friend_requests").doc(docId).delete();
+                alert(`${fromUser} artık ağına eklendi! Haritalarını görebilirsin. 🤝`);
+            } catch(e) { alert("Sistem Hatası!"); }
+        }
+        
+        async function rejectRequest(docId) {
+            await db.collection("friend_requests").doc(docId).delete();
+        }
+
+        async function searchPlayer() {
+            if (user.name.startsWith("Misafir_")) return alert("[SİSTEM REDDEDİLDİ] - Misafirler ağda arama yapamaz!");
+            const q = document.getElementById('search-player-input').value.trim();
+            if(!q) return;
+            if(q.toLowerCase() === user.name.toLowerCase()) return alert("Kendini mi arıyorsun Mimar? 🤨");
+            
+            const resDiv = document.getElementById('search-results');
+            resDiv.innerHTML = "Ağ taranıyor... ⏳";
+            
+            try {
+                const doc = await db.collection("users").doc(q).get();
+                if(doc.exists) {
+                    const u = doc.data();
+                    let btnHtml = "";
+                    if (user.friends && user.friends.includes(u.name)) {
+                        btnHtml = `<div class="action-btn" style="background:#2ecc71; color:#000; padding:8px; font-size:0.7rem; width:auto; margin:0;">AĞINA BAĞLI ✅</div>`;
+                    } else {
+                        btnHtml = `<div class="action-btn" style="background:#3498db; color:white; padding:8px; font-size:0.7rem; width:auto; margin:0; cursor:pointer;" onclick="sendFriendRequest('${u.name}')">İSTEK GÖNDER 🤝</div>`;
+                    }
+                    resDiv.innerHTML = `
+                        <div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:15px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="font-size:2rem;">👤</div>
+                                <div style="text-align:left;">
+                                    <b style="color:var(--orange); font-size:1.1rem;">${u.name}</b><br>
+                                    <span style="color:#aaa; font-size:0.8rem;">Puan: ${u.score || 0}</span>
+                                </div>
+                            </div>
+                            ${btnHtml}
+                        </div>
+                    `;
+                } else {
+                    resDiv.innerHTML = "<p style='color:#e74c3c; text-align:center;'>Mimar bulunamadı. Sinyal yok. 🛑</p>";
+                }
+            } catch(e) { resDiv.innerHTML = "Bağlantı hatası oluştu."; }
+        }
+
+        async function sendFriendRequest(targetName) {
+            try {
+                const existing = await db.collection("friend_requests").where("from", "==", user.name).where("to", "==", targetName).get();
+                if(!existing.empty) return alert("Zaten istek gönderdin! Cevap bekle. ⏳");
+                
+                await db.collection("friend_requests").add({
+                    from: user.name,
+                    to: targetName,
+                    ts: Date.now()
+                });
+                alert("İstek gönderildi! Sinyal hedefe ulaştı. 🚀");
+                searchPlayer(); 
+            } catch(e) { alert("Hata: " + e.message); }
+        }
+
+        function openOnlineCategory(cat) {
+            if (user.name.startsWith("Misafir_") && cat !== 'global') {
+                alert("[SİSTEM REDDEDİLDİ] - Kaçak sinyal. Bu ağa girmek için kalıcı bir profil oluşturmalısın. 🛑");
+                return;
+            }
+            currentOnlineView = cat;
+            if(cat === 'global') document.getElementById('title-online').innerText = "🌍 GLOBAL AĞ";
+            if(cat === 'friends') document.getElementById('title-online').innerText = "🤝 DOST SİNYALİ";
+            if(cat === 'mine') document.getElementById('title-online').innerText = "📁 ARŞİVİM";
+            showScreen('online-screen');
+        }
+        // --- YENİ V55 SONU ---
 
         function getCell(x, y) { if (x < 0 || x >= activeGridSize || y < 0 || y >= activeGridSize) return null; return cells[y * activeGridSize + x]; }
 
@@ -1191,6 +1376,8 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                     user.isAdmin = true; document.getElementById('admin-arc-btn').style.display='block'; document.getElementById('admin-create-char-btn').style.display='block'; 
                     user.score = 999999; user.unlocked1 = 1000; user.unlocked2 = 1000; user.unlocked3 = 1000; user.unlocked4 = 1000; user.unlocked5 = 1000; user.unlocked6 = 1000;
                     user.colors = db_colors.map(c => c.id); user.faces = db_faces.map(f => f.id); user.chars = characters.map(o => o.id); user.effects = db_effects.map(e => e.id);
+                    user.friends = user.friends || [];
+                    startInboxListener();
                     updatePoints(); showScreen('menu-screen'); 
                 } else {
                     db.collection("users").doc(user.name).get().then(doc => {
@@ -1199,7 +1386,9 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                             user.score = d.score || 0; user.unlocked1 = d.unlocked1 || 0; user.unlocked2 = d.unlocked2 || 0; user.unlocked3 = d.unlocked3 || 0; user.unlocked4 = d.unlocked4 || 0; user.unlocked5 = d.unlocked5 || 0; user.unlocked6 = d.unlocked6 || 0;
                             user.colors = d.colors || ['c1','c3']; user.faces = d.faces || ['f0']; user.chars = d.chars || ['chr0']; user.effects = d.effects || ['fx0'];
                             user.activeColor = d.activeColor || 'c1'; user.activeFace = d.activeFace || 'f0'; user.activeChar = d.activeChar || 'chr0'; user.activeEffect = d.activeEffect || 'fx0';
+                            user.friends = d.friends || [];
                         }
+                        startInboxListener();
                         updatePoints(); showScreen('menu-screen'); 
                     }).catch(e => { showScreen('menu-screen'); });
                 }
@@ -1212,8 +1401,9 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             db.collection("users").doc(nick).get().then(doc => {
                 if(doc.exists) { alert("Bu isimde bir Mimar zaten var! Başka bir isim bul. 🤨"); } else {
                     user.name = nick; user.pass = pass; user.isAdmin = false; user.score = 0; user.unlocked1 = 0; user.unlocked2 = 0; user.unlocked3 = 0; user.unlocked4 = 0; user.unlocked5 = 0; user.unlocked6 = 0;
-                    user.colors = ['c1','c3']; user.faces = ['f0']; user.chars = ['chr0']; user.effects = ['fx0']; user.activeColor = 'c1'; user.activeFace = 'f0'; user.activeChar = 'chr0'; user.activeEffect = 'fx0';
-                    db.collection("users").doc(nick).set(user); localStorage.setItem('yesilkare_user', user.name); alert("Hesap başarıyla açıldı, hoş geldin Mimar! 🎉"); updatePoints(); showScreen('menu-screen');
+                    user.colors = ['c1','c3']; user.faces = ['f0']; user.chars = ['chr0']; user.effects = ['fx0']; user.activeColor = 'c1'; user.activeFace = 'f0'; user.activeChar = 'chr0'; user.activeEffect = 'fx0'; user.friends = [];
+                    db.collection("users").doc(nick).set(user); localStorage.setItem('yesilkare_user', user.name); alert("Hesap başarıyla açıldı, hoş geldin Mimar! 🎉"); 
+                    startInboxListener(); updatePoints(); showScreen('menu-screen');
                 }
             });
         }
@@ -1225,7 +1415,8 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                 user.name = "Fırat (Admin)"; user.isAdmin = true; document.getElementById('admin-arc-btn').style.display = 'block'; document.getElementById('admin-create-char-btn').style.display = 'block';
                 user.score = 999999; user.unlocked1 = 1000; user.unlocked2 = 1000; user.unlocked3 = 1000; user.unlocked4 = 1000; user.unlocked5 = 1000; user.unlocked6 = 1000;
                 user.colors = db_colors.map(c => c.id); user.faces = db_faces.map(f => f.id); user.chars = characters.map(o => o.id); user.effects = db_effects.map(e => e.id);
-                localStorage.setItem('yesilkare_user', user.name); saveProgress(); updatePoints(); showScreen('menu-screen'); return;
+                user.friends = user.friends || [];
+                localStorage.setItem('yesilkare_user', user.name); saveProgress(); startInboxListener(); updatePoints(); showScreen('menu-screen'); return;
             }
             db.collection("users").doc(nick).get().then(doc => {
                 if(doc.exists) {
@@ -1234,13 +1425,14 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                         user.name = nick; user.isAdmin = (d.isAdmin === true); if (user.isAdmin) { document.getElementById('admin-arc-btn').style.display = 'block'; document.getElementById('admin-create-char-btn').style.display = 'block'; }
                         user.score = d.score || 0; user.unlocked1 = d.unlocked1 || 0; user.unlocked2 = d.unlocked2 || 0; user.unlocked3 = d.unlocked3 || 0; user.unlocked4 = d.unlocked4 || 0; user.unlocked5 = d.unlocked5 || 0; user.unlocked6 = d.unlocked6 || 0;
                         user.colors = d.colors || ['c1','c3']; user.faces = d.faces || ['f0']; user.chars = d.chars || ['chr0']; user.effects = d.effects || ['fx0']; user.activeColor = d.activeColor || 'c1'; user.activeFace = d.activeFace || 'f0'; user.activeChar = d.activeChar || 'chr0'; user.activeEffect = d.activeEffect || 'fx0';
-                        localStorage.setItem('yesilkare_user', user.name); alert(`Tekrar hoş geldin, ${user.name}! 🚀`); updatePoints(); showScreen('menu-screen'); 
+                        user.friends = d.friends || [];
+                        localStorage.setItem('yesilkare_user', user.name); alert(`Tekrar hoş geldin, ${user.name}! 🚀`); startInboxListener(); updatePoints(); showScreen('menu-screen'); 
                     } else { alert("Şifre yanlış! 🛑"); }
                 } else { alert("Böyle bir hesap bulunamadı! Kayıt Olmayı dene. 🤨"); }
             });
         }
 
-        function loginAsGuest(){ user.name="Misafir_"+Math.floor(Math.random()*999); user.isAdmin=false; localStorage.setItem('yesilkare_user', user.name); updatePoints(); showScreen('menu-screen'); }
+        function loginAsGuest(){ user.name="Misafir_"+Math.floor(Math.random()*999); user.isAdmin=false; user.friends=[]; localStorage.setItem('yesilkare_user', user.name); updatePoints(); showScreen('menu-screen'); }
         function updatePoints(){ document.getElementById('menu-username').innerText=user.name; document.getElementById('username-display').innerText=user.name; document.getElementById('menu-points').innerText=user.score; document.getElementById('total-points').innerText=user.score; }
         
         function showScreen(id){ 
@@ -1389,7 +1581,7 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             else { document.getElementById('preview-custom-face').style.display='none'; document.getElementById('preview-face-container').style.display='block'; document.getElementById('preview-face-container').className=`kare-yuz ${f.cls || 'yuz-standart'}`; }
         }
 
-        function openPixelEditor(t_target){ editingTarget=t_target; document.getElementById('pixel-target-label').innerText = t('edit_draw') + (t_target==='colors'?'GÖVDE':'YÜZ') + " 🤨"; const g=document.getElementById('pixel-grid'); g.innerHTML=''; currentPixelColor = document.getElementById('pixel-color-picker').value; for(let i=0; i<256; i++){ let d=document.createElement('div'); d.className='pixel-cell'; const paint=()=>{d.style.background=currentPixelColor; d.dataset.clr=currentPixelColor;}; d.onmousedown=paint; d.onmouseenter=(e)=>{if(e.buttons===1)paint();}; g.appendChild(d); } document.getElementById('pixel-modal').classList.remove('hidden'); }
+        function openPixelEditor(t_target){ editingTarget=t_target; document.getElementById('pixel-target-label').innerText = "ÇİZİM" + " 🤨"; const g=document.getElementById('pixel-grid'); g.innerHTML=''; currentPixelColor = document.getElementById('pixel-color-picker').value; for(let i=0; i<256; i++){ let d=document.createElement('div'); d.className='pixel-cell'; const paint=()=>{d.style.background=currentPixelColor; d.dataset.clr=currentPixelColor;}; d.onmousedown=paint; d.onmouseenter=(e)=>{if(e.buttons===1)paint();}; g.appendChild(d); } document.getElementById('pixel-modal').classList.remove('hidden'); }
         function closePixelEditor(){ document.getElementById('pixel-modal').classList.add('hidden'); }
         function savePixelArt(){ const cvs=document.createElement('canvas'); cvs.width=16; cvs.height=16; const ctx=cvs.getContext('2d'); document.querySelectorAll('.pixel-cell').forEach((c,i)=>{ if(c.dataset.clr && c.dataset.clr!=='transparent'){ ctx.fillStyle=c.dataset.clr; ctx.fillRect(i%16,Math.floor(i/16),1,1); }}); const url=cvs.toDataURL(); if(editingTarget==='colors') { db_colors.push({id:'ic'+Date.now(), name:'Özel Renk', val:url, price: 1000}); idx.colors=db_colors.length-1; } else { db_faces.push({id:'if'+Date.now(), name:'Özel Yüz', url:url, price: 1000}); idx.faces=db_faces.length-1; } closePixelEditor(); renderPreview(); alert("Çizim prototipe aktarıldı! Önizlemeye bak. 🤨🖌️"); }
         
@@ -1424,7 +1616,7 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                 
                d.onclick=()=>{ 
     levelVerified=false; 
-    canPublish = false; // HARİTA DEĞİŞTİ, ONAY SIFIRLANDI! 🛑
+    canPublish = false; 
     document.getElementById('publish-btn').style.opacity="0.5"; 
     if(selectedTool==='wall') editorW.push({x,y}); else if(selectedTool==='break') editorB.push({x,y}); else if(selectedTool==='bh') editorBH.push({x,y}); else if(selectedTool==='bv') editorBV.push({x,y}); else if(selectedTool==='start') editorS={x,y}; 
                     else if(selectedTool==='portal-m') editorPM=[{x,y}]; else if(selectedTool==='portal-t') editorPT=[{x,y}]; else if(selectedTool==='laser') editorLaser.push({x,y}); else if(selectedTool==='enemy') editorEnemy.push({x,y,dx:1,dy:0}); else if(selectedTool==='nemesis') editorNemesis.push({x,y}); else if(selectedTool==='eu') editorEPaths.push({x,y,dir:'u'}); else if(selectedTool==='ed') editorEPaths.push({x,y,dir:'d'}); else if(selectedTool==='el') editorEPaths.push({x,y,dir:'l'}); else if(selectedTool==='er') editorEPaths.push({x,y,dir:'r'});
@@ -1439,7 +1631,7 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             } 
         }
 
-        function testDesign(){ canPublish = false; // Test başlarken izni sıfırla
+        function testDesign(){ canPublish = false;
             if(document.getElementById('publish-btn')) document.getElementById('publish-btn').style.opacity = "0.5";
             if((editorPM.length > 0 && editorPT.length === 0) || (editorPT.length > 0 && editorPM.length === 0)) { alert("MİMAR! Çıkış portalını unuttun! 🤨"); return; }
             isTestMode=true; showScreen('game-wrapper'); 
@@ -1480,14 +1672,37 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             showScreen('game-wrapper'); loadLevel(currentOnlineLevel);
         }
 
+        // --- YENİ V55: AĞ DURUMUNA GÖRE HARİTA ÇEKME ---
         async function fetchOnlineLevels(){ 
-            const list = document.getElementById('online-list'); list.innerHTML = 'Haritalar aranıyor... 🤨'; 
+            const list = document.getElementById('online-list'); list.innerHTML = 'Sinyaller taranıyor... ⏳'; 
             try { 
-                const qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); let arr = []; qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); arr.sort((a,b) => b.ts - a.ts); list.innerHTML = ''; if(arr.length === 0) list.innerHTML = "Hiç harita yok!"; 
+                let qs;
+                if(currentOnlineView === 'mine') {
+                    qs = await db.collection("levels").where("creator", "==", user.name).limit(40).get();
+                } else if(currentOnlineView === 'friends') {
+                    if(!user.friends || user.friends.length === 0) {
+                        list.innerHTML = "<p style='color:#aaa; text-align:center; grid-column: span 2;'>Ağında kimse yok. 'Mimar Bul' kısmından arkadaşlarını ekle!</p>";
+                        return;
+                    }
+                    const allQs = await db.collection("levels").where("category", "==", "online").get();
+                    let arrF = [];
+                    allQs.forEach(doc => { let d = doc.data(); if(user.friends.includes(d.creator)) arrF.push({...d, id: doc.id}); });
+                    qs = { docs: arrF.map(d => ({ data: () => d, id: d.id })) }; 
+                } else {
+                    qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); 
+                }
+
+                let arr = []; 
+                if(currentOnlineView === 'friends') arr = qs.docs.map(d=>d.data());
+                else qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); 
+                
+                arr.sort((a,b) => b.ts - a.ts); list.innerHTML = ''; 
+                if(arr.length === 0) list.innerHTML = "<p style='color:#aaa; text-align:center; grid-column: span 2;'>Sinyal bulunamadı!</p>"; 
+                
                 arr.forEach(d => { 
                     const c = document.createElement('div'); c.className = 'skin-card'; 
                     let adminDelBtn = "";
-                    if(user.isAdmin) {
+                    if(user.isAdmin || currentOnlineView === 'mine') {
                         adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`;
                     }
                     const getC = (w) => w.x !== undefined ? [w.x, w.y] : [w[0], w[1]];
@@ -1508,7 +1723,7 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
                     c.innerHTML = `${adminDelBtn}<div style="margin-bottom:5px;">${tagHTML}</div><div style="width:100px; height:100px; margin-bottom:5px;">${miniHTML}</div><div style="display:flex; gap:10px; font-size:0.7rem; color:#aaa; margin-bottom:5px;"><span>❤️ ${d.likes || 0}</span><span>▶️ ${d.plays || 0}</span></div><b style="font-size:0.8rem">${d.name || d.creator}</b>${addBtn}`; 
                     list.appendChild(c); 
                 }); 
-            } catch(e) { console.error("Hata:", e); } 
+            } catch(e) { console.error("Hata:", e); list.innerHTML="Ağ Hatası!"; } 
         }
 
         async function saveDesign(){ 
@@ -1591,7 +1806,6 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             if (d.revTime && d.revTime > 0) { reverseIntervalObj = setInterval(() => { if(!gameActive) return; reverseActive = !reverseActive; const pb = document.getElementById('player-body'); if(pb) { if(reverseActive) pb.classList.add('reverse-active'); else pb.classList.remove('reverse-active'); } }, d.revTime * 1000); }
         }
 
-        // --- TAMİR EDİLMİŞ, TEMİZ ÖLME FONKSİYONU ---
         function die() {
             showInterstitial(); 
             
@@ -1613,16 +1827,11 @@ let savedBgmVol = localStorage.getItem('yesilkare_bgm');
             setTimeout(() => { if(isTestMode) testDesign(); else resetLevel(); }, 1200);
         }
 
-            function checkWin() {
+        function checkWin() {
             if (!gameActive) return;
-            
-            // 1. Boyanmamış normal zemin (floor) kaldı mı bak
             const unpaintedFloor = cells.filter(c => c && c.type === 'floor' && !c.painted).length;
-            
-            // 2. Hala kırılmamış kırılabilir duvar (break) kaldı mı bak
             const breakables = cells.filter(c => c && c.type === 'break').length;
 
-            // Eğer ikisi de sıfırsa, zafer vakti!
             if (unpaintedFloor === 0 && breakables === 0) {
                 gameActive = false;
                 moving = false;
