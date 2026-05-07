@@ -91,17 +91,11 @@
         .cell { width: var(--cell-sz); height: var(--cell-sz); background: var(--cell-bg); border-radius: 4px; position: relative; z-index: 1; }
         
         /* NOIR DUVAR CSS GÜNCELLEMESİ (SİBERPUNK SEÇENEĞİ EKLENDİ) */
-        .cell.wall { 
-            background: #111; 
-            border: 1px solid #00ff88; 
-            box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.2), 0 0 5px rgba(0, 255, 136, 0.3);
-            background-image: linear-gradient(rgba(0, 255, 136, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 255, 136, 0.3) 1px, transparent 1px);
-            background-size: 8px 8px;
-            position: relative;
-        }
-        .cell.wall::after {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(circle, transparent 40%, rgba(0,0,0,0.8));
+        .cell.wall {
+            background-color: #050505; 
+            border: 3px solid #00ff88; 
+            box-shadow: inset 0 0 15px rgba(0, 255, 136, 0.4), 0 0 5px rgba(0, 255, 136, 0.5); 
+            border-radius: 6px;
         }
 
         .cell.painted { opacity: 0.9; transform: scale(0.95); transition: transform 0.1s; z-index: 2; }
@@ -115,7 +109,6 @@
             background-image: linear-gradient(90deg, #222 0%, #222 40%, #00ff88 40%, #00ff88 50%, #0a0a0c 50%, #0a0a0c 100%) !important;
             background-size: 30px 100% !important; 
             box-shadow: inset 0 10px 10px rgba(0, 0, 0, 0.9), inset 0 -10px 10px rgba(0, 0, 0, 0.9);
-            animation: conveyorH 1s linear infinite;
         }
 
         .cell.bridge-v { 
@@ -126,7 +119,6 @@
             background-image: linear-gradient(0deg, #222 0%, #222 40%, #00ff88 40%, #00ff88 50%, #0a0a0c 50%, #0a0a0c 100%) !important;
             background-size: 100% 30px !important; 
             box-shadow: inset 10px 0 10px rgba(0, 0, 0, 0.9), inset -10px 0 10px rgba(0, 0, 0, 0.9);
-            animation: conveyorV 1s linear infinite;
         }
 
         @keyframes conveyorH { 0% { background-position: 0 0; } 100% { background-position: 30px 0; } }
@@ -822,6 +814,8 @@
 
         const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
         firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
+        // Yandex engellerini aşmak için bağlantıyı zorla:
+db.settings({ experimentalForceLongPolling: true });
 
         const bgMusic = document.getElementById('bg-music');
         const sfxDie = document.getElementById('sfx-die');
