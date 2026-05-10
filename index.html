@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yeşil Kare: Global Architect V56 - SİBER ÇEKİRDEK</title>
-    <script src="https://yandex.ru/games/sdk/v2"></script>
     
     <script src="firebase-app-compat.js"></script>
     <script src="firebase-firestore-compat.js"></script>
@@ -587,25 +586,49 @@
         <div id="status-msg" style="margin-top:5px; font-weight:900; font-size:1.2rem; color:#00ff88; text-align:center; text-shadow:0 0 10px #00ff88;"></div>
     </div>
 <script>
-// --- YANDEX BAŞLATMA MOTORU ---
-        let ysdk;
-        let player;
+        // --- ANDROID ADMOB KÖPRÜSÜ (YANDEX YERİNE) ---
+        function showInterstitial() {
+            if(bgMusic) bgMusic.pause();
+            if (typeof AndroidBridge !== 'undefined') {
+                AndroidBridge.showInterstitial();
+            } else {
+                console.log("[Test Modu] Geçiş reklamı tetiklendi.");
+                onAdClosed(); 
+            }
+        }
 
-        YaGames.init().then(_sdk => {
-            ysdk = _sdk;
-            ysdk.features.LoadingProgress.report(100);
-            
-            ysdk.getPlayer().then(_player => {
-                player = _player;
-                initGame(); 
-            }).catch(err => {
-                initGame(); 
-            });
-        }).catch(err => {
-            initGame(); 
+        function showRewarded() {
+            if(bgMusic) bgMusic.pause();
+            if (typeof AndroidBridge !== 'undefined') {
+                AndroidBridge.showRewarded();
+            } else {
+                console.log("[Test Modu] Ödüllü reklam izlendi.");
+                grantReward(); 
+                onAdClosed();
+            }
+        }
+
+        window.onAdClosed = function() {
+            if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) {
+                bgMusic.play().catch(e => console.log(e));
+            }
+        };
+
+        window.grantReward = function() {
+            user.score += 500; 
+            updatePoints(); 
+            saveProgress(); 
+            alert("Tebrikler! 500 G Puan kazandın. 💰");
+        };
+
+        window.addEventListener('load', () => {
+            initGame();
         });
 
-        // --- MEVCUT OYUN DEĞİŞKENLERİ ---
+
+        // --- MEVCUT OYUN VE REKLAM KONTROL DEĞİŞKENLERİ ---
+        let deathCount = 0, levelsCompleted = 0, lastAdTime = 0; // REKLAM KONTROL DEĞİŞKENLERİ
+
         let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
         let canPublish = false; 
         let autoAdvanceTimer = null; 
@@ -758,34 +781,6 @@
             }
         };
 
-        const tutBossAnimHTML = `<div style="position:relative; width: 160px; height: 80px; display:flex; align-items:center; justify-content:center; background:#111; border-radius:8px; overflow:hidden; border:2px solid #333;">
-            <div style="position:absolute; width:40px; height:40px; background:#bc13fe; border:2px solid #fff; border-radius:4px; display:flex; align-items:center; justify-content:center; right:10px; animation: tutBossHurt 4s infinite;">
-                <div style="width:24px; height:8px; background:#fff; box-shadow:0 0 10px red;"></div>
-            </div>
-            <div style="position:absolute; right:50px; top:38px; width:100px; height:4px; background:var(--meat-red); transform-origin:right center; animation: tutBossLaserStrike 4s infinite;"></div>
-            <div class="cell capsule-cell" style="position:absolute; left:60px; top:10px; width:20px; height:20px; background:transparent; animation: tutCapsuleVanish 4s infinite;"></div>
-            <div style="position:absolute; left:10px; top:30px; width:20px; height:20px; background:var(--current-color); border-radius:4px; animation: tutGreenHeroDodge 4s infinite;"></div>
-        </div>`;
-
-        const tutorials = {
-            tr: {
-                arc2_bridge: { title: "ARC 2: KÖPRÜLER", anim: `<div style="position:relative; width: 140px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="cell bridge-v" style="position:absolute; width:40px; height:40px; z-index:2;"></div><div style="position:absolute; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutBridgeMove 2.5s infinite ease-in-out; z-index:1;"></div></div>`, desc: "🌉 <b>Köprüler:</b> Sadece köprünün açık olduğu yönden süzülerek geçebilirsin. Yanlardan girmeye çalışırsan seni duvar gibi durdurur." },
-                arc2_hammer: { title: "BİLGİ: KIRILGAN DUVARLAR", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center;"><div class="cell breakable" style="position:absolute; left:60px; width:40px; height:40px; animation: tutWallBreak 2.5s infinite;"></div><div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutHammerMove 2.5s infinite;"></div></div>`, desc: "🧱 <b>Kırılgan Duvarlar:</b> Çarparak kırabilirsin. İlk çarptığında duvar çatlar ve durdurur, ikinci çarpışında tamamen kırılır." },
-                arc3: { title: "ARC 3: PORTALLAR", anim: `<div style="position:relative; width: 150px; height: 40px; display:flex; align-items:center; justify-content:space-between;"><div class="cell portal-m" style="width:40px; height:40px; position:relative; z-index:2;"><div class="portal-core" style="width:20px;height:20px;"></div></div><div style="position:absolute; left:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_1 3s infinite; z-index:1;"></div><div class="cell portal-t" style="width:40px; height:40px; position:relative; z-index:2;"><div class="portal-core" style="width:20px;height:20px;"></div></div><div style="position:absolute; right:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_2 3s infinite; z-index:1;"></div></div>`, desc: "🔵 🟠 <b>Portallar:</b> Mavi portala girdiğinde anında turuncu portaldan çıkarsın." },
-                arc3_bot: { title: "BİLGİ: DEVRİYE BOTLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="enemy-bot" style="position:absolute; width:30px; height:30px; animation: tutBotMove 2s infinite alternate linear;"><div class="bot-visor"><div class="bot-scanner"></div></div></div></div>`, desc: "🤖 <b>Devriye Botları:</b> Haritada belirli bir rotayı izlerler. Çarparsan yanarsın!" },
-                arc3_laser: { title: "BİLGİ: LAZER AĞLARI", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div style="width:40px; height:40px; position:relative; display:flex; align-items:center;"><div class="laser-base" style="width:100%;"></div><div class="laser-beam" style="width:100%; height:8px; background:var(--meat-red); animation: tutLaserPulse 1.4s infinite;"></div></div></div>`, desc: "⚡ <b>Lazerler:</b> Kırmızı renkte parladıklarında üzerlerinde olursan ölürsün." },
-                arc3_boss: { title: "⚠️ SİBER ÇEKİRDEK", anim: tutBossAnimHTML, desc: "🔋 <b>Enerji Kapsülleri:</b> Çekirdek (Boss) seni hedef alıp lazer ateşler! Lazerlerden kaç ve kalkanları çökertmek için tüm <b>Mavi Kapsülleri</b> topla!" }
-            },
-            en: {
-                arc2_bridge: { title: "ARC 2: BRIDGES", anim: `<div style="position:relative; width: 140px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="cell bridge-v" style="position:absolute; width:40px; height:40px; z-index:2;"></div><div style="position:absolute; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutBridgeMove 2.5s infinite ease-in-out; z-index:1;"></div></div>`, desc: "🌉 <b>Bridges:</b> You can only pass through the open sides. If you hit the edges, it blocks you like a wall." },
-                arc2_hammer: { title: "INFO: FRAGILE WALLS", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center;"><div class="cell breakable" style="position:absolute; left:60px; width:40px; height:40px; animation: tutWallBreak 2.5s infinite;"></div><div style="position:absolute; left:0; width:30px; height:30px; margin:5px; background:var(--current-color); border-radius:4px; animation: tutHammerMove 2.5s infinite;"></div></div>`, desc: "🧱 <b>Fragile Walls:</b> You can break them. The first hit cracks them and stops you, the second hit shatters them." },
-                arc3: { title: "ARC 3: PORTALS", anim: `<div style="position:relative; width: 150px; height: 40px; display:flex; align-items:center; justify-content:space-between;"><div class="cell portal-m" style="width:40px; height:40px; position:relative; z-index:2;"><div class="portal-core" style="width:20px;height:20px;"></div></div><div style="position:absolute; left:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_1 3s infinite; z-index:1;"></div><div class="cell portal-t" style="width:40px; height:40px; position:relative; z-index:2;"><div class="portal-core" style="width:20px;height:20px;"></div></div><div style="position:absolute; right:5px; width:30px; height:30px; background:var(--current-color); border-radius:4px; animation: tutMoveArc3_2 3s infinite; z-index:1;"></div></div>`, desc: "🔵 🟠 <b>Portals:</b> Enter the blue portal to instantly exit from the orange portal." },
-                arc3_bot: { title: "INFO: PATROL BOTS", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div class="enemy-bot" style="position:absolute; width:30px; height:30px; animation: tutBotMove 2s infinite alternate linear;"><div class="bot-visor"><div class="bot-scanner"></div></div></div></div>`, desc: "🤖 <b>Patrol Bots:</b> They follow a specific route. Don't hit them!" },
-                arc3_laser: { title: "INFO: LASER WEBS", anim: `<div style="position:relative; width: 120px; height: 40px; display:flex; align-items:center; justify-content:center;"><div style="width:40px; height:40px; position:relative; display:flex; align-items:center;"><div class="laser-base" style="width:100%;"></div><div class="laser-beam" style="width:100%; height:8px; background:var(--meat-red); animation: tutLaserPulse 1.4s infinite;"></div></div></div>`, desc: "⚡ <b>Lasers:</b> If they glow red while you are on them, you die." },
-                arc3_boss: { title: "⚠️ SYSTEM CORE", anim: tutBossAnimHTML, desc: "🔋 <b>Energy Capsules:</b> The Boss fires lasers at you! Dodge the red lasers and collect all <b>Blue Capsules</b> to destroy its shields!" }
-            }
-        };
-
         function getLocalizedIntro(arcNum, isBoss = false) { 
             let langIntros = comicIntros[curLang] || comicIntros['en']; 
             return isBoss ? langIntros[arcNum + '_boss'] : langIntros[arcNum]; 
@@ -856,34 +851,6 @@
             document.getElementById('comic-screen').classList.add('hidden');
             if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) { bgMusic.play().catch(e => console.log(e)); }
             if(pendingLevelData) { showScreen('game-wrapper'); loadLevel(pendingLevelData); }
-        }
-
-        function showInterstitial() {
-            if (typeof ysdk !== 'undefined') {
-                ysdk.adv.showFullscreenAdv({
-                    callbacks: {
-                        onOpen: () => { if(bgMusic) bgMusic.pause(); }, 
-                        onClose: (wasShown) => { if(bgMusic && bgmVol > 0) bgMusic.play(); }, 
-                        onError: (error) => { console.log("Reklam hatası"); }
-                    }
-                });
-            }
-        }
-
-        function showRewarded() {
-            if (typeof ysdk !== 'undefined') {
-                ysdk.adv.showRewardedVideo({
-                    callbacks: {
-                        onOpen: () => { if(bgMusic) bgMusic.pause(); },
-                        onRewarded: () => {
-                            user.score += 500; 
-                            updatePoints(); saveProgress(); alert("Tebrikler! 500 G Puan kazandın. 💰");
-                        },
-                        onClose: () => { if(bgMusic && bgmVol > 0) bgMusic.play(); },
-                        onError: (e) => { console.log('Hata:', e); }
-                    }
-                });
-            }
         }
 
         const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
@@ -1010,7 +977,6 @@
 
         let user = { name: "Misafir", score: 0, unlocked1: 0, unlocked2: 0, unlocked3: 0, unlocked4: 0, unlocked5: 0, unlocked6: 0, colors: ['c1','c3'], faces: ['f0'], chars: ['chr0'], effects: ['fx0'], activeColor: 'c1', activeFace: 'f0', activeChar: 'chr0', activeEffect: 'fx0', isAdmin: false, friends: [] };
         
-        // --- SİBER ÇEKİRDEK (BOSS VE KAPSÜL) DEĞİŞKENLERİ ---
         let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
         let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0, reverseActive = false, reverseIntervalObj = null;
         let currentLevelHasBoss = false, bossDefeated = false, bossAreaObj = null, bossAttackTimeout = null, totalCapsules = 0, collectedCapsules = 0;
@@ -1032,7 +998,6 @@
             document.getElementById('tutorial-overlay').classList.remove('hidden');
         }
 
-        // --- MARKET CANLI ÖNİZLEME MOTORU ---
         let previewInterval = null;
         let previewTimeouts = [];
         
@@ -1334,7 +1299,6 @@
             e.preventDefault(); 
         }, { passive: false });
 
-        // --- SİBER ÇEKİRDEK (BOSS) HAREKET (SLIDE) ENTEGRASYONU ---
         async function move(dx, dy) {
             if (!gameActive || moving) return; moving = true;
             const ch = characters.find(c => c.id === user.activeChar) || characters[0]; const speed = ch.perk === 'hyperspeed' ? 15 : (ch.perk === 'speed' ? 40 : 65);
@@ -1365,7 +1329,6 @@
 
                     if((dy !== 0 && nCell.type==='bh') || (dx !== 0 && nCell.type==='bv')) { if(ch.perk !== 'ghost' || !ghostActive) break; }
                     
-                    // KAPSÜL TOPLAMA MANTIĞI
                     if (nCell.hasCapsule && !nCell.capsuleCollected) {
                         nCell.capsuleCollected = true;
                         nCell.el.classList.remove('capsule-cell');
@@ -1524,7 +1487,7 @@
 
         async function initGame() {
             let savedLang = localStorage.getItem('yesilkare_lang');
-            if(savedLang && i18n[savedLang]) { curLang = savedLang; } else { let lang = (navigator.language || navigator.userLanguage).split('-')[0]; if (typeof ysdk !== 'undefined') lang = ysdk.environment.i18n.lang; if (Object.keys(i18n).includes(lang)) curLang = lang; else curLang = 'en'; }
+            if(savedLang && i18n[savedLang]) { curLang = savedLang; } else { let lang = (navigator.language || navigator.userLanguage).split('-')[0]; if (Object.keys(i18n).includes(lang)) curLang = lang; else curLang = 'en'; }
             updateUITexts(); await fetchOnlineCharacters(); await fetchGlobalArcs(); 
             
             const select = document.getElementById('grid-size'); select.innerHTML = '';
@@ -1808,6 +1771,17 @@
             } 
         }
 
+        // REKLAM MANTIĞI YARDIMCI FONKSİYON
+        function tryShowInterstitial() {
+            const now = Date.now();
+            if (now - lastAdTime >= 60000) { // 60 Saniye kalkanı
+                lastAdTime = now;
+                showInterstitial();
+                return true;
+            }
+            return false;
+        }
+
         function testDesign(){ canPublish = false;
             if(document.getElementById('publish-btn')) document.getElementById('publish-btn').style.opacity = "0.5";
             if((editorPM.length > 0 && editorPT.length === 0) || (editorPT.length > 0 && editorPM.length === 0)) { alert("MİMAR! Çıkış portalını unuttun! 🤨"); return; }
@@ -1942,7 +1916,6 @@
                 else if (currentArc === 3 && currentIdx === 0) { showTutorial('arc3'); willShowTutorial = true; }
                 else if (currentArc === 3 && currentIdx === 6) { showTutorial('arc3_bot'); willShowTutorial = true; }
                 else if (currentArc === 3 && currentIdx === 7) { showTutorial('arc3_laser'); willShowTutorial = true; }
-                // ARC 3 Bölüm 11 (Index 10) - Boss Eğitim Animasyonu
                 else if (currentArc === 3 && currentIdx === 10) { showTutorial('arc3_boss'); willShowTutorial = true; }
             }
 
@@ -1965,7 +1938,6 @@
             cells = new Array(d.grid * d.grid); enemies=[]; nemesisBots=[]; pos={x: d.start?.x ?? d.start?.[0] ?? 0, y: d.start?.y ?? d.start?.[1] ?? 0}; const spk = d.spikes || [];
             const checkP = (arr, x, y) => arr?.some(w => (w.x ?? w[0]) === x && (w.y ?? w[1]) === y);
 
-            // --- BOSS VE KAPSÜL KONTROLÜ ---
             currentLevelHasBoss = !!d.boss;
             bossDefeated = false;
             totalCapsules = d.capsules ? d.capsules.length : 0;
@@ -1979,7 +1951,6 @@
                 bEl.style.height = `${(currentCellSize * 3) + (2 * 2)}px`;
                 bEl.style.left = `${(bossAreaObj.minX * currentCellSize) + (bossAreaObj.minX * 2) + 2}px`;
                 bEl.style.top = `${(bossAreaObj.minY * currentCellSize) + (bossAreaObj.minY * 2) + 2}px`;
-                // YENİ VİZÖR
                 bEl.innerHTML = '<div id="boss-visor"></div>';
                 container.appendChild(bEl);
                 
@@ -2041,7 +2012,15 @@
 
         function triggerPlayerDeath() {
             if (!gameActive) return;
-            showInterstitial();
+            
+            // REKLAM KONTROLÜ
+            deathCount++;
+            if (deathCount >= 10) {
+                if (tryShowInterstitial()) {
+                    deathCount = 0;
+                }
+            }
+
             gameActive = false; moving = false;
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); clearTimeout(bossAttackTimeout);
             
@@ -2089,7 +2068,14 @@
         function die() {
             if (currentLevelHasBoss) { triggerPlayerDeath(); return; } 
             if (!gameActive) return;
-            showInterstitial(); 
+
+            // REKLAM KONTROLÜ
+            deathCount++;
+            if (deathCount >= 10) {
+                if (tryShowInterstitial()) {
+                    deathCount = 0;
+                }
+            }
             
             gameActive = false; moving = false;
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
@@ -2581,7 +2567,21 @@
             else { const source = globalMasterArcs[currentArc] || []; loadLevel(source[currentIdx]); }
         }
         
-        function loadNextLevel(){ currentIdx++; resetLevel(); }
+        function loadNextLevel(){ 
+            currentIdx++; 
+            
+            // REKLAM KONTROLÜ
+            if (!isPlayingOnline) {
+                levelsCompleted++;
+                if (levelsCompleted >= 6) {
+                    if (tryShowInterstitial()) {
+                        levelsCompleted = 0; // Reklam gösterilirse sayacı sıfırla
+                    }
+                }
+            }
+            
+            resetLevel(); 
+        }
 
         const pixelGridEl = document.getElementById('pixel-grid');
         pixelGridEl.addEventListener('touchstart', (e) => { e.preventDefault(); const touch = e.touches[0]; const target = document.elementFromPoint(touch.clientX, touch.clientY); if (target && target.classList.contains('pixel-cell')) { target.style.background = currentPixelColor; target.dataset.clr = currentPixelColor; } }, { passive: false });
