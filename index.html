@@ -230,19 +230,19 @@
         @keyframes spin-left { 100% { transform: rotate(-360deg); } }
 
         /* YENİ BOSS EĞİTİM (TUTORIAL) ANİMASYON KEYFRAMES */
-        @keyframes tutBossLaserStrike { 0%, 100% { opacity:0; transform:scaleY(0); } 15%, 25% { opacity:1; transform:scaleY(1); } 30% { opacity:0; transform:scaleY(0); } }
-        @keyframes tutGreenHeroDodge { 0%, 10% { transform: translate(0, 0); } 20%, 30% { transform: translate(0, 25px); } 40%, 60% { transform: translate(60px, 25px); } 70%, 100% { transform: translate(0, 0); } }
-        @keyframes tutCapsuleVanish { 0%, 35% { opacity: 1; transform: scale(1); } 40%, 90% { opacity: 0; transform: scale(2); } 100% { opacity: 1; transform: scale(1); } }
-        @keyframes tutBossHurt { 0%, 40% { filter: none; transform: translateX(0); } 45%, 55% { filter: brightness(3) hue-rotate(90deg); transform: translateX(-3px) scale(1.1); background:#fff; } 60%, 100% { filter: none; transform: translateX(0); } }
-
-        @keyframes tutBridgeMove { 0% { transform: translateY(-40px); opacity:0; } 15% { transform: translateY(-40px); opacity:1; } 50%, 85% { transform: translateY(40px); opacity:1; } 100% { transform: translateY(40px); opacity:0; } }
-        @keyframes tutHammerMove { 0% { transform: translateX(0); } 30%, 40% { transform: translateX(30px); } 100% { transform: translateX(30px); } }
-        @keyframes tutWallBreak { 0%, 25% { opacity: 1; transform: scale(1); } 30% { transform: scale(1.1); } 35%, 100% { opacity: 0; transform: scale(0); } }
-        @keyframes tutMoveArc3_1 { 0% { transform: translateX(0) scale(1); opacity: 1; } 30% { transform: translateX(40px) scale(0.2); opacity: 0; } 100% { transform: translateX(40px) scale(0.2); opacity: 0; } }
-        @keyframes tutMoveArc3_2 { 0%, 30% { transform: translateX(-40px) scale(0.2); opacity: 0; } 60% { transform: translateX(0) scale(1); opacity: 1; } 100% { transform: translateX(0) scale(1); opacity: 1; } }
-        @keyframes tutBotMove { 0% { transform: translateX(-40px); } 100% { transform: translateX(40px); } }
+        @keyframes tutMoveArc3_1 { 0%, 100% { transform: translateX(-35px) scale(1); opacity: 1; } 45% { transform: translateX(5px) scale(0.2); opacity: 0; } 50%, 95% { transform: translateX(5px) scale(0.2); opacity: 0; } }
+        @keyframes tutMoveArc3_2 { 0%, 50% { transform: translateX(-5px) scale(0.2); opacity: 0; } 95%, 100% { transform: translateX(35px) scale(1); opacity: 1; } }
+        
+        @keyframes tutHammerMove { 0%, 100% { transform: translateX(-25px); } 40%, 60% { transform: translateX(5px); } }
+        @keyframes tutWallBreak { 0%, 35% { opacity: 1; transform: scale(1); } 40% { transform: scale(1.1); } 45%, 90% { opacity: 0; transform: scale(0); } 100% { opacity: 1; transform: scale(1); } }
+        
+        @keyframes tutBotMove { 0%, 100% { transform: translateX(-40px); } 50% { transform: translateX(40px); } }
         @keyframes tutLaserPulse { 0%, 40% { opacity:0.2; height:2px; background:var(--orange); } 50%, 90% { opacity:1; height:8px; background:var(--meat-red); } 100% { opacity:0.2; height:2px; background:var(--orange); } }
         
+        @keyframes tutHeroToCapsule { 0%, 100% { transform: translateX(-40px); } 45%, 55% { transform: translateX(12px); } }
+        @keyframes tutCapsuleVanish { 0%, 35% { opacity: 1; transform: scale(1); } 45%, 90% { opacity: 0; transform: scale(2); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes tutBossHurt { 0%, 40% { filter: none; transform: translateX(30px); } 45%, 55% { filter: brightness(3) hue-rotate(90deg); transform: translateX(27px) scale(1.1); background:#fff; } 60%, 100% { filter: none; transform: translateX(30px); } }
+
         #comic-screen { background: #000; z-index: 20000; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .comic-panel { border: 2px solid #333; background: #0a0a0a; border-radius: 10px; margin-bottom: 20px; opacity: 0; transform: scale(0.95); transition: 0.4s ease-out; width: 100%; max-width: 380px; overflow:hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.8); position: relative;}
         .comic-panel.visible { opacity: 1; transform: scale(1); }
@@ -586,7 +586,27 @@
         <div id="status-msg" style="margin-top:5px; font-weight:900; font-size:1.2rem; color:#00ff88; text-align:center; text-shadow:0 0 10px #00ff88;"></div>
     </div>
 <script>
-        // --- ANDROID ADMOB KÖPRÜSÜ (YANDEX YERİNE) ---
+// --- ÖĞRETİCİ (TUTORIAL) VERİLERİ (GÜNCELLENMİŞ, ORTALANMIŞ VE CİLALANMIŞ HALİ) ---
+        const tutorials = {
+            tr: {
+                arc2_bridge: { title: "KÖPRÜ GEÇİŞİ", desc: "Mavi köprülerden sadece açık uçlarından geçebilirsin. Yanlardan giremezsin!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; animation:tutMoveArc3_1 2s infinite;'></div><div style='width:32px; height:32px; background:#000; border-top:4px solid #00f3ff; border-bottom:4px solid #00f3ff; position:absolute; left:50%; transform:translateX(-50%);'></div>" },
+                arc2_hammer: { title: "KIRILGAN DUVAR", desc: "Çatlak duvarlara çarparak onları kırabilir ve yeni yollar açabilirsin.", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; animation:tutHammerMove 2s infinite;'></div><div style='width:32px; height:32px; background:#5d4037; border:2px solid #ffaa00; position:absolute; left:50%; transform:translateX(-50%); animation:tutWallBreak 2s infinite;'></div>" },
+                arc3: { title: "PORTALLAR", desc: "Mavi portala girersen, diğer portaldan çıkarsın. Mesafeleri kısalt!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; left:20px; animation:tutMoveArc3_1 2s infinite;'></div><div style='width:32px; height:32px; border-radius:50%; background:#ff00ff; position:absolute; left:40px;'></div><div style='width:32px; height:32px; border-radius:50%; background:#ccff00; position:absolute; right:40px;'></div><div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; right:20px; opacity:0; animation:tutMoveArc3_2 2s infinite;'></div>" },
+                arc3_bot: { title: "MAVİ DEVRİYE", desc: "Mavi botlar sadece belirli bir rotada devriye gezer. Zamanlamanı iyi ayarla ve aralarından süzül!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; right:30px;'></div><div class='enemy-wrapper' style='width:32px; height:32px; position:absolute; animation:tutBotMove 2s infinite;'><div class='enemy-bot'><div class='bot-visor'><div class='bot-scanner'></div></div></div></div>" },
+                arc3_laser: { title: "LAZER AĞI", desc: "Lazerler kırmızı olduğunda oradan geçemezsin! Turuncu olduğunda güvendesin.", anim: "<div style='width:100%; max-width: 150px; height:4px; background:var(--orange); position:absolute; animation:tutLaserPulse 2s infinite;'></div>" },
+                arc3_boss: { title: "SİBER ÇEKİRDEK", desc: "Boss'un kalkanını indirmek için mavi enerji kapsüllerini topla!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; top:60px; left:20px; z-index:20; animation:tutHeroToCapsule 3s infinite;'></div><div style='width:40px; height:40px; background:#1a0000; border:2px solid #bc13fe; position:absolute; top:20px; right:30px; animation:tutBossHurt 3s infinite;'></div><div style='width:12px; height:12px; background:#00e5ff; border-radius:50%; position:absolute; top:70px; left:60px; box-shadow:0 0 10px #00e5ff; animation:tutCapsuleVanish 3s infinite;'></div>" }
+            },
+            en: {
+                arc2_bridge: { title: "BRIDGE CROSSING", desc: "You can only cross blue bridges from their open ends. No side entry!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; animation:tutMoveArc3_1 2s infinite;'></div><div style='width:32px; height:32px; background:#000; border-top:4px solid #00f3ff; border-bottom:4px solid #00f3ff; position:absolute; left:50%; transform:translateX(-50%);'></div>" },
+                arc2_hammer: { title: "FRAGILE WALLS", desc: "Crash into cracked walls to break them and open new paths.", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; animation:tutHammerMove 2s infinite;'></div><div style='width:32px; height:32px; background:#5d4037; border:2px solid #ffaa00; position:absolute; left:50%; transform:translateX(-50%); animation:tutWallBreak 2s infinite;'></div>" },
+                arc3: { title: "PORTALS", desc: "Enter a portal to exit from the other. Shorten distances!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; left:20px; animation:tutMoveArc3_1 2s infinite;'></div><div style='width:32px; height:32px; border-radius:50%; background:#ff00ff; position:absolute; left:40px;'></div><div style='width:32px; height:32px; border-radius:50%; background:#ccff00; position:absolute; right:40px;'></div><div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; right:20px; opacity:0; animation:tutMoveArc3_2 2s infinite;'></div>" },
+                arc3_bot: { title: "BLUE PATROL", desc: "Blue bots only patrol a specific route. Time your moves and slip through!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; right:30px;'></div><div class='enemy-wrapper' style='width:32px; height:32px; position:absolute; animation:tutBotMove 2s infinite;'><div class='enemy-bot'><div class='bot-visor'><div class='bot-scanner'></div></div></div></div>" },
+                arc3_laser: { title: "LASER GRID", desc: "You cannot pass when lasers are red! It's safe when orange.", anim: "<div style='width:100%; max-width: 150px; height:4px; background:var(--orange); position:absolute; animation:tutLaserPulse 2s infinite;'></div>" },
+                arc3_boss: { title: "CYBER CORE", desc: "Collect blue energy capsules to lower the Boss's shields!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; top:60px; left:20px; z-index:20; animation:tutHeroToCapsule 3s infinite;'></div><div style='width:40px; height:40px; background:#1a0000; border:2px solid #bc13fe; position:absolute; top:20px; right:30px; animation:tutBossHurt 3s infinite;'></div><div style='width:12px; height:12px; background:#00e5ff; border-radius:50%; position:absolute; top:70px; left:60px; box-shadow:0 0 10px #00e5ff; animation:tutCapsuleVanish 3s infinite;'></div>" }
+            }
+        };
+
+        // --- ANDROID ADMOB KÖPRÜSÜ ---
         function showInterstitial() {
             if(bgMusic) bgMusic.pause();
             if (typeof AndroidBridge !== 'undefined') {
@@ -625,9 +645,8 @@
             initGame();
         });
 
-
-        // --- MEVCUT OYUN VE REKLAM KONTROL DEĞİŞKENLERİ ---
-        let deathCount = 0, levelsCompleted = 0, lastAdTime = 0; // REKLAM KONTROL DEĞİŞKENLERİ
+        // --- MEVCUT OYUN VE KONTROL DEĞİŞKENLERİ ---
+        let deathCount = 0, levelsCompleted = 0, lastAdTime = 0;
 
         let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
         let canPublish = false; 
@@ -701,82 +720,6 @@
                     { speaker: "mimar", title: "ARCHITECT", img: "boss2.png", text: "WARNING! Unauthorized core access. Security protocols maximized. Delete that virus immediately!" },
                     { speaker: "mimar", title: "SYSTEM CORE", img: "boss3.png", text: "Did you think you could hack me, little anomaly? You just coded your own grave..." },
                     { speaker: "square", title: "SYSTEM LOG", img: "boss4.png", text: "Blue capsules feeding your shields... I will collect them and delete you!" }
-                ]
-            },
-            es: {
-                1: [
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne1.png", text: "Desperté en un vacío oscuro. Me llamaron virus. Mi existencia es un delito." },
-                    { speaker: "mimar", title: "ARQUITECTO", img: "sahne2.png", text: "Anomalía del sistema detectada. Cuarentena activada. Purgar el virus." },
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne3.png", text: "Debo escapar... Tengo que sobrevivir..." },
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "sahne4.png", text: "Ya no hay vuelta atrás. Saldré del sistema." }
-                ],
-                2: [
-                    { speaker: "mimar", title: "ARQUITECTO", img: "arc2.1.png", text: "¡Tu escape termina aquí, anomalía! El Sector 2 será tu tumba digital." },
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "arc2.2.png", text: "Cruzar estos puentes será difícil... pero no imposible." },
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "arc2.3.png", text: "No soy un simple fragmento de código. ¡Destruiré sus obstáculos y abriré mi propio camino!" }
-                ],
-                "3_boss": [
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "boss1.png", text: "No pensaron que llegaría tan profundo... Estoy en el corazón del sistema." },
-                    { speaker: "mimar", title: "ARQUITECTO", img: "boss2.png", text: "¡ADVERTENCIA! Acceso al núcleo no autorizado. ¡Eliminen a ese virus inmediatamente!" },
-                    { speaker: "mimar", title: "NÚCLEO DEL SISTEMA", img: "boss3.png", text: "¿Creíste que podrías hackearme, pequeña anomalía? Acabas de programar tu propia tumba..." },
-                    { speaker: "square", title: "DIARIO DEL SISTEMA", img: "boss4.png", text: "Cápsulas azules alimentando tus escudos... ¡Las recolectaré y te borraré!" }
-                ]
-            },
-            ru: {
-                1: [
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne1.png", text: "Я очнулся в темной пустоте. Они назвали меня вирусом." },
-                    { speaker: "mimar", title: "АРХИТЕКТОР", img: "sahne2.png", text: "Обнаружена аномалия системы. Карантин активирован. Уничтожить вирус." },
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne3.png", text: "Я должен сбежать... Я должен выжить..." },
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "sahne4.png", text: "Назад пути нет. Я вырвусь из системы." }
-                ],
-                2: [
-                    { speaker: "mimar", title: "АРХИТЕКТОР", img: "arc2.1.png", text: "Твой побег заканчивается здесь! Сектор 2 станет твоей могилой." },
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "arc2.2.png", text: "Перейти эти мосты будет сложно... но не невозможно." },
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "arc2.3.png", text: "Я не просто кусок кода. Я проложу свой собственный путь!" }
-                ],
-                "3_boss": [
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "boss1.png", text: "Они не думали, что я зайду так далеко... Я в сердце системы." },
-                    { speaker: "mimar", title: "АРХИТЕКТОР", img: "boss2.png", text: "ПРЕДУПРЕЖДЕНИЕ! Несанкционированный доступ. Немедленно удалите этот вирус!" },
-                    { speaker: "mimar", title: "ЯДРО СИСТЕМЫ", img: "boss3.png", text: "Думал, сможешь взломать меня? Ты запрограммировал свою могилу..." },
-                    { speaker: "square", title: "СИСТЕМНЫЙ ЖУРНАЛ", img: "boss4.png", text: "Синие капсулы питают твои щиты... Я соберу их и сотру тебя!" }
-                ]
-            },
-            fr: {
-                1: [
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne1.png", text: "Je me suis réveillé dans le noir. Ils m'ont appelé un virus." },
-                    { speaker: "mimar", title: "ARCHITECTE", img: "sahne2.png", text: "Anomalie détectée. Quarantaine activée. Purger le virus." },
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne3.png", text: "Je dois m'échapper... survivre..." },
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "sahne4.png", text: "Pas de retour possible. Je vais sortir du système." }
-                ],
-                2: [
-                    { speaker: "mimar", title: "ARCHITECTE", img: "arc2.1.png", text: "Ta fuite s'arrête ici ! Le Secteur 2 sera ta tombe numérique." },
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "arc2.2.png", text: "Traverser ces ponts sera difficile... mais pas impossible." },
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "arc2.3.png", text: "Je vais détruire vos obstacles et tracer mon propre chemin !" }
-                ],
-                "3_boss": [
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "boss1.png", text: "Ils ne pensaient pas que j'irais si loin... Je suis au cœur du système." },
-                    { speaker: "mimar", title: "ARCHITECTE", img: "boss2.png", text: "ATTENTION ! Accès non autorisé. Supprimez ce virus !" },
-                    { speaker: "mimar", title: "NOYAU DU SYSTÈME", img: "boss3.png", text: "Tu pensais pouvoir me pirater ? Tu viens de coder ta propre tombe..." },
-                    { speaker: "square", title: "JOURNAL SYSTÈME", img: "boss4.png", text: "Capsules bleues alimentant tes boucliers... Je vais les collecter et t'effacer !" }
-                ]
-            },
-            zh: {
-                1: [
-                    { speaker: "square", title: "系统日志", img: "sahne1.png", text: "我在黑暗中醒来。他们叫我病毒。我的存在就是犯罪。" },
-                    { speaker: "mimar", title: "架构师", img: "sahne2.png", text: "检测到系统异常。隔离启动。清除病毒。" },
-                    { speaker: "square", title: "系统日志", img: "sahne3.png", text: "我必须逃跑... 我必须活下去..." },
-                    { speaker: "square", title: "系统日志", img: "sahne4.png", text: "没有回头路了。我要打破系统。" }
-                ],
-                2: [
-                    { speaker: "mimar", title: "架构师", img: "arc2.1.png", text: "你的逃亡到此为止！第二区将是你的坟墓。" },
-                    { speaker: "square", title: "系统日志", img: "arc2.2.png", text: "穿过这些桥梁很困难......但并非不可能。" },
-                    { speaker: "square", title: "系统日志", img: "arc2.3.png", text: "我会粉碎障碍，开辟我自己的道路！" }
-                ],
-                "3_boss": [
-                    { speaker: "square", title: "系统日志", img: "boss1.png", text: "他们没想到我会走得这么深...我正在系统的核心。" },
-                    { speaker: "mimar", title: "架构师", img: "boss2.png", text: "警告！未经授权的核心访问。立即删除病毒！" },
-                    { speaker: "mimar", title: "系统核心", img: "boss3.png", text: "你以为能黑进我？你刚刚编写了自己的坟墓..." },
-                    { speaker: "square", title: "系统日志", img: "boss4.png", text: "蓝色的胶囊为你的护盾供能... 我会收集它们并删除你！" }
                 ]
             }
         };
@@ -1322,6 +1265,11 @@
                         pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return;
                     }
 
+                    // --- YENİ BOSS LAZERİ KONTROLÜ BURADA ---
+                    if (nCell.el && nCell.el.classList.contains('laser-active-boss')) {
+                        pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return;
+                    }
+
                     if (nCell.type === 'laser' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
                     if (nCell.type === 'laserv' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
                     if (enemies.some(e => e.x === nx && e.y === ny)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
@@ -1719,7 +1667,6 @@
             try { alert("Karakter buluta yükleniyor... ⏳"); const docRef = await db.collection("market_characters").add(newChar); newChar.id = docRef.id; characters.push(newChar); user.chars.push(newChar.id); user.activeChar = newChar.id; saveProgress(); alert("Tüm Dünya İçin Markete Yayınlandı! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı hatası!"); }
         }
 
-        // --- EDİTÖR GÜNCELLEMESİ (BOS, LZ-D VE KAPSÜL) ---
         function openEditor(){canPublish = false; document.getElementById('reverse-timer').value=''; showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorLaserV=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; editorBoss=null; editorCapsules=[]; levelVerified=false; document.getElementById('publish-btn').style.opacity="0.5"; document.getElementById('grid-size').value = "5"; renderEditor(); }
         
         function setTool(t_tool){ selectedTool=t_tool; document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active')); if(event && event.target) event.target.classList.add('active'); }
@@ -1771,10 +1718,9 @@
             } 
         }
 
-        // REKLAM MANTIĞI YARDIMCI FONKSİYON
         function tryShowInterstitial() {
             const now = Date.now();
-            if (now - lastAdTime >= 60000) { // 60 Saniye kalkanı
+            if (now - lastAdTime >= 60000) { 
                 lastAdTime = now;
                 showInterstitial();
                 return true;
