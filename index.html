@@ -5,8 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Yeşil Kare: Global Architect V56 - SİBER ÇEKİRDEK</title>
     
-    <script src="firebase-app-compat.js"></script>
-    <script src="firebase-firestore-compat.js"></script>
+    <!-- Firebase Doğrudan Sunucu (CDN) Linkleri -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
     <style>
         :root { --current-color: #00ff88; --bg: #0a0a0c; --cell-bg: #ecf0f1; --wall: #222; --orange: #ff9f43; --bridge: #000000; --meat-red: #e74c3c; --boss-color: #bc13fe; --gap: 2px; --cell-sz: 32px; }
@@ -119,20 +120,38 @@
         .portal-m { --main-color: #ff00ff; --glow-color: #8a008a; }
         .portal-t { --main-color: #ccff00; --glow-color: #668000; }
         
-        .laser-base { position: absolute; top: 50%; left: 0; width: 100%; height: 8px; background: rgba(231,76,60,0.1); transform: translateY(-50%); border-top: 1px solid rgba(231,76,60,0.3); border-bottom: 1px solid rgba(231,76,60,0.3); z-index: 10; pointer-events: none; }
-        .laser-beam { position: absolute; top: 50%; left: 0; width: 100%; height: 2px; background: transparent; transform: translateY(-50%); z-index: 20; transition: 0.1s; will-change: transform, opacity; }
-        .laser-alert .laser-beam { height: 4px; background: var(--orange); }
-        .laser-active .laser-beam { height: 8px; background: var(--meat-red); animation: laserPulse 0.1s infinite; }
-        @keyframes laserPulse { 0% { opacity: 0.8; transform: translate3d(0, -50%, 0) scaleY(1); } 100% { opacity: 1; transform: translate3d(0, -50%, 0) scaleY(1.3); } }
-
-        .cell.laser-v .laser-base { width: 8px; height: 100%; top: 0; left: 50%; transform: translateX(-50%); border-top:none; border-bottom:none; border-left: 1px solid rgba(231,76,60,0.3); border-right: 1px solid rgba(231,76,60,0.3); }
-        .cell.laser-v .laser-beam { width: 2px; height: 100%; top: 0; left: 50%; transform: translateX(-50%); }
-        .laser-alert.laser-v .laser-beam { width: 4px; background: var(--orange); }
-        .laser-active.laser-v .laser-beam { width: 8px; background: var(--meat-red); animation: laserPulseV 0.1s infinite; }
-        @keyframes laserPulseV { 0% { opacity: 0.8; transform: translate3d(-50%, 0, 0) scaleX(1); } 100% { opacity: 1; transform: translate3d(-50%, 0, 0) scaleX(1.3); } }
+        /* ---------------------------------------------------- */
+        /* OPTİMİZE EDİLMİŞ KESİNTİSİZ LAZER KORİDORU CSS       */
+        /* ---------------------------------------------------- */
+        .cell.laser, .cell.laser-v { background-color: #0b0b0e; border: 2px solid #1a1a1a; box-shadow: inset 0 0 15px #000; }
+        .cell.laser::before, .cell.laser::after, .cell.laser-v::before, .cell.laser-v::after { content: ''; position: absolute; background: linear-gradient(to bottom, #444, #222); z-index: 20; box-sizing: border-box; }
         
-        .enemy-wrapper { position: absolute; z-index: 50; transition: transform 0.15s linear; will-change: transform; }
-        .enemy-bot { width: 100%; height: 100%; background-color: #0b132b; border: 2px solid #00e5ff; box-shadow: 0 0 10px #00e5ff, inset 0 0 8px #00e5ff; border-radius: 8px; position: relative; animation: hover-bot 2s ease-in-out infinite; overflow: hidden; }
+        .cell.laser:not(.laser-v)::before, .cell.laser:not(.laser-v)::after { left: 0; width: 100%; height: 10px; border-top: 1px solid #666; border-bottom: 2px solid #000; }
+        .cell.laser:not(.laser-v)::before { top: 0; }
+        .cell.laser:not(.laser-v)::after { bottom: 0; transform: scaleY(-1); }
+        
+        .cell.laser-v::before, .cell.laser-v::after { top: 0; width: 10px; height: 100%; background: linear-gradient(to right, #444, #222); border-left: 1px solid #666; border-right: 2px solid #000; }
+        .cell.laser-v::before { left: 0; }
+        .cell.laser-v::after { right: 0; transform: scaleX(-1); }
+
+        .laser-base { display: none; }
+        
+        .laser-beam { position: absolute; z-index: 10; transition: all 0.1s ease; pointer-events: none; will-change: transform, opacity, box-shadow, height, width, filter; }
+        
+        .cell.laser:not(.laser-v) .laser-beam { width: 100%; height: calc(100% - 20px); top: 10px; left: 0; transform: none; }
+        .cell.laser-v .laser-beam { height: 100%; width: calc(100% - 20px); left: 10px; top: 0; transform: none; }
+
+        .laser-alert .laser-beam { background: repeating-linear-gradient(45deg, rgba(255,159,67,0.2), rgba(255,159,67,0.2) 10px, rgba(255,159,67,0.4) 10px, rgba(255,159,67,0.4) 20px); box-shadow: inset 0 0 10px var(--orange); animation: warnPulse 0.5s infinite alternate; opacity: 0.8; }
+        
+        .laser:not(.laser-v).laser-active .laser-beam { background: linear-gradient(to bottom, var(--meat-red) 0%, #fff 50%, var(--meat-red) 100%); box-shadow: 0 0 15px var(--meat-red); animation: electricGlitch 0.15s infinite; }
+        .laser-v.laser-active .laser-beam { background: linear-gradient(to right, var(--meat-red) 0%, #fff 50%, var(--meat-red) 100%); box-shadow: 0 0 15px var(--meat-red); animation: electricGlitch 0.15s infinite; }
+
+        @keyframes warnPulse { 0% { opacity: 0.4; } 100% { opacity: 1; } }
+        @keyframes electricGlitch { 0% { opacity: 0.9; filter: brightness(1); } 50% { opacity: 1; filter: brightness(1.3); } 100% { opacity: 0.8; filter: brightness(0.9); } }
+        /* ---------------------------------------------------- */
+        
+        .enemy-wrapper { position: absolute; z-index: 50; transition: transform 0.12s linear; will-change: transform; }
+        .enemy-bot { width: 100%; height: 100%; background-color: #0b132b; border: 2px solid #00e5ff; box-shadow: 0 0 10px #00e5ff; border-radius: 8px; position: relative; overflow: hidden; }
         .bot-visor { width: 80%; height: 20%; background-color: #000; position: absolute; top: 30%; left: 10%; border-radius: 4px; overflow: hidden; box-shadow: inset 0 0 5px #000; }
         .bot-scanner { width: 30%; height: 100%; background-color: #00e5ff; box-shadow: 0 0 10px #00e5ff, 0 0 20px #fff; animation: scan-left-right 1.2s linear infinite alternate; }
 
@@ -145,7 +164,7 @@
         .nemesis-eye-left { left: 15%; animation: evil-blink-left 3s infinite; }
         .nemesis-eye-right { right: 15%; animation: evil-blink-right 3s infinite; }
 
-        /* YENİ SİBER ÇEKİRDEK (BOSS) VİZÖR CSS'LERİ */
+        /* BOSS CSS */
         .boss-wall { background: transparent !important; }
         #boss-entity { position: absolute; background: #1a0000; border: 2px solid var(--boss-color); box-shadow: 0 0 30px var(--boss-color), inset 0 0 15px var(--boss-color); border-radius: 8px; z-index: 10; display: flex; align-items: center; justify-content: center; animation: glitch-skew 0.3s infinite both; transform-origin: center center; pointer-events: none; }
         
@@ -586,7 +605,47 @@
         <div id="status-msg" style="margin-top:5px; font-weight:900; font-size:1.2rem; color:#00ff88; text-align:center; text-shadow:0 0 10px #00ff88;"></div>
     </div>
 <script>
-// --- ÖĞRETİCİ (TUTORIAL) VERİLERİ (GÜNCELLENMİŞ, ORTALANMIŞ VE CİLALANMIŞ HALİ) ---
+        // --- 1. VERİTABANI VE DEĞİŞKENLER ---
+        let db_colors = [{id:'c1',name:'Neon Yeşili',val:'#00ff88', price:0},{id:'c2',name:'Lav Kırmızı',val:'#ff4500', price:500},{id:'c3',name:'Saf Beyaz',val:'#ffffff', price:0},{id:'c4',name:'Kral Altın',val:'#f1c40f', price:1500},{id:'c5',name:'Siber Pembe',val:'#ff00ff', price:1000},{id:'c6',name:'Buz Mavi',val:'#00ffff', price:2000},{id:'c7',name:'Zümrüt',val:'#2ecc71', price:2500},{id:'c8',name:'Güneş Sarı',val:'#ffff00', price:3000},{id:'c9',name:'Gece Moru',val:'#9b59b6', price:3500},{id:'c10',name:'Gölge Gri',val:'#7f8c8d', price:4000},{id:'c11',name:'Polis Mavi',val:'#00a8ff', price:1500},{id:'c12',name:'Yakut',val:'#e74c3c', price:2500}];
+        let db_faces = [ {id:'f0', name:'Standart', cls:'yuz-standart', price:0}, {id:'f1', name:'Kızgın', cls:'yuz-kizgin', price:500}, {id:'f2', name:'Sayborg', cls:'yuz-sayborg', price:1500}, {id:'f3', name:'Uykulu', cls:'yuz-uykulu', price:1000}, {id:'f4', name:'Aşık', cls:'yuz-ask', price:1200}, {id:'f5', name:'Deli', cls:'yuz-deli', price:2000}, {id:'f6', name:'Ninja', cls:'yuz-ninja', price:3000}, {id:'f7', name:'Şaşkın', cls:'yuz-saskin', price:800}, {id:'f8', name:'Şüpheli', cls:'yuz-supheli', price:1100}, {id:'f9', name:'Havalı', cls:'yuz-havali', price:2500} ];
+        let characters = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price: 0}];
+        let db_effects = [ {id:'fx0', name:'Klasik Geçiş', price:0}, {id:'fx1', name:'Siyah Portal', price:1000}, {id:'fx2', name:'Ağla Kaçış (Web-Zip)', price:1500}, {id:'fx3', name:'Gizli Geçit', price:2000}, {id:'fx4', name:'Kancalı Salınım', price:2500}, {id:'fx5', name:'Boyut Yarığı', price:3000}, {id:'fx6', name:'Siber Dash', price:3500}, {id:'fx7', name:'Evrensel Çöküş', price:4000}, {id:'fx8', name:'Külleşme (The Snap)', price:4500}, {id:'fx9', name:'Kristal Kırılma', price:5000}, {id:'fx10', name:'Havai Fişek', price:3500}, {id:'fx11', name:'Boya Erimesi', price:4000}, {id:'fx12', name:'Glitch Out', price:3000} ];
+        let perks = [{name: 'Yok', type: 'none'}, {name: '🛡️ Zırh', type: 'armor'}, {name: '🧱 Balyoz', type: 'breaker'}, {name: '💰 Mıknatıs', type: 'rich'}, {name: '⚡ Hız', type: 'speed'}, {name: '🚀 Hırsız', type: 'hyperspeed'}, {name: '👻 Hayalet', type: 'ghost'}];
+
+        let user = { name: "Misafir", score: 0, unlocked1: 0, unlocked2: 0, unlocked3: 0, unlocked4: 0, unlocked5: 0, unlocked6: 0, colors: ['c1','c3'], faces: ['f0'], chars: ['chr0'], effects: ['fx0'], activeColor: 'c1', activeFace: 'f0', activeChar: 'chr0', activeEffect: 'fx0', isAdmin: false, friends: [] };
+
+        let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
+        let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0, reverseActive = false, reverseIntervalObj = null;
+        let currentLevelHasBoss = false, bossDefeated = false, bossAreaObj = null, bossAttackTimeout = null, totalCapsules = 0, collectedCapsules = 0;
+        
+        let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[], editorPM=[], editorPT=[], editorLaser=[], editorLaserV=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], editorBoss=null, editorCapsules=[], isTestMode=false, levelVerified=false;
+        let idx = { colors:0, faces:0, perk:0 }, currentPixelColor = '#00ff88', editingTarget = 'colors', currentMarketTab = 'colors', shieldActive = false, ghostActive = false, currentCellSize = 32, currentManagerArc = 1, isPlayingOnline = false, currentOnlineLevel = null;
+
+        let currentOnlineView = 'global'; 
+        let inboxUnsubscribe = null;
+        let deathCount = 0, levelsCompleted = 0, lastAdTime = 0;
+        let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
+        let canPublish = false, autoAdvanceTimer = null; 
+        let audioCtx = null, ambientOsc = null;
+        let previewInterval = null, previewTimeouts = [];
+
+        // --- 2. FİREBASE BAĞLANTISI ---
+        const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
+        firebase.initializeApp(firebaseConfig); 
+        const db = firebase.firestore();
+        db.settings({ experimentalForceLongPolling: true });
+
+        // --- 3. MİSAFİR VE ADMİN YETKİ KONTROLÜ (DÜZELTİLDİ) ---
+        function hideAdminButtons() {
+            document.getElementById('admin-arc-btn').style.display = 'none';
+            document.getElementById('admin-create-char-btn').style.display = 'none';
+        }
+        function showAdminButtons() {
+            document.getElementById('admin-arc-btn').style.display = 'block';
+            document.getElementById('admin-create-char-btn').style.display = 'block';
+        }
+
+        // --- 4. ÖĞRETİCİ VE HİKAYE VERİLERİ ---
         const tutorials = {
             tr: {
                 arc2_bridge: { title: "KÖPRÜ GEÇİŞİ", desc: "Mavi köprülerden sadece açık uçlarından geçebilirsin. Yanlardan giremezsin!", anim: "<div style='width:32px; height:32px; background:#00ff88; border-radius:4px; position:absolute; animation:tutMoveArc3_1 2s infinite;'></div><div style='width:32px; height:32px; background:#000; border-top:4px solid #00f3ff; border-bottom:4px solid #00f3ff; position:absolute; left:50%; transform:translateX(-50%);'></div>" },
@@ -606,83 +665,6 @@
             }
         };
 
-        // --- ANDROID ADMOB KÖPRÜSÜ ---
-        function showInterstitial() {
-            if(bgMusic) bgMusic.pause();
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.showInterstitial();
-            } else {
-                console.log("[Test Modu] Geçiş reklamı tetiklendi.");
-                onAdClosed(); 
-            }
-        }
-
-        function showRewarded() {
-            if(bgMusic) bgMusic.pause();
-            if (typeof AndroidBridge !== 'undefined') {
-                AndroidBridge.showRewarded();
-            } else {
-                console.log("[Test Modu] Ödüllü reklam izlendi.");
-                grantReward(); 
-                onAdClosed();
-            }
-        }
-
-        window.onAdClosed = function() {
-            if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) {
-                bgMusic.play().catch(e => console.log(e));
-            }
-        };
-
-        window.grantReward = function() {
-            user.score += 500; 
-            updatePoints(); 
-            saveProgress(); 
-            alert("Tebrikler! 500 G Puan kazandın. 💰");
-        };
-
-        window.addEventListener('load', () => {
-            initGame();
-        });
-
-        // --- MEVCUT OYUN VE KONTROL DEĞİŞKENLERİ ---
-        let deathCount = 0, levelsCompleted = 0, lastAdTime = 0;
-
-        let pendingLevelData = null, comicStep = 0, currentComicData = null, typewritingInterval = null, isTyping = false, introPlayedThisRun = false;
-        let canPublish = false; 
-        let autoAdvanceTimer = null; 
-
-        let audioCtx = null;
-        let ambientOsc = null;
-
-        function initAudioCtx() {
-            if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-        }
-
-        function playAmbient() { }
-        function stopAmbient() { }
-
-        function playTypewriterTick() {
-            if (sfxVol === 0) return;
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
-            
-            osc.type = 'triangle'; 
-            osc.frequency.setValueAtTime(400 + Math.random() * 100, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.02);
-            gain.gain.setValueAtTime(sfxVol * 0.4, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
-            osc.connect(gain); 
-            gain.connect(audioCtx.destination);
-            
-            osc.start(); 
-            osc.stop(audioCtx.currentTime + 0.02);
-        }        
-        
         const comicIntros = {
             tr: {
                 1: [
@@ -724,8 +706,61 @@
             }
         };
 
+        function showTutorial(tutKey) {
+            let langTuts = tutorials[curLang] || tutorials['tr']; 
+            const tut = langTuts[tutKey]; 
+            if (!tut) return;
+            document.getElementById('tut-title').innerHTML = tut.title; 
+            document.getElementById('tut-anim-container').innerHTML = tut.anim; 
+            document.getElementById('tut-desc').innerHTML = tut.desc;
+            document.getElementById('tutorial-overlay').classList.remove('hidden');
+        }
+
+        // --- 5. ADMOB REKLAMLARI ---
+        function showInterstitial() {
+            if(bgMusic) bgMusic.pause();
+            if (typeof AndroidBridge !== 'undefined') AndroidBridge.showInterstitial();
+            else { console.log("[Test Modu] Geçiş reklamı tetiklendi."); onAdClosed(); }
+        }
+
+        function showRewarded() {
+            if(bgMusic) bgMusic.pause();
+            if (typeof AndroidBridge !== 'undefined') AndroidBridge.showRewarded();
+            else { console.log("[Test Modu] Ödüllü reklam izlendi."); grantReward(); onAdClosed(); }
+        }
+
+        window.onAdClosed = function() {
+            if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) bgMusic.play().catch(e => console.log(e));
+        };
+
+        window.grantReward = function() {
+            user.score += 500; updatePoints(); saveProgress(); 
+            alert("Tebrikler! 500 G Puan kazandın. 💰");
+        };
+
+        window.addEventListener('load', () => { initGame(); });
+
+        // --- 6. AUDIO & HİKAYE EKRANI ---
+        function initAudioCtx() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+        function playAmbient() { }
+        function stopAmbient() { }
+        function playTypewriterTick() {
+            if (sfxVol === 0) return;
+            initAudioCtx();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(400 + Math.random() * 100, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(50, audioCtx.currentTime + 0.02);
+            gain.gain.setValueAtTime(sfxVol * 0.4, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.02);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.02);
+        }        
+
         function getLocalizedIntro(arcNum, isBoss = false) { 
-            let langIntros = comicIntros[curLang] || comicIntros['en']; 
+            let langIntros = comicIntros[curLang] || comicIntros['tr']; 
             return isBoss ? langIntros[arcNum + '_boss'] : langIntros[arcNum]; 
         }
 
@@ -741,149 +776,86 @@
 
         function nextComicPanel() {
             if(isTyping) {
-                clearInterval(typewritingInterval);
-                document.getElementById(`txt-${comicStep-1}`).innerHTML = currentComicData[comicStep-1].text;
-                isTyping = false;
-                clearTimeout(autoAdvanceTimer);
-                autoAdvanceTimer = setTimeout(nextComicPanel, 2500); 
-                return;
+                clearInterval(typewritingInterval); document.getElementById(`txt-${comicStep-1}`).innerHTML = currentComicData[comicStep-1].text;
+                isTyping = false; clearTimeout(autoAdvanceTimer); autoAdvanceTimer = setTimeout(nextComicPanel, 2500); return;
             }
-
             clearTimeout(autoAdvanceTimer); 
             if(comicStep >= currentComicData.length) { finishComic(); return; }
 
-            const data = currentComicData[comicStep];
-            const panel = document.createElement('div');
-            panel.className = 'comic-panel';
-            
+            const data = currentComicData[comicStep]; const panel = document.createElement('div'); panel.className = 'comic-panel';
             const currentStep = comicStep;
-            
             panel.innerHTML = `<div class="comic-img-area"><img class="comic-render" src="${data.img}"></div>
                                <div class="comic-content"><div class="${data.speaker === 'mimar' ? 'speaker-mimar' : 'speaker-square'}">${data.title}</div>
                                <div class="comic-text" id="txt-${currentStep}"></div></div>`;
             document.getElementById('comic-container').appendChild(panel);
             
             const screenEl = document.getElementById('comic-screen');
-            setTimeout(() => { 
-                panel.classList.add('visible'); 
-                screenEl.scrollTo({ top: screenEl.scrollHeight, behavior: 'smooth' }); 
-            }, 50);
+            setTimeout(() => { panel.classList.add('visible'); screenEl.scrollTo({ top: screenEl.scrollHeight, behavior: 'smooth' }); }, 50);
 
-            isTyping = true; 
-            let charIdx = 0;
+            isTyping = true; let charIdx = 0;
             typewritingInterval = setInterval(() => {
-                if (charIdx % 2 === 0 && data.text[charIdx] !== ' ') {
-                    playTypewriterTick(); 
-                }
+                if (charIdx % 2 === 0 && data.text[charIdx] !== ' ') playTypewriterTick(); 
                 document.getElementById(`txt-${currentStep}`).innerHTML = data.text.substring(0, charIdx) + '_';
                 charIdx++;
-                
                 if(charIdx > data.text.length) { 
-                    clearInterval(typewritingInterval); 
-                    document.getElementById(`txt-${currentStep}`).innerHTML = data.text; 
-                    isTyping = false; 
-                    autoAdvanceTimer = setTimeout(nextComicPanel, 3500);
+                    clearInterval(typewritingInterval); document.getElementById(`txt-${currentStep}`).innerHTML = data.text; 
+                    isTyping = false; autoAdvanceTimer = setTimeout(nextComicPanel, 3500);
                 }
             }, 45); 
-            
             comicStep++;
         }
 
         function finishComic() {
             clearInterval(typewritingInterval); isTyping = false; stopAmbient(); clearTimeout(autoAdvanceTimer);
             document.getElementById('comic-screen').classList.add('hidden');
-            if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) { bgMusic.play().catch(e => console.log(e)); }
+            if(bgMusic && bgmVol > 0 && document.getElementById('audio-menu').classList.contains('hidden')) bgMusic.play().catch(e => console.log(e));
             if(pendingLevelData) { showScreen('game-wrapper'); loadLevel(pendingLevelData); }
         }
-
-        const firebaseConfig = { apiKey: "AIzaSyDWc9pwYsovq7Aw03EreRZR_RbofDrFqH0", authDomain: "oyun-991a6.firebaseapp.com", projectId: "oyun-991a6", storageBucket: "oyun-991a6.firebasestorage.app", messagingSenderId: "426030759870", appId: "1:426030759870:web:10622642568fb9f160c3ef" };
-        firebase.initializeApp(firebaseConfig); const db = firebase.firestore();
-        db.settings({ experimentalForceLongPolling: true });
 
         const bgMusic = document.getElementById('bg-music');
         const sfxDie = document.getElementById('sfx-die');
         const sfxWin = document.getElementById('sfx-win');
         
-        const musicTracks = {
-            default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", 
-            asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", 
-            phonk: "phonk.mp3",  
-            lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3",   
-            taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3"  
-        };
-
-        let savedBgmVol = localStorage.getItem('yesilkare_bgm');
-        let savedSfxVol = localStorage.getItem('yesilkare_sfx');
-        let savedGenre = localStorage.getItem('yesilkare_genre') || 'default';
-        
-        let bgmVol = savedBgmVol !== null ? parseFloat(savedBgmVol) : 0.2;
-        let sfxVol = savedSfxVol !== null ? parseFloat(savedSfxVol) : 0.5;        
-        
+        const musicTracks = { default: "https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3", asansor: "https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc48af67b2.mp3", phonk: "phonk.mp3", lofi: "https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3", taverna: "https://cdn.pixabay.com/download/audio/2022/12/08/audio_90e88f8fac.mp3" };
+        let savedBgmVol = localStorage.getItem('yesilkare_bgm'); let savedSfxVol = localStorage.getItem('yesilkare_sfx'); let savedGenre = localStorage.getItem('yesilkare_genre') || 'default';
+        let bgmVol = savedBgmVol !== null ? parseFloat(savedBgmVol) : 0.2; let sfxVol = savedSfxVol !== null ? parseFloat(savedSfxVol) : 0.5;        
         if(bgMusic) { bgMusic.src = musicTracks[savedGenre]; bgMusic.volume = bgmVol; }
 
-        function updateVolumes() {
-            bgmVol = parseFloat(document.getElementById('bgm-slider').value); sfxVol = parseFloat(document.getElementById('sfx-slider').value);
-            if(bgMusic) bgMusic.volume = bgmVol;
-            localStorage.setItem('yesilkare_bgm', bgmVol); localStorage.setItem('yesilkare_sfx', sfxVol);
-        }
-
-        function changeMusicGenre() {
-            const genre = document.getElementById('music-genre').value; localStorage.setItem('yesilkare_genre', genre);
-            bgMusic.src = musicTracks[genre]; if (bgmVol > 0) { bgMusic.play().catch(e => console.log(e)); }
-        }
-
-        function toggleAudioMenu() {
-            const menu = document.getElementById('audio-menu');
-            if (menu.classList.contains('hidden')) { document.getElementById('bgm-slider').value = bgmVol; document.getElementById('sfx-slider').value = sfxVol; document.getElementById('music-genre').value = localStorage.getItem('yesilkare_genre') || 'default'; menu.classList.remove('hidden'); } 
-            else { menu.classList.add('hidden'); }
-        }
-
-        function toggleLangMenu() {
-            const menu = document.getElementById('lang-menu');
-            if (menu.classList.contains('hidden')) { menu.classList.remove('hidden'); } else { menu.classList.add('hidden'); }
-        }
-
-        function setLang(l) {
-            curLang = l; localStorage.setItem('yesilkare_lang', l);
-            toggleLangMenu(); updateUITexts(); 
-        }
+        function updateVolumes() { bgmVol = parseFloat(document.getElementById('bgm-slider').value); sfxVol = parseFloat(document.getElementById('sfx-slider').value); if(bgMusic) bgMusic.volume = bgmVol; localStorage.setItem('yesilkare_bgm', bgmVol); localStorage.setItem('yesilkare_sfx', sfxVol); }
+        function changeMusicGenre() { const genre = document.getElementById('music-genre').value; localStorage.setItem('yesilkare_genre', genre); bgMusic.src = musicTracks[genre]; if (bgmVol > 0) bgMusic.play().catch(e => console.log(e)); }
+        function toggleAudioMenu() { const menu = document.getElementById('audio-menu'); if (menu.classList.contains('hidden')) { document.getElementById('bgm-slider').value = bgmVol; document.getElementById('sfx-slider').value = sfxVol; document.getElementById('music-genre').value = localStorage.getItem('yesilkare_genre') || 'default'; menu.classList.remove('hidden'); } else menu.classList.add('hidden'); }
+        function toggleLangMenu() { const menu = document.getElementById('lang-menu'); if (menu.classList.contains('hidden')) menu.classList.remove('hidden'); else menu.classList.add('hidden'); }
+        function setLang(l) { curLang = l; localStorage.setItem('yesilkare_lang', l); toggleLangMenu(); updateUITexts(); }
 
         const i18n = {
             tr: { play: "🎮 OYNA", online: "🌐 SİBER AĞ (ONLİNE)", market: "🛒 MAĞAZA", back: "GERİ DÖN", guest: "MİSAFİR GİRİŞİ 🚀", login_reg: "GİRİŞ YAP / KAYIT OL 👤", map_pool: "🌍 GLOBAL AĞ", map_edit: "✏️ HARİTA TASARLA", colors: "🎨 RENKLER", faces: "👁️ YÜZLER", chars: "🎭 KARAKTER", effects: "✨ EFEKTLER", cancel: "İPTAL", logout: "ÇIKIŞ YAP", retry: "TEKRAR", quit: "ÇIK", score: "💰 PUAN:", buy_ok: "Eşya alındı! 🚀", low_gold: "Altın yetersiz! 🛑", del_conf: "Sileyim mi? 🗑️", perks: { none: "Özellik yok.", armor: "Dikenli telden korur.", breaker: "Duvarı tek atar.", rich: "Kazancı x2 yapar.", speed: "%30 hızlı.", hyperspeed: "Mermi hızı!", ghost: "Hayalet modu." }},
             en: { play: "🎮 PLAY", online: "🌐 CYBER NET (ONLINE)", market: "🛒 MARKET", back: "BACK", guest: "GUEST LOGIN 🚀", login_reg: "LOGIN / REGISTER 👤", map_pool: "🌍 GLOBAL NET", map_edit: "✏️ MAP EDITOR", colors: "🎨 COLORS", faces: "👁️ FACES", chars: "🎭 CHARACTERS", effects: "✨ EFFECTS", cancel: "CANCEL", logout: "LOGOUT", retry: "RETRY", quit: "QUIT", score: "💰 SCORE:", buy_ok: "Bought! 🚀", low_gold: "Not enough gold! 🛑", del_conf: "Delete? 🗑️", perks: { none: "No perks.", armor: "Protects from spikes.", breaker: "One-shots walls.", rich: "2x Earnings.", speed: "30% faster.", hyperspeed: "Bullet speed!", ghost: "Ghost mode." }}
         };
-        let curLang = 'tr'; 
-        const t = (key) => i18n[curLang][key] || key;
+        let curLang = 'tr'; const t = (key) => i18n[curLang][key] || key;
 
         function updateUITexts() {
-            const lang = i18n[curLang] || i18n['en'];
+            const lang = i18n[curLang] || i18n['tr'];
             const setHtml = (id, text) => { if(document.getElementById(id)) document.getElementById(id).innerHTML = text; };
-            
-            setHtml('btn-guest', lang.guest); setHtml('btn-login-reg', lang.login_reg); setHtml('btn-play', lang.play);
-            setHtml('btn-online', lang.online); setHtml('btn-market', lang.market); setHtml('btn-cancel-login', lang.cancel);
-            setHtml('btn-cancel-edit', lang.cancel); setHtml('btn-close-lang', lang.cancel); setHtml('btn-close-audio', lang.cancel + " / KAYDET");
-            setHtml('tab-colors', lang.colors); setHtml('tab-faces', lang.faces); setHtml('tab-chars', lang.chars); setHtml('tab-effects', lang.effects);
-            setHtml('btn-back-arc', lang.back); setHtml('btn-back-play', lang.back); setHtml('btn-back-online-m', lang.back); setHtml('btn-back-market', lang.back);
-            setHtml('btn-back-char', lang.quit); setHtml('btn-back-lvl', lang.back); setHtml('btn-back-onl', lang.back);
-            setHtml('btn-logout', lang.logout);
-            setHtml('btn-retry', lang.retry); setHtml('btn-quit', lang.quit); setHtml('btn-cancel-pixel', lang.cancel + " / ÇIK");
-            setHtml('title-profile', "PROFİL"); setHtml('title-market', lang.market); setHtml('title-levels', "BÖLÜMLER"); 
+            setHtml('btn-guest', lang.guest); setHtml('btn-login-reg', lang.login_reg); setHtml('btn-play', lang.play); setHtml('btn-online', lang.online); setHtml('btn-market', lang.market); setHtml('btn-cancel-login', lang.cancel); setHtml('btn-cancel-edit', lang.cancel); setHtml('btn-close-lang', lang.cancel); setHtml('btn-close-audio', lang.cancel + " / KAYDET"); setHtml('tab-colors', lang.colors); setHtml('tab-faces', lang.faces); setHtml('tab-chars', lang.chars); setHtml('tab-effects', lang.effects); setHtml('btn-back-arc', lang.back); setHtml('btn-back-play', lang.back); setHtml('btn-back-online-m', lang.back); setHtml('btn-back-market', lang.back); setHtml('btn-back-char', lang.quit); setHtml('btn-back-lvl', lang.back); setHtml('btn-back-onl', lang.back); setHtml('btn-logout', lang.logout); setHtml('btn-retry', lang.retry); setHtml('btn-quit', lang.quit); setHtml('btn-cancel-pixel', lang.cancel + " / ÇIK"); setHtml('title-profile', "PROFİL"); setHtml('title-market', lang.market); setHtml('title-levels', "BÖLÜMLER"); 
             if(!document.getElementById('market-screen').classList.contains('hidden')) setMarketTab(currentMarketTab);
         }
 
         function startBackgroundMusic() {
             if (bgMusic && bgMusic.paused && bgmVol > 0 && document.getElementById('comic-screen').classList.contains('hidden')) { bgMusic.volume = bgmVol; bgMusic.play().catch(e => console.log(e)); }
-            let sounds = [sfxDie, sfxWin];
-            sounds.forEach(sfx => {
-                if(sfx && sfx.paused) { sfx.volume = 0; let playPromise = sfx.play(); if (playPromise !== undefined) { playPromise.then(() => { sfx.pause(); sfx.currentTime = 0; sfx.volume = sfxVol; }).catch(err => {}); } }
-            });
+            let sounds = [sfxDie, sfxWin]; sounds.forEach(sfx => { if(sfx && sfx.paused) { sfx.volume = 0; let playPromise = sfx.play(); if (playPromise !== undefined) { playPromise.then(() => { sfx.pause(); sfx.currentTime = 0; sfx.volume = sfxVol; }).catch(err => {}); } } });
         }
-        
         window.addEventListener('click', () => { startBackgroundMusic(); initAudioCtx(); }, { once: true });
         window.addEventListener('touchstart', () => { startBackgroundMusic(); initAudioCtx(); }, { once: true });
 
+        // --- 7. HARİTA VERİLERİ (Temizlenmiş Hali) ---
         const arc1Base = [{"grid":4,"start":[0,0],"walls":[[1,1],[3,1],[1,2]]},{"grid":5,"start":[0,0],"walls":[[2,0],[4,1],[0,2],[1,4],[3,3]]},{"grid":6,"start":[0,0],"walls":[[2,1],[5,0],[4,2],[0,2],[1,5],[5,5]]},{"grid":7,"start":[0,0],"walls":[[2,0],[5,1],[6,3],[6,6],[3,5],[0,6],[1,3]]},{"grid":6,"start":[0,0],"walls":[[3,0],[5,2],[2,3],[0,5],[4,5]]},{"grid":8,"start":[0,0],"walls":[[2,2],[7,1],[4,7],[0,4],[7,6],[7,0],[7,7],[4,0],[1,7],[5,5]]},{"grid":8,"start":[0,0],"walls":[[2,0],[7,3],[5,1],[0,4],[1,7],[7,6],[5,7],[4,2],[4,1]]},{"grid":8,"start":[3,4],"walls":[[1,1],[1,7],[6,3],[0,5],[5,0],[4,4],[3,6],[7,7]]},{"grid":10,"start":[1,0],"walls":[[9,4],[6,0],[0,6],[7,9],[3,9],[4,1],[0,2]]},{"grid":10,"start":[0,0],"walls":[[3,2],[4,2],[5,2],[3,3],[3,4],[3,5],[3,6],[3,7],[4,5],[5,5],[9,5],[0,7],[1,1],[8,9],[7,0],[9,6],[0,9]]}];
         const arc2Base = [{"grid":5,"start":[0,0],"walls":[[0,4],[4,4],[4,0]],"bridgesH":[[2,2]],"bridgesV":[[1,1]]},{"grid":5,"start":[0,0],"walls":[[0,4],[4,4],[4,0],[2,2]],"bridgesV":[[0,2],[2,0]]},{"grid":7,"start":[0,0],"walls":[[0,6],[1,3],[3,1],[3,5],[5,3],[6,0],[6,6]],"bridgesH":[[3,3],[4,6]],"bridgesV":[[1,0],[6,4],[0,2]]},{"grid":5,"start":[0,0],"walls":[[4,0],[4,4],[2,2],[0,4]],"breakables":[[2,0],[2,4]]}];
+        
+        // Sadece İçe Aktarma Mantığı İle Doldurulacak Boş Arclar
+        const arc3Base = [];
+        const arc4Base = [];
+        const arc5Base = [];
+        const arc6Base = [];
         
         function sanitizeLevelData(arcArray) {
             return arcArray.map(lvl => {
@@ -894,84 +866,27 @@
             });
         }
 
-        let defaultMasterArcs = { 1: sanitizeLevelData(arc1Base), 2: sanitizeLevelData(arc2Base), 3: [], 4: [], 5: [], 6: [] }; let globalMasterArcs = defaultMasterArcs;
+        let defaultMasterArcs = { 1: sanitizeLevelData(arc1Base), 2: sanitizeLevelData(arc2Base), 3: [], 4: [], 5: [], 6: [] }; 
+        let globalMasterArcs = defaultMasterArcs;
 
-        let db_colors = [{id:'c1',name:'Neon Yeşili',val:'#00ff88', price:0},{id:'c2',name:'Lav Kırmızı',val:'#ff4500', price:500},{id:'c3',name:'Saf Beyaz',val:'#ffffff', price:0},{id:'c4',name:'Kral Altın',val:'#f1c40f', price:1500},{id:'c5',name:'Siber Pembe',val:'#ff00ff', price:1000},{id:'c6',name:'Buz Mavi',val:'#00ffff', price:2000},{id:'c7',name:'Zümrüt',val:'#2ecc71', price:2500},{id:'c8',name:'Güneş Sarı',val:'#ffff00', price:3000},{id:'c9',name:'Gece Moru',val:'#9b59b6', price:3500},{id:'c10',name:'Gölge Gri',val:'#7f8c8d', price:4000},{id:'c11',name:'Polis Mavi',val:'#00a8ff', price:1500},{id:'c12',name:'Yakut',val:'#e74c3c', price:2500}];
-        let db_faces = [ {id:'f0', name:'Standart', cls:'yuz-standart', price:0}, {id:'f1', name:'Kızgın', cls:'yuz-kizgin', price:500}, {id:'f2', name:'Sayborg', cls:'yuz-sayborg', price:1500}, {id:'f3', name:'Uykulu', cls:'yuz-uykulu', price:1000}, {id:'f4', name:'Aşık', cls:'yuz-ask', price:1200}, {id:'f5', name:'Deli', cls:'yuz-deli', price:2000}, {id:'f6', name:'Ninja', cls:'yuz-ninja', price:3000}, {id:'f7', name:'Şaşkın', cls:'yuz-saskin', price:800}, {id:'f8', name:'Şüpheli', cls:'yuz-supheli', price:1100}, {id:'f9', name:'Havalı', cls:'yuz-havali', price:2500} ];
-        let characters = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price: 0}];
-        
-        let db_effects = [
-            {id:'fx0', name:'Klasik Geçiş', price:0},
-            {id:'fx1', name:'Siyah Portal', price:1000},
-            {id:'fx2', name:'Ağla Kaçış (Web-Zip)', price:1500},
-            {id:'fx3', name:'Gizli Geçit', price:2000},
-            {id:'fx4', name:'Kancalı Salınım', price:2500},
-            {id:'fx5', name:'Boyut Yarığı', price:3000},
-            {id:'fx6', name:'Siber Dash', price:3500},
-            {id:'fx7', name:'Evrensel Çöküş', price:4000},
-            {id:'fx8', name:'Külleşme (The Snap)', price:4500},
-            {id:'fx9', name:'Kristal Kırılma', price:5000},
-            {id:'fx10', name:'Havai Fişek', price:3500},
-            {id:'fx11', name:'Boya Erimesi', price:4000},
-            {id:'fx12', name:'Glitch Out', price:3000}
-        ];
-
-        let perks = [{name: 'Yok', type: 'none'}, {name: '🛡️ Zırh', type: 'armor'}, {name: '🧱 Balyoz', type: 'breaker'}, {name: '💰 Mıknatıs', type: 'rich'}, {name: '⚡ Hız', type: 'speed'}, {name: '🚀 Hırsız', type: 'hyperspeed'}, {name: '👻 Hayalet', type: 'ghost'}];
-
-        let user = { name: "Misafir", score: 0, unlocked1: 0, unlocked2: 0, unlocked3: 0, unlocked4: 0, unlocked5: 0, unlocked6: 0, colors: ['c1','c3'], faces: ['f0'], chars: ['chr0'], effects: ['fx0'], activeColor: 'c1', activeFace: 'f0', activeChar: 'chr0', activeEffect: 'fx0', isAdmin: false, friends: [] };
-        
-        let gameActive=false, moving=false, pos={x:0, y:0}, cells=[], enemies=[], nemesisBots=[], activeGridSize=5, currentIdx=0, currentArc=1, levelStartTime=0, timerInterval=null;
-        let cycleInterval=null, enemyInterval=null, nemesisInterval=null, laserCycle=0, reverseActive = false, reverseIntervalObj = null;
-        let currentLevelHasBoss = false, bossDefeated = false, bossAreaObj = null, bossAttackTimeout = null, totalCapsules = 0, collectedCapsules = 0;
-        
-        let selectedTool='wall', editorW=[], editorB=[], editorBH=[], editorBV=[], editorS={x:0, y:0}, editorSpikes=[], editorPM=[], editorPT=[], editorLaser=[], editorLaserV=[], editorEnemy=[], editorNemesis=[], editorEPaths=[], editorBoss=null, editorCapsules=[], isTestMode=false, levelVerified=false;
-        let idx = { colors:0, faces:0, perk:0 }, currentPixelColor = '#00ff88', editingTarget = 'colors', currentMarketTab = 'colors', shieldActive = false, ghostActive = false, currentCellSize = 32, currentManagerArc = 1, isPlayingOnline = false, currentOnlineLevel = null;
-
-        let currentOnlineView = 'global'; 
-        let inboxUnsubscribe = null;
-
-        function showTutorial(tutKey) {
-            let langTuts = tutorials[curLang] || tutorials['en']; 
-            const tut = langTuts[tutKey] || tutorials['en'][tutKey]; 
-            if (!tut) return;
-            
-            document.getElementById('tut-title').innerHTML = tut.title; 
-            document.getElementById('tut-anim-container').innerHTML = tut.anim; 
-            document.getElementById('tut-desc').innerHTML = tut.desc;
-            document.getElementById('tutorial-overlay').classList.remove('hidden');
-        }
-
-        let previewInterval = null;
-        let previewTimeouts = [];
-        
+        // --- 8. ÖNİZLEME (MARKET) EFEKTLERİ ---
         function clearPreview() {
-            clearInterval(previewInterval);
-            previewTimeouts.forEach(clearTimeout);
-            previewTimeouts = [];
-            const canvas = document.getElementById('preview-canvas');
-            if(canvas) canvas.innerHTML = '';
+            clearInterval(previewInterval); previewTimeouts.forEach(clearTimeout); previewTimeouts = [];
+            const canvas = document.getElementById('preview-canvas'); if(canvas) canvas.innerHTML = '';
         }
-
         function pt(fn, delay) { const t = setTimeout(fn, delay); previewTimeouts.push(t); return t; }
 
         function playEffectPreview(fxId) {
-            clearPreview();
-            const canvas = document.getElementById('preview-canvas');
-            if(!canvas) return;
-
+            clearPreview(); const canvas = document.getElementById('preview-canvas'); if(!canvas) return;
             const runAnim = () => {
-                canvas.innerHTML = '';
-                const pSize = 24; const cx = 75; const cy = 85;
-                
+                canvas.innerHTML = ''; const pSize = 24; const cx = 75; const cy = 85;
                 const p = document.createElement('div');
                 let activeClr = user.activeColor ? (db_colors.find(x=>x.id===user.activeColor)||db_colors[0]).val : '#00ff88';
                 p.style.cssText = `width:${pSize}px; height:${pSize}px; background:${activeClr.startsWith('data') ? 'url('+activeClr+') center/cover' : activeClr}; border-radius:4px; position:absolute; left:${cx - pSize/2}px; top:${cy - pSize/2}px; z-index:100; box-shadow:0 0 10px rgba(0,255,136,0.3); display:flex; justify-content:center; align-items:center;`;
                 p.innerHTML = '<div style="width:4px;height:4px;background:#000;border-radius:50%;position:absolute;top:6px;left:4px;"></div><div style="width:4px;height:4px;background:#000;border-radius:50%;position:absolute;top:6px;right:4px;"></div>';
                 canvas.appendChild(p);
 
-                if(fxId === 'fx0') { 
-                    pt(() => { p.style.transition = 'all 0.5s'; p.style.transform = 'scale(1.5)'; p.style.opacity = '0'; }, 500);
-                } 
+                if(fxId === 'fx0') { pt(() => { p.style.transition = 'all 0.5s'; p.style.transform = 'scale(1.5)'; p.style.opacity = '0'; }, 500); } 
                 else if(fxId === 'fx1') { 
                     const portal = document.createElement('div');
                     portal.style.cssText = `position:absolute; width:60px; height:60px; background:#000; border-radius:50%; left:${cx-30}px; top:${cy-30}px; box-shadow:0 0 15px #8a008a, inset 0 0 10px #fff; transform:scale(0); opacity:0; transition:all 0.5s; z-index:90;`;
@@ -1006,9 +921,7 @@
                     pt(() => { p.style.transition='all 0.3s'; p.style.left=(cx+20)+'px'; p.style.transform='scaleX(0.1) scaleY(1.5)'; p.style.opacity='0'; }, 400);
                     pt(() => { rift.style.transform='scaleY(0)'; }, 700);
                 }
-                else if(fxId === 'fx6') { 
-                    pt(() => { p.style.transition='all 0.3s ease-in'; p.style.left='160px'; p.style.transform='skewX(-20deg)'; p.style.opacity='0'; }, 300);
-                }
+                else if(fxId === 'fx6') { pt(() => { p.style.transition='all 0.3s ease-in'; p.style.left='160px'; p.style.transform='skewX(-20deg)'; p.style.opacity='0'; }, 300); }
                 else if(fxId === 'fx7') { 
                     const bg = document.createElement('div');
                     bg.style.cssText = `position:absolute; width:100%; height:100%; background:radial-gradient(#333 1px, transparent 1px); background-size:10px 10px; transition:all 0.6s; z-index:1;`;
@@ -1074,46 +987,28 @@
             previewInterval = setInterval(runAnim, 1800); 
         }
 
+        // --- 9. FİREBASE SİBER AĞ SİSTEMİ ---
         function startInboxListener() {
             if(user.name.startsWith("Misafir_")) return;
             if(inboxUnsubscribe) inboxUnsubscribe();
             
             inboxUnsubscribe = db.collection("friend_requests").where("to", "==", user.name).onSnapshot(snap => {
                 const notif = document.getElementById('inbox-notif');
-                if(!snap.empty) {
-                    notif.classList.remove('hidden');
-                } else {
-                    notif.classList.add('hidden');
-                }
-                if(!document.getElementById('inbox-screen').classList.contains('hidden')) {
-                    renderInbox(snap);
-                }
+                if(!snap.empty) notif.classList.remove('hidden'); else notif.classList.add('hidden');
+                if(!document.getElementById('inbox-screen').classList.contains('hidden')) renderInbox(snap);
             });
         }
 
         async function renderInbox(snapData = null) {
-            const list = document.getElementById('inbox-list');
-            list.innerHTML = "Sinyaller taranıyor... ⏳";
+            const list = document.getElementById('inbox-list'); list.innerHTML = "Sinyaller taranıyor... ⏳";
             try {
-                let snap = snapData;
-                if(!snap) snap = await db.collection("friend_requests").where("to", "==", user.name).get();
-                
+                let snap = snapData; if(!snap) snap = await db.collection("friend_requests").where("to", "==", user.name).get();
                 list.innerHTML = "";
                 if(snap.empty) { list.innerHTML = "<p style='color:#aaa; text-align:center;'>Ağında bekleyen sinyal yok.</p>"; return; }
                 
                 snap.forEach(doc => {
                     const req = doc.data();
-                    list.innerHTML += `
-                        <div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:10px;">
-                            <div style="display:flex; align-items:center; gap:5px;">
-                                👤 <b style="color:var(--orange); font-size:0.9rem;">${req.from}</b>
-                            </div>
-                            <div style="display:flex; gap:5px;">
-                                <div class="action-btn" style="background:#2ecc71; color:#000; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="acceptRequest('${doc.id}', '${req.from}')">KABUL ✅</div>
-                                <div class="action-btn" style="background:#e74c3c; color:#fff; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="rejectRequest('${doc.id}')">RED ❌</div>
-                            </div>
-                        </div>
-                    `;
+                    list.innerHTML += `<div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:10px;"><div style="display:flex; align-items:center; gap:5px;">👤 <b style="color:var(--orange); font-size:0.9rem;">${req.from}</b></div><div style="display:flex; gap:5px;"><div class="action-btn" style="background:#2ecc71; color:#000; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="acceptRequest('${doc.id}', '${req.from}')">KABUL ✅</div><div class="action-btn" style="background:#e74c3c; color:#fff; padding:5px 10px; font-size:0.7rem; margin:0; cursor:pointer;" onclick="rejectRequest('${doc.id}')">RED ❌</div></div></div>`;
                 });
             } catch(e) { list.innerHTML = "Veri akışı kesildi."; }
         }
@@ -1121,63 +1016,34 @@
         async function acceptRequest(docId, fromUser) {
             try {
                 if(!user.friends) user.friends = [];
-                if(!user.friends.includes(fromUser)) {
-                    user.friends.push(fromUser);
-                    await db.collection("users").doc(user.name).update({ friends: user.friends });
-                }
+                if(!user.friends.includes(fromUser)) { user.friends.push(fromUser); await db.collection("users").doc(user.name).update({ friends: user.friends }); }
                 
                 const theirDoc = await db.collection("users").doc(fromUser).get();
                 if(theirDoc.exists) {
                     let theirFriends = theirDoc.data().friends || [];
-                    if(!theirFriends.includes(user.name)) {
-                        theirFriends.push(user.name);
-                        await db.collection("users").doc(fromUser).update({ friends: theirFriends });
-                    }
+                    if(!theirFriends.includes(user.name)) { theirFriends.push(user.name); await db.collection("users").doc(fromUser).update({ friends: theirFriends }); }
                 }
-                
                 await db.collection("friend_requests").doc(docId).delete();
                 alert(`${fromUser} artık ağına eklendi! Haritalarını görebilirsin. 🤝`);
             } catch(e) { alert("Sistem Hatası!"); }
         }
         
-        async function rejectRequest(docId) {
-            await db.collection("friend_requests").doc(docId).delete();
-        }
+        async function rejectRequest(docId) { await db.collection("friend_requests").doc(docId).delete(); }
 
         async function searchPlayer() {
             if (user.name.startsWith("Misafir_")) return alert("[SİSTEM REDDEDİLDİ] - Misafirler ağda arama yapamaz!");
-            const q = document.getElementById('search-player-input').value.trim();
-            if(!q) return;
+            const q = document.getElementById('search-player-input').value.trim(); if(!q) return;
             if(q.toLowerCase() === user.name.toLowerCase()) return alert("Kendini mi arıyorsun Mimar? 🤨");
             
-            const resDiv = document.getElementById('search-results');
-            resDiv.innerHTML = "Ağ taranıyor... ⏳";
-            
+            const resDiv = document.getElementById('search-results'); resDiv.innerHTML = "Ağ taranıyor... ⏳";
             try {
                 const doc = await db.collection("users").doc(q).get();
                 if(doc.exists) {
-                    const u = doc.data();
-                    let btnHtml = "";
-                    if (user.friends && user.friends.includes(u.name)) {
-                        btnHtml = `<div class="action-btn" style="background:#2ecc71; color:#000; padding:8px; font-size:0.7rem; width:auto; margin:0;">AĞINA BAĞLI ✅</div>`;
-                    } else {
-                        btnHtml = `<div class="action-btn" style="background:#3498db; color:white; padding:8px; font-size:0.7rem; width:auto; margin:0; cursor:pointer;" onclick="sendFriendRequest('${u.name}')">İSTEK GÖNDER 🤝</div>`;
-                    }
-                    resDiv.innerHTML = `
-                        <div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:15px;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <div style="font-size:2rem;">👤</div>
-                                <div style="text-align:left;">
-                                    <b style="color:var(--orange); font-size:1.1rem;">${u.name}</b><br>
-                                    <span style="color:#aaa; font-size:0.8rem;">Puan: ${u.score || 0}</span>
-                                </div>
-                            </div>
-                            ${btnHtml}
-                        </div>
-                    `;
-                } else {
-                    resDiv.innerHTML = "<p style='color:#e74c3c; text-align:center;'>Mimar bulunamadı. Sinyal yok. 🛑</p>";
-                }
+                    const u = doc.data(); let btnHtml = "";
+                    if (user.friends && user.friends.includes(u.name)) btnHtml = `<div class="action-btn" style="background:#2ecc71; color:#000; padding:8px; font-size:0.7rem; width:auto; margin:0;">AĞINA BAĞLI ✅</div>`;
+                    else btnHtml = `<div class="action-btn" style="background:#3498db; color:white; padding:8px; font-size:0.7rem; width:auto; margin:0; cursor:pointer;" onclick="sendFriendRequest('${u.name}')">İSTEK GÖNDER 🤝</div>`;
+                    resDiv.innerHTML = `<div class="skin-card" style="flex-direction:row; justify-content:space-between; padding:15px;"><div style="display:flex; align-items:center; gap:10px;"><div style="font-size:2rem;">👤</div><div style="text-align:left;"><b style="color:var(--orange); font-size:1.1rem;">${u.name}</b><br><span style="color:#aaa; font-size:0.8rem;">Puan: ${u.score || 0}</span></div></div>${btnHtml}</div>`;
+                } else resDiv.innerHTML = "<p style='color:#e74c3c; text-align:center;'>Mimar bulunamadı. Sinyal yok. 🛑</p>";
             } catch(e) { resDiv.innerHTML = "Bağlantı hatası oluştu."; }
         }
 
@@ -1185,22 +1051,13 @@
             try {
                 const existing = await db.collection("friend_requests").where("from", "==", user.name).where("to", "==", targetName).get();
                 if(!existing.empty) return alert("Zaten istek gönderdin! Cevap bekle. ⏳");
-                
-                await db.collection("friend_requests").add({
-                    from: user.name,
-                    to: targetName,
-                    ts: Date.now()
-                });
-                alert("İstek gönderildi! Sinyal hedefe ulaştı. 🚀");
-                searchPlayer(); 
+                await db.collection("friend_requests").add({ from: user.name, to: targetName, ts: Date.now() });
+                alert("İstek gönderildi! Sinyal hedefe ulaştı. 🚀"); searchPlayer(); 
             } catch(e) { alert("Hata: " + e.message); }
         }
 
         function openOnlineCategory(cat) {
-            if (user.name.startsWith("Misafir_") && cat !== 'global') {
-                alert("[SİSTEM REDDEDİLDİ] - Kaçak sinyal. Bu ağa girmek için kalıcı bir profil oluşturmalısın. 🛑");
-                return;
-            }
+            if (user.name.startsWith("Misafir_") && cat !== 'global') { alert("[SİSTEM REDDEDİLDİ] - Kaçak sinyal. Bu ağa girmek için kalıcı bir profil oluşturmalısın. 🛑"); return; }
             currentOnlineView = cat;
             if(cat === 'global') document.getElementById('title-online').innerText = "🌍 GLOBAL AĞ";
             if(cat === 'friends') document.getElementById('title-online').innerText = "🤝 DOST SİNYALİ";
@@ -1208,8 +1065,8 @@
             showScreen('online-screen');
         }
 
+        // --- 10. GİRİŞ VE SİSTEM BAŞLATMA ---
         function getCell(x, y) { if (x < 0 || x >= activeGridSize || y < 0 || y >= activeGridSize) return null; return cells[y * activeGridSize + x]; }
-
         function saveProgress() { if(user.name && !user.name.startsWith("Misafir_")) { db.collection("users").doc(user.name).set(user, {merge: true}).catch(e=>console.log(e)); } }
 
         async function fetchGlobalArcs() { try { const doc = await db.collection("server_data").doc("master_arcs").get(); if(doc.exists) { globalMasterArcs = doc.data().arcs || defaultMasterArcs; } else { saveGlobalArcs(); } } catch(e) {} }
@@ -1227,215 +1084,9 @@
 
         async function fetchOnlineCharacters() { try { const qs = await db.collection("market_characters").get(); let baseChars = [{id:'chr0', name:'Neon Savaşçı', body:'#00ff88', face:'yuz-standart', faceUrl:'none', perk:'none', price:0}]; let fetchedChars = []; qs.forEach(doc => { fetchedChars.push({id: doc.id, ...doc.data()}); }); fetchedChars.sort((a,b) => b.ts - a.ts); characters = baseChars.concat(fetchedChars); if(currentMarketTab === 'chars') setMarketTab(currentMarketTab); } catch(e) {} }
 
-        function toggleGhost() {
-            if(!gameActive) return; const ch = characters.find(c => c.id === user.activeChar) || characters[0]; if (ch.perk !== 'ghost') return;
-            ghostActive = !ghostActive; const pb = document.getElementById('player-body'); const ind = document.getElementById('ghost-indicator');
-            if (ghostActive) { pb.classList.add('ghost-active'); ind.classList.remove('hidden'); } else { pb.classList.remove('ghost-active'); ind.classList.add('hidden'); }
-        }
-
-        document.addEventListener('touchmove', function(e) { 
-            if(e.target.tagName === 'INPUT' && e.target.type === 'range') return; 
-            if (gameActive) { e.preventDefault(); return; } 
-            if (e.target.closest('.scroll-list') || e.target.closest('.arc-manager-list')) return; 
-            let screenEl = e.target.closest('.screen'); 
-            if (screenEl && screenEl.scrollHeight > screenEl.clientHeight) return; 
-            e.preventDefault(); 
-        }, { passive: false });
-
-        async function move(dx, dy) {
-            if (!gameActive || moving) return; moving = true;
-            const ch = characters.find(c => c.id === user.activeChar) || characters[0]; const speed = ch.perk === 'hyperspeed' ? 15 : (ch.perk === 'speed' ? 40 : 65);
-
-            while (gameActive) {
-                let cCell = getCell(pos.x, pos.y); if(!cCell) break;
-                if((dy !== 0 && cCell.type === 'bh') || (dx !== 0 && cCell.type === 'bv')) { if(ch.perk !== 'ghost' || !ghostActive) break; }
-
-                let hitSpike = false; let nx = pos.x + dx, ny = pos.y + dy; let nCell = getCell(nx, ny);
-                if(nCell) { if(dx===1 && nCell.spikes.includes('l')) hitSpike=true; if(dx===-1 && nCell.spikes.includes('r')) hitSpike=true; if(dy===1 && nCell.spikes.includes('t')) hitSpike=true; if(dy===-1 && nCell.spikes.includes('b')) hitSpike=true; }
-
-                if(hitSpike) { 
-                    if(ch.perk === 'armor' && shieldActive) { shieldActive = false; } 
-                    else { const p = document.getElementById('player-container'); p.style.transform=`translate3d(${(pos.x + dx*0.4)*(currentCellSize+2) + 2}px, ${(pos.y + dy*0.4)*(currentCellSize+2) + 2}px, 0)`; die(); return; } 
-                }
-
-                if (nx >= 0 && nx < activeGridSize && ny >= 0 && ny < activeGridSize && nCell) {
-                    if (nCell.type === 'wall') break;
-                    
-                    if (nCell.type === 'boss-wall') {
-                        pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return;
-                    }
-
-                    // --- YENİ BOSS LAZERİ KONTROLÜ BURADA ---
-                    if (nCell.el && nCell.el.classList.contains('laser-active-boss')) {
-                        pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return;
-                    }
-
-                    if (nCell.type === 'laser' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
-                    if (nCell.type === 'laserv' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
-                    if (enemies.some(e => e.x === nx && e.y === ny)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
-                    if (nemesisBots.some(n => n.x === nx && n.y === ny)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
-
-                    if((dy !== 0 && nCell.type==='bh') || (dx !== 0 && nCell.type==='bv')) { if(ch.perk !== 'ghost' || !ghostActive) break; }
-                    
-                    if (nCell.hasCapsule && !nCell.capsuleCollected) {
-                        nCell.capsuleCollected = true;
-                        nCell.el.classList.remove('capsule-cell');
-                        collectedCapsules++;
-                        user.score += 100;
-                        updatePoints();
-                        if (currentLevelHasBoss) {
-                            document.getElementById('capsule-count').innerText = `${collectedCapsules}/${totalCapsules}`;
-                        }
-                    }
-
-                    if (nCell.type === 'break') {
-                        let extraSpikeClasses = Array.from(nCell.el.classList).filter(c => c.startsWith('spike-')).join(' ');
-                        if (ch.perk === 'breaker') { 
-                            nCell.type = 'floor'; nCell.el.className = 'cell ' + extraSpikeClasses; 
-                        } else { 
-                            if(nCell.hp > 1){ 
-                                nCell.hp--; nCell.el.classList.add('breakable-cracked'); 
-                                break; 
-                            } else { 
-                                nCell.type='floor'; nCell.el.className='cell ' + extraSpikeClasses; 
-                            } 
-                        }
-                    }
-                    
-                    if (!nCell.painted && nCell.type !== 'bh' && nCell.type !== 'bv' && nCell.type !== 'portal-m' && nCell.type !== 'portal-t') {
-                        nCell.painted = true; nCell.el.classList.add('painted');
-                        let activeBgVal = user.activeChar !== 'none' ? ch.body : (db_colors.find(x => x.id === user.activeColor) || db_colors[0]).val;
-                        if (activeBgVal.startsWith('data')) { nCell.el.style.backgroundImage = `url(${activeBgVal})`; nCell.el.style.backgroundSize = 'cover'; nCell.el.style.backgroundPosition = 'center'; nCell.el.style.backgroundColor = 'transparent'; } else { nCell.el.style.background = activeBgVal; }
-                    }
-
-                    pos.x = nx; pos.y = ny; updateUI(); await new Promise(r => setTimeout(r, speed));
-
-                    if (nCell.type === 'portal-m' || nCell.type === 'portal-t') {
-                        let targetType = nCell.type === 'portal-m' ? 'portal-t' : 'portal-m'; let target = cells.find(c => c && c.type === targetType); 
-                        if(target) { pos.x = target.x; pos.y = target.y; const p = document.getElementById('player-container'); p.style.transition = 'none'; updateUI(); void p.offsetWidth; p.style.transition = 'transform 0.1s linear'; }
-                    }
-                } else break;
-            }
-            moving = false; checkWin();
-        }
-
-        function updateUI() { const p = document.getElementById('player-container'); if(p) p.style.transform = `translate3d(${pos.x * (currentCellSize + 2) + 2}px, ${pos.y * (currentCellSize + 2) + 2}px, 0)`; }
-        
-        function startCycles() {
-            clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearTimeout(bossAttackTimeout);
-            let laserDOMs = document.querySelectorAll('.cell.laser, .cell.laserv');
-
-            cycleInterval = setInterval(() => {
-                if(!gameActive) return; laserCycle = (laserCycle + 1) % 4; 
-                laserDOMs.forEach(el => { 
-                    el.classList.remove('laser-alert', 'laser-active'); 
-                    if(laserCycle === 1) el.classList.add('laser-alert'); 
-                    if(laserCycle === 2 || laserCycle === 3) { 
-                        el.classList.add('laser-active'); 
-                        if(pos.x === parseInt(el.dataset.x) && pos.y === parseInt(el.dataset.y)) triggerPlayerDeath(); 
-                    } 
-                });
-            }, 350);
-
-            enemyInterval = setInterval(() => {
-                if(!gameActive) return;
-                enemies.forEach(en => {
-                    let currCell = getCell(en.x, en.y);
-                    if(currCell && currCell.ePath) { if(currCell.ePath === 'u') { en.dx = 0; en.dy = -1; } else if(currCell.ePath === 'd') { en.dx = 0; en.dy = 1; } else if(currCell.ePath === 'l') { en.dx = -1; en.dy = 0; } else if(currCell.ePath === 'r') { en.dx = 1; en.dy = 0; } }
-                    let nx = en.x + en.dx, ny = en.y + en.dy; let target = getCell(nx, ny);
-                    if(!target || target.type === 'wall' || target.type === 'boss-wall' || target.type === 'break') { en.dx *= -1; en.dy *= -1; nx = en.x + en.dx; ny = en.y + en.dy; target = getCell(nx, ny); } 
-                    if(target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { en.x = nx; en.y = ny; }
-                    en.el.style.transform = `translate3d(${en.x * (currentCellSize+2) + 2}px, ${en.y * (currentCellSize+2) + 2}px, 0)`; if(en.x === pos.x && en.y === pos.y) triggerPlayerDeath();
-                });
-            }, 120);
-
-            nemesisInterval = setInterval(() => {
-                if(!gameActive || nemesisBots.length === 0) return;
-                nemesisBots.forEach(nem => {
-                    let dx = Math.sign(pos.x - nem.x); let dy = Math.sign(pos.y - nem.y); let moved = false;
-                    if (dx !== 0) { let target = getCell(nem.x + dx, nem.y); if (target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { nem.x += dx; moved = true; } }
-                    if (!moved && dy !== 0) { let target = getCell(nem.x, nem.y + dy); if (target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { nem.y += dy; } }
-                    nem.el.style.transform = `translate3d(${nem.x * (currentCellSize+2) + 2}px, ${nem.y * (currentCellSize+2) + 2}px, 0)`;
-                    const gameBox = document.getElementById('game-container'); gameBox.style.transform = `translate(${Math.random()*4-2}px, ${Math.random()*4-2}px)`; setTimeout(()=> gameBox.style.transform = 'none', 50);
-                    if(nem.x === pos.x && nem.y === pos.y) triggerPlayerDeath();
-                });
-            }, 300);
-
-            if(currentLevelHasBoss) bossAttackLoop();
-        }
-
-        function bossAttackLoop() {
-            if (!gameActive || !currentLevelHasBoss || bossDefeated) return;
-
-            let validCols = []; let validRows = [];
-            for(let i=0; i<activeGridSize; i++) {
-                if(i < bossAreaObj.minX || i > bossAreaObj.maxX) validCols.push(i);
-                if(i < bossAreaObj.minY || i > bossAreaObj.maxY) validRows.push(i);
-            }
-
-            let cols = [validCols[Math.floor(Math.random() * validCols.length)], validCols[Math.floor(Math.random() * validCols.length)]];
-            let rows = [validRows[Math.floor(Math.random() * validRows.length)], validRows[Math.floor(Math.random() * validRows.length)]];
-
-            let warningCells = [];
-            cells.forEach(c => {
-                if (c && (cols.includes(c.x) || rows.includes(c.y))) {
-                    if (c.type !== 'wall' && c.type !== 'boss-wall') warningCells.push(c);
-                }
-            });
-
-            warningCells.forEach(c => c.el.classList.add('laser-warn'));
-
-            bossAttackTimeout = setTimeout(() => {
-                if (!gameActive || bossDefeated) return;
-                warningCells.forEach(c => {
-                    c.el.classList.remove('laser-warn');
-                    c.el.classList.add('laser-active-boss');
-                });
-                let bEl = document.getElementById('boss-entity');
-                let visorEl = document.getElementById('boss-visor');
-                if(bEl) {
-                    bEl.style.borderColor = "#ff0000";
-                    bEl.style.boxShadow = "0 0 40px red, inset 0 0 20px red";
-                }
-                if(visorEl) {
-                    visorEl.style.background = "#ff0000";
-                    visorEl.style.boxShadow = "0 0 30px red";
-                }
-
-                if (warningCells.some(c => c.x === pos.x && c.y === pos.y)) triggerPlayerDeath();
-
-                bossAttackTimeout = setTimeout(() => {
-                    if (!gameActive) return;
-                    warningCells.forEach(c => c.el.classList.remove('laser-active-boss'));
-                    if(bEl) {
-                        bEl.style.borderColor = "var(--boss-color)";
-                        bEl.style.boxShadow = "0 0 30px var(--boss-color), inset 0 0 15px var(--boss-color)";
-                    }
-                    if(visorEl) {
-                        visorEl.style.background = "#fff";
-                        visorEl.style.boxShadow = "0 0 20px var(--boss-color), 0 0 10px #ff0000, inset 0 0 5px #ff0000";
-                    }
-                    bossAttackTimeout = setTimeout(bossAttackLoop, 600);
-                }, 500); 
-            }, 1000); 
-        }
-
-        window.addEventListener('keydown', e => { if(gameActive) { if (e.code === 'Space') { toggleGhost(); e.preventDefault(); } else if (!moving && e.key.includes('Arrow')) { let dx = e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0; let dy = e.key==='ArrowDown'?1:e.key==='ArrowUp'?-1:0; if(reverseActive) { dx *= -1; dy *= -1; } move(dx, dy); } } });
-        window.addEventListener('dblclick', (e) => { if(gameActive) { toggleGhost(); e.preventDefault(); } });
-
-        let touchS = {x:0, y:0}; let lastTap = 0;
-        window.addEventListener('touchstart', e => { touchS.x = e.touches[0].clientX; touchS.y = e.touches[0].clientY; }, {passive: false});
-        window.addEventListener('touchend', e => {
-            if(e.target.closest('.action-btn') || e.target.closest('.tool-btn') || e.target.closest('.mini-btn') || e.target.closest('.arc-ctrl-btn') || e.target.closest('#audio-btn') || e.target.closest('#audio-menu') || e.target.closest('#lang-btn') || e.target.closest('#lang-menu')) return;
-            if(!gameActive || moving) return;
-            const currentTime = new Date().getTime(); const tapLength = currentTime - lastTap; const dx = e.changedTouches[0].clientX - touchS.x, dy = e.changedTouches[0].clientY - touchS.y;
-            if (Math.abs(dx) < 15 && Math.abs(dy) < 15) { if (tapLength < 300 && tapLength > 0) { toggleGhost(); e.preventDefault(); } lastTap = currentTime; return; } lastTap = currentTime;
-            if (Math.abs(dx) > Math.abs(dy)) { if(Math.abs(dx)>25) { let mdx = dx > 0 ? 1 : -1; if(reverseActive) mdx *= -1; move(mdx, 0); } } else { if(Math.abs(dy)>25) { let mdy = dy > 0 ? 1 : -1; if(reverseActive) mdy *= -1; move(0, mdy); } }
-        }, {passive: false});
-
         async function initGame() {
             let savedLang = localStorage.getItem('yesilkare_lang');
-            if(savedLang && i18n[savedLang]) { curLang = savedLang; } else { let lang = (navigator.language || navigator.userLanguage).split('-')[0]; if (Object.keys(i18n).includes(lang)) curLang = lang; else curLang = 'en'; }
+            if(savedLang && i18n[savedLang]) { curLang = savedLang; } else { let lang = (navigator.language || navigator.userLanguage).split('-')[0]; if (Object.keys(i18n).includes(lang)) curLang = lang; else curLang = 'tr'; }
             updateUITexts(); await fetchOnlineCharacters(); await fetchGlobalArcs(); 
             
             const select = document.getElementById('grid-size'); select.innerHTML = '';
@@ -1444,36 +1095,30 @@
             let savedUser = localStorage.getItem('yesilkare_user');
             if (savedUser) {
                 user.name = savedUser;
-                if(savedUser === "Fırat (Admin)") { 
-                    user.isAdmin = true; document.getElementById('admin-arc-btn').style.display='block'; document.getElementById('admin-create-char-btn').style.display='block'; 
-                    user.score = 999999; user.unlocked1 = 1000; user.unlocked2 = 1000; user.unlocked3 = 1000; user.unlocked4 = 1000; user.unlocked5 = 1000; user.unlocked6 = 1000;
-                    user.colors = db_colors.map(c => c.id); user.faces = db_faces.map(f => f.id); user.chars = characters.map(o => o.id); user.effects = db_effects.map(e => e.id);
-                    user.friends = user.friends || [];
-                    startInboxListener();
-                    updatePoints(); showScreen('menu-screen'); 
-                } else {
-                    db.collection("users").doc(user.name).get().then(doc => {
-                        if(doc.exists) {
-                            let d = doc.data(); user.isAdmin = (d.isAdmin === true); if (user.isAdmin) { document.getElementById('admin-arc-btn').style.display='block'; document.getElementById('admin-create-char-btn').style.display='block'; }
-                            user.score = d.score || 0; user.unlocked1 = d.unlocked1 || 0; user.unlocked2 = d.unlocked2 || 0; user.unlocked3 = d.unlocked3 || 0; user.unlocked4 = d.unlocked4 || 0; user.unlocked5 = d.unlocked5 || 0; user.unlocked6 = d.unlocked6 || 0;
-                            user.colors = d.colors || ['c1','c3']; user.faces = d.faces || ['f0']; user.chars = d.chars || ['chr0']; user.effects = d.effects || ['fx0'];
-                            user.activeColor = d.activeColor || 'c1'; user.activeFace = d.activeFace || 'f0'; user.activeChar = d.activeChar || 'chr0'; user.activeEffect = d.activeEffect || 'fx0';
-                            user.friends = d.friends || [];
-                        }
-                        startInboxListener();
-                        updatePoints(); showScreen('menu-screen'); 
-                    }).catch(e => { showScreen('menu-screen'); });
-                }
+                db.collection("users").doc(user.name).get().then(doc => {
+                    if(doc.exists) {
+                        let d = doc.data(); user.isAdmin = (d.isAdmin === true); 
+                        if (user.isAdmin) showAdminButtons(); else hideAdminButtons();
+                        
+                        user.score = d.score || 0; user.unlocked1 = d.unlocked1 || 0; user.unlocked2 = d.unlocked2 || 0; user.unlocked3 = d.unlocked3 || 0; user.unlocked4 = d.unlocked4 || 0; user.unlocked5 = d.unlocked5 || 0; user.unlocked6 = d.unlocked6 || 0;
+                        user.colors = d.colors || ['c1','c3']; user.faces = d.faces || ['f0']; user.chars = d.chars || ['chr0']; user.effects = d.effects || ['fx0'];
+                        user.activeColor = d.activeColor || 'c1'; user.activeFace = d.activeFace || 'f0'; user.activeChar = d.activeChar || 'chr0'; user.activeEffect = d.activeEffect || 'fx0';
+                        user.friends = d.friends || [];
+                    } else hideAdminButtons();
+                    startInboxListener(); updatePoints(); showScreen('menu-screen'); 
+                }).catch(e => { hideAdminButtons(); showScreen('menu-screen'); });
             } else { showScreen('start-screen'); }
         }
 
         function handleRegister() {
             const nick = document.getElementById('username-input').value.trim(); const pass = document.getElementById('password-input').value.trim();
-            if(!nick || !pass) return alert("Kullanıcı adı ve şifre zorunlu! 🤨"); if(nick.toLowerCase() === "fırat" || nick.toLowerCase().includes("admin")) return alert("Bu isimi alamazsın! 🛑");
+            if(!nick || !pass) return alert("Kullanıcı adı ve şifre zorunlu! 🤨"); 
+            if(nick.toLowerCase() === "fırat" || nick.toLowerCase() === "firat" || nick.toLowerCase().includes("admin")) return alert("Bu isimi alamazsın! 🛑");
             db.collection("users").doc(nick).get().then(doc => {
                 if(doc.exists) { alert("Bu isimde bir Mimar zaten var! Başka bir isim bul. 🤨"); } else {
                     user.name = nick; user.pass = pass; user.isAdmin = false; user.score = 0; user.unlocked1 = 0; user.unlocked2 = 0; user.unlocked3 = 0; user.unlocked4 = 0; user.unlocked5 = 0; user.unlocked6 = 0;
                     user.colors = ['c1','c3']; user.faces = ['f0']; user.chars = ['chr0']; user.effects = ['fx0']; user.activeColor = 'c1'; user.activeFace = 'f0'; user.activeChar = 'chr0'; user.activeEffect = 'fx0'; user.friends = [];
+                    hideAdminButtons(); // Misafir güvenliği
                     db.collection("users").doc(nick).set(user); localStorage.setItem('yesilkare_user', user.name); alert("Hesap başarıyla açıldı, hoş geldin Mimar! 🎉"); 
                     startInboxListener(); updatePoints(); showScreen('menu-screen');
                 }
@@ -1483,28 +1128,34 @@
         function handleLogin() {
             const nick = document.getElementById('username-input').value.trim(); const pass = document.getElementById('password-input').value.trim();
             if(!nick || !pass) return alert("Kullanıcı adı ve şifre zorunlu! 🤨");
-            if(nick.toLowerCase() === "fırat" && pass === "TUF14") { 
-                user.name = "Fırat (Admin)"; user.isAdmin = true; document.getElementById('admin-arc-btn').style.display = 'block'; document.getElementById('admin-create-char-btn').style.display = 'block';
-                user.score = 999999; user.unlocked1 = 1000; user.unlocked2 = 1000; user.unlocked3 = 1000; user.unlocked4 = 1000; user.unlocked5 = 1000; user.unlocked6 = 1000;
-                user.colors = db_colors.map(c => c.id); user.faces = db_faces.map(f => f.id); user.chars = characters.map(o => o.id); user.effects = db_effects.map(e => e.id);
-                user.friends = user.friends || [];
-                localStorage.setItem('yesilkare_user', user.name); saveProgress(); startInboxListener(); updatePoints(); showScreen('menu-screen'); return;
+            
+            // DÜZELTME: Admin yetki girişinde Türkçe karakter hassasiyeti sorunu çözüldü
+            if(nick === "Fırat" || nick.toLowerCase() === "fırat" || nick.toLowerCase() === "firat") { 
+                if (pass === "TUF14") {
+                    user.name = "Fırat (Admin)"; user.isAdmin = true; showAdminButtons();
+                    user.score = 999999; user.unlocked1 = 1000; user.unlocked2 = 1000; user.unlocked3 = 1000; user.unlocked4 = 1000; user.unlocked5 = 1000; user.unlocked6 = 1000;
+                    user.colors = db_colors.map(c => c.id); user.faces = db_faces.map(f => f.id); user.chars = characters.map(o => o.id); user.effects = db_effects.map(e => e.id);
+                    user.friends = user.friends || [];
+                    localStorage.setItem('yesilkare_user', user.name); saveProgress(); startInboxListener(); updatePoints(); showScreen('menu-screen'); return;
+                } else return alert("Şifre yanlış! 🛑");
             }
+            
             db.collection("users").doc(nick).get().then(doc => {
                 if(doc.exists) {
                     let d = doc.data();
                     if(d.pass === pass) {
-                        user.name = nick; user.isAdmin = (d.isAdmin === true); if (user.isAdmin) { document.getElementById('admin-arc-btn').style.display = 'block'; document.getElementById('admin-create-char-btn').style.display = 'block'; }
+                        user.name = nick; user.isAdmin = (d.isAdmin === true); 
+                        if (user.isAdmin) showAdminButtons(); else hideAdminButtons();
                         user.score = d.score || 0; user.unlocked1 = d.unlocked1 || 0; user.unlocked2 = d.unlocked2 || 0; user.unlocked3 = d.unlocked3 || 0; user.unlocked4 = d.unlocked4 || 0; user.unlocked5 = d.unlocked5 || 0; user.unlocked6 = d.unlocked6 || 0;
                         user.colors = d.colors || ['c1','c3']; user.faces = d.faces || ['f0']; user.chars = d.chars || ['chr0']; user.effects = d.effects || ['fx0']; user.activeColor = d.activeColor || 'c1'; user.activeFace = d.activeFace || 'f0'; user.activeChar = d.activeChar || 'chr0'; user.activeEffect = d.activeEffect || 'fx0';
                         user.friends = d.friends || [];
                         localStorage.setItem('yesilkare_user', user.name); alert(`Tekrar hoş geldin, ${user.name}! 🚀`); startInboxListener(); updatePoints(); showScreen('menu-screen'); 
-                    } else { alert("Şifre yanlış! 🛑"); }
-                } else { alert("Böyle bir hesap bulunamadı! Kayıt Olmayı dene. 🤨"); }
+                    } else alert("Şifre yanlış! 🛑");
+                } else alert("Böyle bir hesap bulunamadı! Kayıt Olmayı dene. 🤨");
             });
         }
 
-        function loginAsGuest(){ user.name="Misafir_"+Math.floor(Math.random()*999); user.isAdmin=false; user.friends=[]; localStorage.setItem('yesilkare_user', user.name); updatePoints(); showScreen('menu-screen'); }
+        function loginAsGuest(){ user.name="Misafir_"+Math.floor(Math.random()*999); user.isAdmin=false; user.friends=[]; localStorage.setItem('yesilkare_user', user.name); hideAdminButtons(); updatePoints(); showScreen('menu-screen'); }
         function updatePoints(){ document.getElementById('menu-username').innerText=user.name; document.getElementById('username-display').innerText=user.name; document.getElementById('menu-points').innerText=user.score; document.getElementById('total-points').innerText=user.score; }
         
         function showScreen(id){ 
@@ -1515,13 +1166,9 @@
             if(id==='market-screen') { setMarketTab(currentMarketTab); } if(id==='admin-char-screen') renderPreview(); if(id==='online-screen') fetchOnlineLevels(); if(id==='arc-manager-screen') setArcManagerTab(currentManagerArc);
         }
 
-        function closeTutorial() {
-            document.getElementById('tutorial-overlay').classList.add('hidden');
-            gameActive = true; levelStartTime = Date.now();
-            timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100);
-            startCycles();
-        }
+        function closeTutorial() { document.getElementById('tutorial-overlay').classList.add('hidden'); gameActive = true; levelStartTime = Date.now(); timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100); startCycles(); }
 
+        // --- 11. DÜZENLEYİCİ VE ARC YÖNETİMİ ---
         function setArcManagerTab(n) {
             currentManagerArc = n; document.querySelectorAll('#arc-manager-screen .tab-btn').forEach(b => b.classList.remove('active')); document.getElementById('tab-arc-' + n).classList.add('active');
             const list = document.getElementById('arc-manager-list'); list.innerHTML = '';
@@ -1564,7 +1211,6 @@
                     c.style.cursor = 'pointer';
                     c.onclick=()=>{ 
                         currentIdx=i; isTestMode=false; isPlayingOnline=false; currentOnlineLevel=null; 
-                        
                         let shouldPlayBossIntro = d.boss && getLocalizedIntro(n, true) && !introPlayedThisRun;
                         let shouldPlayNormalIntro = i === 0 && getLocalizedIntro(n) && !introPlayedThisRun;
                         
@@ -1576,18 +1222,13 @@
             }); 
         }
 
+        // --- 12. MAĞAZA İŞLEMLERİ ---
         function setMarketTab(t){ 
             currentMarketTab = t; document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); document.getElementById('tab-'+t).classList.add('active');
             const g = document.getElementById('market-grid'); g.innerHTML=''; 
             
             const stage = document.getElementById('effect-preview-stage');
-            if(t === 'effects') {
-                stage.classList.remove('hidden');
-                playEffectPreview(user.activeEffect || 'fx0');
-            } else {
-                stage.classList.add('hidden');
-                clearPreview();
-            }
+            if(t === 'effects') { stage.classList.remove('hidden'); playEffectPreview(user.activeEffect || 'fx0'); } else { stage.classList.add('hidden'); clearPreview(); }
 
             let items = t==='colors' ? db_colors : (t==='faces' ? db_faces : (t==='effects' ? db_effects : characters));
             let userOwned = t==='colors' ? user.colors : (t==='faces' ? user.faces : (t==='effects' ? user.effects : user.chars));
@@ -1596,7 +1237,6 @@
             items.forEach(item=>{ 
                 const owned = userOwned.includes(item.id), active = userActive === item.id;
                 const c=document.createElement('div'); c.className=`skin-card ${active?'active':''}`; 
-                
                 let delBtn = ''; if (user.isAdmin && !['chr0','c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'].includes(item.id) && !['f0','f1','f2','f3','f4','f5','f6','f7','f8','f9'].includes(item.id) && !['fx0','fx1','fx2','fx3','fx4','fx5','fx6','fx7','fx8','fx9','fx10','fx11','fx12'].includes(item.id)) { delBtn = `<div class="delete-btn" onclick="event.stopPropagation(); deleteItem('${item.id}', '${t}')">🗑️</div>`; }
                 
                 let prev = '';
@@ -1604,43 +1244,24 @@
                 else if(t==='faces') { if(item.url && item.url !== 'none') prev = `<div class="skin-prev" style="background:url(${item.url}) center/cover, #fff;"></div>`; else prev = `<div class="skin-prev" style="background:#fff; overflow:hidden;"><div class="kare-yuz ${item.cls}" style="transform:scale(0.6);"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div></div>`; }
                 else if(t==='effects') {
                     let fxIcon = '✨';
-                    if(item.id==='fx0') fxIcon='🚪';
-                    else if(item.id==='fx1') fxIcon='<div style="width:20px;height:20px;background:#000;border-radius:50%;box-shadow:0 0 10px #8a008a;animation:breathe 1s infinite alternate;"></div>';
-                    else if(item.id==='fx2') fxIcon='🕸️';
-                    else if(item.id==='fx3') fxIcon='🕳️';
-                    else if(item.id==='fx4') fxIcon='🪝';
-                    else if(item.id==='fx5') fxIcon='<div style="width:4px;height:25px;background:cyan;box-shadow:0 0 10px cyan;border-radius:50%;"></div>';
-                    else if(item.id==='fx6') fxIcon='⚡';
-                    else if(item.id==='fx7') fxIcon='🌌';
-                    else if(item.id==='fx8') fxIcon='🍂';
-                    else if(item.id==='fx9') fxIcon='💎';
-                    else if(item.id==='fx10') fxIcon='🎇';
-                    else if(item.id==='fx11') fxIcon='🫠';
-                    else if(item.id==='fx12') fxIcon='👾';
+                    if(item.id==='fx0') fxIcon='🚪'; else if(item.id==='fx1') fxIcon='<div style="width:20px;height:20px;background:#000;border-radius:50%;box-shadow:0 0 10px #8a008a;animation:breathe 1s infinite alternate;"></div>'; else if(item.id==='fx2') fxIcon='🕸️'; else if(item.id==='fx3') fxIcon='🕳️'; else if(item.id==='fx4') fxIcon='🪝'; else if(item.id==='fx5') fxIcon='<div style="width:4px;height:25px;background:cyan;box-shadow:0 0 10px cyan;border-radius:50%;"></div>'; else if(item.id==='fx6') fxIcon='⚡'; else if(item.id==='fx7') fxIcon='🌌'; else if(item.id==='fx8') fxIcon='🍂'; else if(item.id==='fx9') fxIcon='💎'; else if(item.id==='fx10') fxIcon='🎇'; else if(item.id==='fx11') fxIcon='🫠'; else if(item.id==='fx12') fxIcon='👾';
                     prev = `<div class="skin-prev" style="background:#111; font-size:1.5rem; display:flex; align-items:center; justify-content:center;">${fxIcon}</div>`;
                 }
                 else { let bStyle = item.body.startsWith('data') ? `url(${item.body}) center/cover` : item.body; let fStyle = item.faceUrl && item.faceUrl !== 'none' ? `<div class="layer" style="background-image:url(${item.faceUrl})"></div>` : `<div class="kare-yuz ${item.face}"><div class="kas sol-kas"></div><div class="kas sag-kas"></div><div class="goz sol-goz"></div><div class="goz sag-goz"></div></div>`; prev = `<div class="skin-prev" style="background:${bStyle}; overflow:hidden;">${fStyle}</div>`; }
                 let creatorTag = item.creator ? `<span style="font-size:0.6rem; color:#aaa; margin-top:-5px; margin-bottom:5px;">Mimar: ${item.creator}</span>` : '';
-                
                 let perkTag = '';
                 if (t === 'chars') { let pObj = perks.find(p => p.type === item.perk); if (pObj && pObj.type !== 'none') { perkTag = `<div style="font-size:0.65rem; color:#f1c40f; margin-bottom:5px; background:rgba(0,0,0,0.5); padding:4px 6px; border-radius:6px;">✨ ${pObj.name}: ${i18n[curLang].perks[pObj.type]}</div>`; } }
                 if (t === 'effects') { perkTag = `<div style="font-size:0.65rem; color:#00ff88; margin-bottom:5px; cursor:pointer; background:#222; padding:3px; border-radius:4px;" onclick="event.stopPropagation(); playEffectPreview('${item.id}');">👁️ İZLE</div>`; }
 
                 c.innerHTML=`${delBtn}${prev}<b style="font-size:0.8rem; margin-bottom:5px;">${item.name}</b>${creatorTag}${perkTag}<div class="action-btn ${active?'':'orange-btn'}" style="padding:8px; font-size:0.7rem; margin-top:auto; cursor:pointer;" onclick="buyItem('${item.id}','${t}', ${item.price||0})">${active?'SEÇİLDİ':(owned?'SEÇ':(item.price||0)+' 💰')}</div>`; 
-                
-                if(t === 'effects') { c.style.cursor = 'pointer'; c.onclick = () => playEffectPreview(item.id); }
-                g.appendChild(c); 
+                if(t === 'effects') { c.style.cursor = 'pointer'; c.onclick = () => playEffectPreview(item.id); } g.appendChild(c); 
             }); 
         }
 
         function buyItem(id, t_type, p){ 
             if(t_type==='colors') { if(user.colors.includes(id)) { user.activeColor=id; user.activeChar='none'; } else if(user.score>=p){ user.score-=p; user.colors.push(id); user.activeColor=id; user.activeChar='none'; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } } 
             else if(t_type==='faces') { if(user.faces.includes(id)) { user.activeFace=id; user.activeChar='none'; } else if(user.score>=p){ user.score-=p; user.faces.push(id); user.activeFace=id; user.activeChar='none'; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } }
-            else if(t_type==='effects') { 
-                if(user.effects.includes(id)) { user.activeEffect=id; playEffectPreview(id); }
-                else if(user.score>=p){ user.score-=p; user.effects.push(id); user.activeEffect=id; updatePoints(); saveProgress(); playEffectPreview(id); } 
-                else { alert(t('low_gold')); return; } 
-            }
+            else if(t_type==='effects') { if(user.effects.includes(id)) { user.activeEffect=id; playEffectPreview(id); } else if(user.score>=p){ user.score-=p; user.effects.push(id); user.activeEffect=id; updatePoints(); saveProgress(); playEffectPreview(id); } else { alert(t('low_gold')); return; } }
             else { if(user.chars.includes(id)) user.activeChar=id; else if(user.score>=p){ user.score-=p; user.chars.push(id); user.activeChar=id; updatePoints(); saveProgress(); } else { alert(t('low_gold')); return; } } 
             setMarketTab(t_type); 
         }
@@ -1667,13 +1288,48 @@
             try { alert("Karakter buluta yükleniyor... ⏳"); const docRef = await db.collection("market_characters").add(newChar); newChar.id = docRef.id; characters.push(newChar); user.chars.push(newChar.id); user.activeChar = newChar.id; saveProgress(); alert("Tüm Dünya İçin Markete Yayınlandı! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı hatası!"); }
         }
 
+        // --- 13. OYUN İÇİ HARİTA DÜZENLEYİCİSİ (EDİTÖR) ---
         function openEditor(){canPublish = false; document.getElementById('reverse-timer').value=''; showScreen('editor-screen'); editorW=[]; editorB=[]; editorBH=[]; editorBV=[]; editorS={x:0, y:0}; editorSpikes=[]; editorPM=[]; editorPT=[]; editorLaser=[]; editorLaserV=[]; editorEnemy=[]; editorNemesis=[]; editorEPaths=[]; editorBoss=null; editorCapsules=[]; levelVerified=false; document.getElementById('publish-btn').style.opacity="0.5"; document.getElementById('grid-size').value = "5"; renderEditor(); }
-        
         function setTool(t_tool){ selectedTool=t_tool; document.querySelectorAll('.tool-btn').forEach(b=>b.classList.remove('active')); if(event && event.target) event.target.classList.add('active'); }
         
         function exportMapCode() { const sz = parseInt(document.getElementById('grid-size').value); const mapData = { grid: sz, revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start: {x: editorS.x || 0, y: editorS.y || 0}, walls: editorW, breakables: editorB, bridgesH: editorBH, bridgesV: editorBV, spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, lasersV: editorLaserV, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths, capsules: editorCapsules }; if(editorBoss) mapData.boss = editorBoss; const code = JSON.stringify(mapData); prompt("Harita Kodun:", code); }
-        function importMapCode() { const code = prompt("Harita kodu:"); if(!code) return; try { const mapData = JSON.parse(code); document.getElementById('grid-size').value = mapData.grid || 5; document.getElementById('reverse-timer').value = mapData.revTime || ''; const getObj = (w) => w.x !== undefined ? {x: w.x, y: w.y} : {x: w[0] || 0, y: w[1] || 0}; editorS = mapData.start?.x !== undefined ? {x: mapData.start.x, y: mapData.start.y} : {x: mapData.start?.[0] || 0, y: mapData.start?.[1] || 0}; editorW = (mapData.walls || []).map(getObj); editorB = (mapData.breakables || []).map(getObj); editorBH = (mapData.bridgesH || []).map(getObj); editorBV = (mapData.bridgesV || []).map(getObj); editorSpikes = mapData.spikes || []; editorPM = mapData.portalsM || []; editorPT = mapData.portalsT || []; editorLaser = mapData.lasers || []; editorLaserV = mapData.lasersV || []; editorEnemy = mapData.enemies || []; editorNemesis = mapData.nemesis || []; editorEPaths = mapData.enemyPaths || []; editorCapsules = mapData.capsules || []; editorBoss = mapData.boss ? {x: mapData.boss.x, y: mapData.boss.y} : null; renderEditor(); alert("Harita başarıyla yüklendi! 🛠️"); } catch(e) { alert("Hatalı kod! 🤨"); } }
-
+        function importMapCode() { 
+            const code = prompt("Harita kodu:"); 
+            if(!code) return; 
+            try { 
+                const mapData = JSON.parse(code); 
+                document.getElementById('grid-size').value = mapData.grid || 5; 
+                document.getElementById('reverse-timer').value = mapData.revTime || ''; 
+                
+                // Mucizevi Çevirmen: Eski [x, y] formatını yeni {x: .., y: ..} formatına çevirir
+                const getObj = (w) => w.x !== undefined ? {x: w.x, y: w.y} : {x: w[0] || 0, y: w[1] || 0}; 
+                
+                editorS = mapData.start?.x !== undefined ? {x: mapData.start.x, y: mapData.start.y} : {x: mapData.start?.[0] || 0, y: mapData.start?.[1] || 0}; 
+                
+                editorW = (mapData.walls || []).map(getObj); 
+                editorB = (mapData.breakables || []).map(getObj); 
+                editorBH = (mapData.bridgesH || []).map(getObj); 
+                editorBV = (mapData.bridgesV || []).map(getObj); 
+                
+                // İŞTE HATAYI ÇÖZEN KISIM: Lazer, Portal, Kapsül ve Nemesis de artık filtreden geçiyor!
+                editorPM = (mapData.portalsM || []).map(getObj); 
+                editorPT = (mapData.portalsT || []).map(getObj); 
+                editorLaser = (mapData.lasers || []).map(getObj); 
+                editorLaserV = (mapData.lasersV || []).map(getObj); 
+                editorNemesis = (mapData.nemesis || []).map(getObj); 
+                editorCapsules = (mapData.capsules || []).map(getObj); 
+                
+                editorSpikes = mapData.spikes || []; 
+                editorEnemy = (mapData.enemies || []).map(e => e.x !== undefined ? e : {x: e[0], y: e[1], dx: 1, dy: 0}); 
+                editorEPaths = mapData.enemyPaths || []; 
+                editorBoss = mapData.boss ? (mapData.boss.x !== undefined ? {x: mapData.boss.x, y: mapData.boss.y} : {x: mapData.boss[0], y: mapData.boss[1]}) : null; 
+                
+                renderEditor(); 
+                alert("Harita başarıyla yeni sisteme uyarlandı ve yüklendi! 🛠️"); 
+            } catch(e) { 
+                alert("Hatalı kod! 🤨"); 
+            } 
+        }
         function renderEditor(){ 
             const sz=parseInt(document.getElementById('grid-size').value); const c=document.getElementById('editor-container'); c.innerHTML=''; 
             let maxW = window.innerWidth * 0.9; let maxH = window.innerHeight * 0.45; currentCellSize = Math.min(32, Math.floor(maxW / sz) - 2, Math.floor(maxH / sz) - 2); if(currentCellSize < 12) currentCellSize = 12; 
@@ -1692,20 +1348,15 @@
                 
                 if(checkP(editorCapsules, x, y)) d.classList.add('capsule-cell');
 
-                if(editorBoss && editorBoss.x === x && editorBoss.y === y) {
-                    d.innerHTML = '<div style="width:100%; height:100%; background:#bc13fe; border:2px solid #fff; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:bold; color:#000;">BOS</div>';
-                }
+                if(editorBoss && editorBoss.x === x && editorBoss.y === y) { d.innerHTML = '<div style="width:100%; height:100%; background:#bc13fe; border:2px solid #fff; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:0.6rem; font-weight:bold; color:#000;">BOS</div>'; }
 
                 editorEPaths.forEach(p => { if(p.x===x && p.y===y) d.classList.add(`epath-${p.dir}`); }); editorSpikes.forEach(sp => { if(sp.x===x && sp.y===y) d.classList.add(`spike-${sp.dir}`); }); 
                 
                d.onclick=()=>{ 
-                    levelVerified=false; 
-                    canPublish = false; 
-                    document.getElementById('publish-btn').style.opacity="0.5"; 
+                    levelVerified=false; canPublish = false; document.getElementById('publish-btn').style.opacity="0.5"; 
                     if(selectedTool==='wall') editorW.push({x,y}); else if(selectedTool==='break') editorB.push({x,y}); else if(selectedTool==='bh') editorBH.push({x,y}); else if(selectedTool==='bv') editorBV.push({x,y}); else if(selectedTool==='start') editorS={x,y}; 
                     else if(selectedTool==='portal-m') editorPM=[{x,y}]; else if(selectedTool==='portal-t') editorPT=[{x,y}]; else if(selectedTool==='laser') editorLaser.push({x,y}); else if(selectedTool==='laserv') editorLaserV.push({x,y}); else if(selectedTool==='enemy') editorEnemy.push({x,y,dx:1,dy:0}); else if(selectedTool==='nemesis') editorNemesis.push({x,y}); else if(selectedTool==='eu') editorEPaths.push({x,y,dir:'u'}); else if(selectedTool==='ed') editorEPaths.push({x,y,dir:'d'}); else if(selectedTool==='el') editorEPaths.push({x,y,dir:'l'}); else if(selectedTool==='er') editorEPaths.push({x,y,dir:'r'});
-                    else if(selectedTool==='boss') editorBoss={x,y};
-                    else if(selectedTool==='capsule') editorCapsules.push({x,y});
+                    else if(selectedTool==='boss') editorBoss={x,y}; else if(selectedTool==='capsule') editorCapsules.push({x,y});
                     else if(['st','sb','sl','sr'].includes(selectedTool)) editorSpikes.push({x, y, dir: selectedTool.charAt(1)}); 
                     else if(selectedTool==='eraser'){ 
                         const filterP = (w) => (w.x ?? w[0]) !== x || (w.y ?? w[1]) !== y;
@@ -1716,16 +1367,6 @@
                     renderEditor(); 
                 }; c.appendChild(d); 
             } 
-        }
-
-        function tryShowInterstitial() {
-            const now = Date.now();
-            if (now - lastAdTime >= 60000) { 
-                lastAdTime = now;
-                showInterstitial();
-                return true;
-            }
-            return false;
         }
 
         function testDesign(){ canPublish = false;
@@ -1741,6 +1382,21 @@
         
         function returnToEditor() { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); clearTimeout(bossAttackTimeout); showScreen('editor-screen'); }
 
+        async function saveDesign(){ 
+            if(!canPublish && !user.isAdmin) { alert("MİMAR! Önce haritayı TEST ET modunda bitirerek doğrulamalısın! 🤨"); return; }
+            let ans = "7"; if(user.isAdmin) { ans = prompt("Mimar Fırat, nereye yayınlıyoruz?\n(1-6: Global Arc, 7: Online Havuz):", "1"); }
+            if (!ans || !['1','2','3','4','5','6','7'].includes(ans)) { alert("İptal edildi! 🤨"); return; }
+            let mapName = "İsimsiz Harita"; if (ans === '7') { mapName = prompt("Haritanın Adı Ne Olsun?:", "Zorlu Parkur") || "İsimsiz Harita"; }
+
+            const convertCoords = (arr) => arr.map(p => ({x: p.x ?? p[0], y: p.y ?? p[1]})); 
+            const lvl = { name: mapName, grid: parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start: {x: editorS.x ?? editorS[0] ?? 0, y: editorS.y ?? editorS[1] ?? 0}, walls: convertCoords(editorW), breakables: convertCoords(editorB), bridgesH: convertCoords(editorBH), bridgesV: convertCoords(editorBV), spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, lasersV: editorLaserV, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths, capsules: convertCoords(editorCapsules), creator: user.name, ts: Date.now(), likes: 0, plays: 0, records: [] }; 
+            if(editorBoss) lvl.boss = editorBoss;
+
+            if (ans === '7') { alert("Online Havuza gönderiliyor... 🌍⏳"); lvl.category = "online"; try { await db.collection("levels").add(lvl); alert("Başarıyla eklendi! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı Hatası!"); } } 
+            else { if(!globalMasterArcs[ans]) globalMasterArcs[ans] = []; globalMasterArcs[ans].push(lvl); await saveGlobalArcs(); alert(`ARC ${ans} sunucusuna eklendi!`); showScreen('menu-screen'); }
+        }
+
+        // --- 14. DİNAMİK SİBER AĞ HAVUZU ---
         function openLevelDetail(lvlString, docId) {
             currentOnlineLevel = JSON.parse(decodeURIComponent(lvlString)); currentOnlineLevel.docId = docId; 
             document.getElementById('detail-title').innerText = currentOnlineLevel.name || "İsimsiz Harita";
@@ -1777,34 +1433,23 @@
             const list = document.getElementById('online-list'); list.innerHTML = 'Sinyaller taranıyor... ⏳'; 
             try { 
                 let qs;
-                if(currentOnlineView === 'mine') {
-                    qs = await db.collection("levels").where("creator", "==", user.name).limit(40).get();
-                } else if(currentOnlineView === 'friends') {
-                    if(!user.friends || user.friends.length === 0) {
-                        list.innerHTML = "<p style='color:#aaa; text-align:center; grid-column: span 2;'>Ağında kimse yok. 'Mimar Bul' kısmından arkadaşlarını ekle!</p>";
-                        return;
-                    }
+                if(currentOnlineView === 'mine') { qs = await db.collection("levels").where("creator", "==", user.name).limit(40).get(); } 
+                else if(currentOnlineView === 'friends') {
+                    if(!user.friends || user.friends.length === 0) { list.innerHTML = "<p style='color:#aaa; text-align:center; grid-column: span 2;'>Ağında kimse yok. 'Mimar Bul' kısmından arkadaşlarını ekle!</p>"; return; }
                     const allQs = await db.collection("levels").where("category", "==", "online").get();
-                    let arrF = [];
-                    allQs.forEach(doc => { let d = doc.data(); if(user.friends.includes(d.creator)) arrF.push({...d, id: doc.id}); });
+                    let arrF = []; allQs.forEach(doc => { let d = doc.data(); if(user.friends.includes(d.creator)) arrF.push({...d, id: doc.id}); });
                     qs = { docs: arrF.map(d => ({ data: () => d, id: d.id })) }; 
-                } else {
-                    qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); 
-                }
+                } else { qs = await db.collection("levels").where("category", "==", "online").limit(40).get(); }
 
                 let arr = []; 
-                if(currentOnlineView === 'friends') arr = qs.docs.map(d=>d.data());
-                else qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); 
-                
+                if(currentOnlineView === 'friends') arr = qs.docs.map(d=>d.data()); else qs.forEach(doc => arr.push({...doc.data(), id: doc.id})); 
                 arr.sort((a,b) => b.ts - a.ts); list.innerHTML = ''; 
                 if(arr.length === 0) list.innerHTML = "<p style='color:#aaa; text-align:center; grid-column: span 2;'>Sinyal bulunamadı!</p>"; 
                 
                 arr.forEach(d => { 
                     const c = document.createElement('div'); c.className = 'skin-card'; 
                     let adminDelBtn = "";
-                    if(user.isAdmin || currentOnlineView === 'mine') {
-                        adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`;
-                    }
+                    if(user.isAdmin || currentOnlineView === 'mine') { adminDelBtn = `<div class="delete-btn" style="top:5px; right:5px; background:#ff4757;" onclick="event.stopPropagation(); deleteOnlineMap('${d.id}')">🗑️</div>`; }
                     const getC = (w) => w.x !== undefined ? [w.x, w.y] : [w[0], w[1]];
                     const walls = (d.walls || []).map(getC); const brH = (d.bridgesH || []).map(getC); const brV = (d.bridgesV || []).map(getC); const breaks = (d.breakables || []).map(getC); const spikes = d.spikes || []; const nem = d.nemesis || []; const caps = (d.capsules || []).map(getC);
                     let lvl = {...d, walls, bridgesH: brH, bridgesV: brV, breakables: breaks, spikes, nemesis: nem, capsules: caps}; 
@@ -1815,8 +1460,7 @@
                     for(let i=0; i<d.grid*d.grid; i++){ 
                         let cx = i % d.grid; let cy = Math.floor(i / d.grid); let bg = '#ecf0f1'; 
                         if(walls.some(w => w[0]===cx && w[1]===cy)) bg = '#222'; else if(breaks.some(w => w[0]===cx && w[1]===cy)) bg = '#5d4037'; else if(brH.some(w => w[0]===cx && w[1]===cy) || brV.some(w => w[0]===cx && w[1]===cy)) bg = '#000'; else if(sPos[0]===cx && sPos[1]===cy) bg = '#00ff88'; 
-                        if(d.boss && d.boss.x === cx && d.boss.y === cy) bg = '#bc13fe';
-                        else if(caps.some(w => w[0]===cx && w[1]===cy)) bg = '#00e5ff';
+                        if(d.boss && d.boss.x === cx && d.boss.y === cy) bg = '#bc13fe'; else if(caps.some(w => w[0]===cx && w[1]===cy)) bg = '#00e5ff';
                         miniHTML += `<div style="background:${bg}; border-radius:2px;"></div>`; 
                     } miniHTML += `</div>`;
                     
@@ -1833,21 +1477,162 @@
             } catch(e) { console.error("Hata:", e); list.innerHTML="Ağ Hatası!"; } 
         }
 
-        async function saveDesign(){ 
-            if(!canPublish && !user.isAdmin) {
-                alert("MİMAR! Önce haritayı TEST ET modunda bitirerek doğrulamalısın! 🤨");
-                return;
+        async function deleteOnlineMap(mapId) {
+            if(!confirm("Bu haritayı sonsuza dek imha etmek istediğine emin misin Baş Mimar? 🗑️")) return;
+            try { await db.collection("levels").doc(mapId).delete(); alert("Harita sistemden silindi. 🧹"); fetchOnlineLevels(); } catch(e) { alert("Silme başarısız: " + e.message); }
+        }
+
+        // --- 15. OYUN FİZİKLERİ VE MEKANİKLER (KLAVYE HAREKETİ DÜZELTİLDİ) ---
+        function toggleGhost() {
+            if(!gameActive) return; const ch = characters.find(c => c.id === user.activeChar) || characters[0]; if (ch.perk !== 'ghost') return;
+            ghostActive = !ghostActive; const pb = document.getElementById('player-body'); const ind = document.getElementById('ghost-indicator');
+            if (ghostActive) { pb.classList.add('ghost-active'); ind.classList.remove('hidden'); } else { pb.classList.remove('ghost-active'); ind.classList.add('hidden'); }
+        }
+
+        // GÜNCELLENDİ: OK TUŞLARI VE W-A-S-D DESTEĞİ
+        window.addEventListener('keydown', e => { 
+            if(gameActive && !moving) { 
+                if (e.code === 'Space') { 
+                    toggleGhost(); e.preventDefault(); 
+                } else {
+                    let dx = 0, dy = 0;
+                    if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') dx = 1;
+                    else if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') dx = -1;
+                    else if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') dy = 1;
+                    else if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') dy = -1;
+                    
+                    if (dx !== 0 || dy !== 0) {
+                        e.preventDefault(); 
+                        if(reverseActive) { dx *= -1; dy *= -1; } 
+                        move(dx, dy); 
+                    }
+                } 
+            } 
+        });
+
+        async function move(dx, dy) {
+            if (!gameActive || moving) return; moving = true;
+            const ch = characters.find(c => c.id === user.activeChar) || characters[0]; const speed = ch.perk === 'hyperspeed' ? 15 : (ch.perk === 'speed' ? 40 : 65);
+
+            while (gameActive) {
+                let cCell = getCell(pos.x, pos.y); if(!cCell) break;
+                if((dy !== 0 && cCell.type === 'bh') || (dx !== 0 && cCell.type === 'bv')) { if(ch.perk !== 'ghost' || !ghostActive) break; }
+
+                let hitSpike = false; let nx = pos.x + dx, ny = pos.y + dy; let nCell = getCell(nx, ny);
+                if(nCell) { if(dx===1 && nCell.spikes.includes('l')) hitSpike=true; if(dx===-1 && nCell.spikes.includes('r')) hitSpike=true; if(dy===1 && nCell.spikes.includes('t')) hitSpike=true; if(dy===-1 && nCell.spikes.includes('b')) hitSpike=true; }
+
+                if(hitSpike) { 
+                    if(ch.perk === 'armor' && shieldActive) { shieldActive = false; } 
+                    else { const p = document.getElementById('player-container'); p.style.transform=`translate3d(${(pos.x + dx*0.4)*(currentCellSize+2) + 2}px, ${(pos.y + dy*0.4)*(currentCellSize+2) + 2}px, 0)`; die(); return; } 
+                }
+
+                if (nx >= 0 && nx < activeGridSize && ny >= 0 && ny < activeGridSize && nCell) {
+                    if (nCell.type === 'wall') break;
+                    if (nCell.type === 'boss-wall' || (nCell.el && nCell.el.classList.contains('laser-active-boss'))) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
+                    if (nCell.type === 'laser' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
+                    if (nCell.type === 'laserv' && (laserCycle === 2 || laserCycle === 3)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
+                    if (enemies.some(e => e.x === nx && e.y === ny)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
+                    if (nemesisBots.some(n => n.x === nx && n.y === ny)) { pos.x = nx; pos.y = ny; updateUI(); triggerPlayerDeath(); return; }
+
+                    if((dy !== 0 && nCell.type==='bh') || (dx !== 0 && nCell.type==='bv')) { if(ch.perk !== 'ghost' || !ghostActive) break; }
+                    
+                    if (nCell.hasCapsule && !nCell.capsuleCollected) {
+                        nCell.capsuleCollected = true; nCell.el.classList.remove('capsule-cell'); collectedCapsules++; user.score += 100; updatePoints();
+                        if (currentLevelHasBoss) document.getElementById('capsule-count').innerText = `${collectedCapsules}/${totalCapsules}`;
+                    }
+
+                    if (nCell.type === 'break') {
+                        let extraSpikeClasses = Array.from(nCell.el.classList).filter(c => c.startsWith('spike-')).join(' ');
+                        if (ch.perk === 'breaker') { nCell.type = 'floor'; nCell.el.className = 'cell ' + extraSpikeClasses; } 
+                        else { if(nCell.hp > 1){ nCell.hp--; nCell.el.classList.add('breakable-cracked'); break; } else { nCell.type='floor'; nCell.el.className='cell ' + extraSpikeClasses; } }
+                    }
+                    
+                    if (!nCell.painted && nCell.type !== 'bh' && nCell.type !== 'bv' && nCell.type !== 'portal-m' && nCell.type !== 'portal-t') {
+                        nCell.painted = true; nCell.el.classList.add('painted');
+                        let activeBgVal = user.activeChar !== 'none' ? ch.body : (db_colors.find(x => x.id === user.activeColor) || db_colors[0]).val;
+                        if (activeBgVal.startsWith('data')) { nCell.el.style.backgroundImage = `url(${activeBgVal})`; nCell.el.style.backgroundSize = 'cover'; nCell.el.style.backgroundPosition = 'center'; nCell.el.style.backgroundColor = 'transparent'; } else { nCell.el.style.background = activeBgVal; }
+                    }
+
+                    pos.x = nx; pos.y = ny; updateUI(); await new Promise(r => setTimeout(r, speed));
+
+                    if (nCell.type === 'portal-m' || nCell.type === 'portal-t') {
+                        let targetType = nCell.type === 'portal-m' ? 'portal-t' : 'portal-m'; let target = cells.find(c => c && c.type === targetType); 
+                        if(target) { pos.x = target.x; pos.y = target.y; const p = document.getElementById('player-container'); p.style.transition = 'none'; updateUI(); void p.offsetWidth; p.style.transition = 'transform 0.1s linear'; }
+                    }
+                } else break;
             }
-            let ans = "7"; if(user.isAdmin) { ans = prompt("Mimar Fırat, nereye yayınlıyoruz?\n(1-6: Global Arc, 7: Online Havuz):", "1"); }
-            if (!ans || !['1','2','3','4','5','6','7'].includes(ans)) { alert("İptal edildi! 🤨"); return; }
-            let mapName = "İsimsiz Harita"; if (ans === '7') { mapName = prompt("Haritanın Adı Ne Olsun?:", "Zorlu Parkur") || "İsimsiz Harita"; }
+            moving = false; checkWin();
+        }
 
-            const convertCoords = (arr) => arr.map(p => ({x: p.x ?? p[0], y: p.y ?? p[1]})); 
-            const lvl = { name: mapName, grid: parseInt(document.getElementById('grid-size').value), revTime: parseInt(document.getElementById('reverse-timer').value) || 0, start: {x: editorS.x ?? editorS[0] ?? 0, y: editorS.y ?? editorS[1] ?? 0}, walls: convertCoords(editorW), breakables: convertCoords(editorB), bridgesH: convertCoords(editorBH), bridgesV: convertCoords(editorBV), spikes: editorSpikes, portalsM: editorPM, portalsT: editorPT, lasers: editorLaser, lasersV: editorLaserV, enemies: editorEnemy, nemesis: editorNemesis, enemyPaths: editorEPaths, capsules: convertCoords(editorCapsules), creator: user.name, ts: Date.now(), likes: 0, plays: 0, records: [] }; 
-            if(editorBoss) lvl.boss = editorBoss;
+        function updateUI() { const p = document.getElementById('player-container'); if(p) p.style.transform = `translate3d(${pos.x * (currentCellSize + 2) + 2}px, ${pos.y * (currentCellSize + 2) + 2}px, 0)`; }
+        
+        function startCycles() {
+            clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearTimeout(bossAttackTimeout);
+            let laserDOMs = document.querySelectorAll('.cell.laser, .cell.laserv');
 
-            if (ans === '7') { alert("Online Havuza gönderiliyor... 🌍⏳"); lvl.category = "online"; try { await db.collection("levels").add(lvl); alert("Başarıyla eklendi! 🌍🚀"); showScreen('menu-screen'); } catch(e) { alert("Bağlantı Hatası!"); } } 
-            else { if(!globalMasterArcs[ans]) globalMasterArcs[ans] = []; globalMasterArcs[ans].push(lvl); await saveGlobalArcs(); alert(`ARC ${ans} sunucusuna eklendi!`); showScreen('menu-screen'); }
+            cycleInterval = setInterval(() => {
+                if(!gameActive) return; laserCycle = (laserCycle + 1) % 4; 
+                laserDOMs.forEach(el => { 
+                    el.classList.remove('laser-alert', 'laser-active'); 
+                    if(laserCycle === 1) el.classList.add('laser-alert'); 
+                    if(laserCycle === 2 || laserCycle === 3) { el.classList.add('laser-active'); if(pos.x === parseInt(el.dataset.x) && pos.y === parseInt(el.dataset.y)) triggerPlayerDeath(); } 
+                });
+            }, 350);
+
+            enemyInterval = setInterval(() => {
+                if(!gameActive) return;
+                enemies.forEach(en => {
+                    let currCell = getCell(en.x, en.y);
+                    if(currCell && currCell.ePath) { if(currCell.ePath === 'u') { en.dx = 0; en.dy = -1; } else if(currCell.ePath === 'd') { en.dx = 0; en.dy = 1; } else if(currCell.ePath === 'l') { en.dx = -1; en.dy = 0; } else if(currCell.ePath === 'r') { en.dx = 1; en.dy = 0; } }
+                    let nx = en.x + en.dx, ny = en.y + en.dy; let target = getCell(nx, ny);
+                    if(!target || target.type === 'wall' || target.type === 'boss-wall' || target.type === 'break') { en.dx *= -1; en.dy *= -1; nx = en.x + en.dx; ny = en.y + en.dy; target = getCell(nx, ny); } 
+                    if(target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { en.x = nx; en.y = ny; }
+                    en.el.style.transform = `translate3d(${en.x * (currentCellSize+2) + 2}px, ${en.y * (currentCellSize+2) + 2}px, 0)`; if(en.x === pos.x && en.y === pos.y) triggerPlayerDeath();
+                });
+            }, 120);
+
+            nemesisInterval = setInterval(() => {
+                if(!gameActive || nemesisBots.length === 0) return;
+                nemesisBots.forEach(nem => {
+                    let dx = Math.sign(pos.x - nem.x); let dy = Math.sign(pos.y - nem.y); let moved = false;
+                    if (dx !== 0) { let target = getCell(nem.x + dx, nem.y); if (target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { nem.x += dx; moved = true; } }
+                    if (!moved && dy !== 0) { let target = getCell(nem.x, nem.y + dy); if (target && target.type !== 'wall' && target.type !== 'boss-wall' && target.type !== 'break') { nem.y += dy; } }
+                    nem.el.style.transform = `translate3d(${nem.x * (currentCellSize+2) + 2}px, ${nem.y * (currentCellSize+2) + 2}px, 0)`;
+                    const gameBox = document.getElementById('game-container'); gameBox.style.transform = `translate(${Math.random()*4-2}px, ${Math.random()*4-2}px)`; setTimeout(()=> gameBox.style.transform = 'none', 50);
+                    if(nem.x === pos.x && nem.y === pos.y) triggerPlayerDeath();
+                });
+            }, 300);
+
+            if(currentLevelHasBoss) bossAttackLoop();
+        }
+
+        function bossAttackLoop() {
+            if (!gameActive || !currentLevelHasBoss || bossDefeated) return;
+            let validCols = []; let validRows = [];
+            for(let i=0; i<activeGridSize; i++) { if(i < bossAreaObj.minX || i > bossAreaObj.maxX) validCols.push(i); if(i < bossAreaObj.minY || i > bossAreaObj.maxY) validRows.push(i); }
+            let cols = [validCols[Math.floor(Math.random() * validCols.length)], validCols[Math.floor(Math.random() * validCols.length)]];
+            let rows = [validRows[Math.floor(Math.random() * validRows.length)], validRows[Math.floor(Math.random() * validRows.length)]];
+
+            let warningCells = []; cells.forEach(c => { if (c && (cols.includes(c.x) || rows.includes(c.y))) { if (c.type !== 'wall' && c.type !== 'boss-wall') warningCells.push(c); } });
+            warningCells.forEach(c => c.el.classList.add('laser-warn'));
+
+            bossAttackTimeout = setTimeout(() => {
+                if (!gameActive || bossDefeated) return;
+                warningCells.forEach(c => { c.el.classList.remove('laser-warn'); c.el.classList.add('laser-active-boss'); });
+                let bEl = document.getElementById('boss-entity'); let visorEl = document.getElementById('boss-visor');
+                if(bEl) { bEl.style.borderColor = "#ff0000"; bEl.style.boxShadow = "0 0 40px red, inset 0 0 20px red"; }
+                if(visorEl) { visorEl.style.background = "#ff0000"; visorEl.style.boxShadow = "0 0 30px red"; }
+
+                if (warningCells.some(c => c.x === pos.x && c.y === pos.y)) triggerPlayerDeath();
+
+                bossAttackTimeout = setTimeout(() => {
+                    if (!gameActive) return;
+                    warningCells.forEach(c => c.el.classList.remove('laser-active-boss'));
+                    if(bEl) { bEl.style.borderColor = "var(--boss-color)"; bEl.style.boxShadow = "0 0 30px var(--boss-color), inset 0 0 15px var(--boss-color)"; }
+                    if(visorEl) { visorEl.style.background = "#fff"; visorEl.style.boxShadow = "0 0 20px var(--boss-color), 0 0 10px #ff0000, inset 0 0 5px #ff0000"; }
+                    bossAttackTimeout = setTimeout(bossAttackLoop, 600);
+                }, 500); 
+            }, 1000); 
         }
 
         function loadLevel(d){
@@ -1884,27 +1669,17 @@
             cells = new Array(d.grid * d.grid); enemies=[]; nemesisBots=[]; pos={x: d.start?.x ?? d.start?.[0] ?? 0, y: d.start?.y ?? d.start?.[1] ?? 0}; const spk = d.spikes || [];
             const checkP = (arr, x, y) => arr?.some(w => (w.x ?? w[0]) === x && (w.y ?? w[1]) === y);
 
-            currentLevelHasBoss = !!d.boss;
-            bossDefeated = false;
-            totalCapsules = d.capsules ? d.capsules.length : 0;
-            collectedCapsules = 0;
+            currentLevelHasBoss = !!d.boss; bossDefeated = false; totalCapsules = d.capsules ? d.capsules.length : 0; collectedCapsules = 0;
 
             if (currentLevelHasBoss) {
                 bossAreaObj = { minX: d.boss.x - 1, maxX: d.boss.x + 1, minY: d.boss.y - 1, maxY: d.boss.y + 1 };
-                let bEl = document.createElement('div');
-                bEl.id = 'boss-entity';
-                bEl.style.width = `${(currentCellSize * 3) + (2 * 2)}px`;
-                bEl.style.height = `${(currentCellSize * 3) + (2 * 2)}px`;
+                let bEl = document.createElement('div'); bEl.id = 'boss-entity';
+                bEl.style.width = `${(currentCellSize * 3) + (2 * 2)}px`; bEl.style.height = `${(currentCellSize * 3) + (2 * 2)}px`;
                 bEl.style.left = `${(bossAreaObj.minX * currentCellSize) + (bossAreaObj.minX * 2) + 2}px`;
                 bEl.style.top = `${(bossAreaObj.minY * currentCellSize) + (bossAreaObj.minY * 2) + 2}px`;
-                bEl.innerHTML = '<div id="boss-visor"></div>';
-                container.appendChild(bEl);
-                
-                document.getElementById('capsule-hud').classList.remove('hidden');
-                document.getElementById('capsule-count').innerText = `0/${totalCapsules}`;
-            } else {
-                document.getElementById('capsule-hud').classList.add('hidden');
-            }
+                bEl.innerHTML = '<div id="boss-visor"></div>'; container.appendChild(bEl);
+                document.getElementById('capsule-hud').classList.remove('hidden'); document.getElementById('capsule-count').innerText = `0/${totalCapsules}`;
+            } else { document.getElementById('capsule-hud').classList.add('hidden'); }
 
             for(let y=0; y<d.grid; y++){ for(let x=0; x<d.grid; x++){
                 const isW = checkP(d.walls, x, y), isB = checkP(d.breakables, x, y), isBH = checkP(d.bridgesH, x, y), isBV = checkP(d.bridgesV, x, y), isPM=checkP(d.portalsM, x, y), isPT=checkP(d.portalsT, x, y), isL=checkP(d.lasers, x, y), isLV=checkP(d.lasersV, x, y);                
@@ -1912,18 +1687,9 @@
                 let ePath = null; if(d.enemyPaths) { let p = d.enemyPaths.find(ep => ep.x === x && ep.y === y); if(p) ePath = p.dir; }
                 
                 let cType = 'floor'; 
-                if(isW) cType = 'wall'; 
-                else if(isB) cType = 'break'; 
-                else if(isBH) cType = 'bh'; 
-                else if(isBV) cType = 'bv'; 
-                else if(isPM) cType = 'portal-m'; 
-                else if(isPT) cType = 'portal-t'; 
-                else if(isL) cType = 'laser';
-                else if(isLV) cType = 'laserv';
+                if(isW) cType = 'wall'; else if(isB) cType = 'break'; else if(isBH) cType = 'bh'; else if(isBV) cType = 'bv'; else if(isPM) cType = 'portal-m'; else if(isPT) cType = 'portal-t'; else if(isL) cType = 'laser'; else if(isLV) cType = 'laserv';
 
-                if (currentLevelHasBoss && x >= bossAreaObj.minX && x <= bossAreaObj.maxX && y >= bossAreaObj.minY && y <= bossAreaObj.maxY) {
-                    cType = 'boss-wall';
-                }
+                if (currentLevelHasBoss && x >= bossAreaObj.minX && x <= bossAreaObj.maxX && y >= bossAreaObj.minY && y <= bossAreaObj.maxY) cType = 'boss-wall';
 
                 let classStr = 'cell' + (isW?' wall':(isB?' breakable':(isBH?' bridge-h':(isBV?' bridge-v':(isPM?' portal-m':(isPT?' portal-t':(isL?' laser':(isLV?' laser laser-v':''))))))));
                 if (isCapsule) classStr += ' capsule-cell';
@@ -1948,174 +1714,88 @@
                 gameActive=true; levelStartTime=Date.now();
                 timerInterval = setInterval(() => { if(gameActive) document.getElementById('timer-display').innerText = ((Date.now() - levelStartTime)/1000).toFixed(1); }, 100);
                 startCycles(); 
-            } else {
-                gameActive = false; 
-                document.getElementById('timer-display').innerText = "0.0";
-            }
+            } else { gameActive = false; document.getElementById('timer-display').innerText = "0.0"; }
 
             if (d.revTime && d.revTime > 0) { reverseIntervalObj = setInterval(() => { if(!gameActive) return; reverseActive = !reverseActive; const pb = document.getElementById('player-body'); if(pb) { if(reverseActive) pb.classList.add('reverse-active'); else pb.classList.remove('reverse-active'); } }, d.revTime * 1000); }
         }
 
         function triggerPlayerDeath() {
             if (!gameActive) return;
-            
-            // REKLAM KONTROLÜ
-            deathCount++;
-            if (deathCount >= 10) {
-                if (tryShowInterstitial()) {
-                    deathCount = 0;
-                }
-            }
-
+            deathCount++; if (deathCount >= 10) { if (tryShowInterstitial()) deathCount = 0; }
             gameActive = false; moving = false;
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); clearTimeout(bossAttackTimeout);
             
-            const gameBox = document.getElementById('game-container');
-            const playerEl = document.getElementById('player-container');
+            const gameBox = document.getElementById('game-container'); const playerEl = document.getElementById('player-container');
+            gameBox.classList.add('shake-screen'); playerEl.style.transition = 'none'; document.getElementById('player-body').classList.add('dead-glitch');
             
-            gameBox.classList.add('shake-screen');
-            playerEl.style.transition = 'none'; 
-            document.getElementById('player-body').classList.add('dead-glitch');
+            const startX = (pos.x * (currentCellSize + 2)) + 2 + (currentCellSize / 2); const startY = (pos.y * (currentCellSize + 2)) + 2 + (currentCellSize / 2);
             
-            const startX = (pos.x * (currentCellSize + 2)) + 2 + (currentCellSize / 2);
-            const startY = (pos.y * (currentCellSize + 2)) + 2 + (currentCellSize / 2);
-            
-            for (let i = 0; i < 25; i++) {
-                const particle = document.createElement('div');
-                const size = Math.random() * 6 + 2; 
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div'); const size = Math.random() * 6 + 2; 
                 particle.style.cssText = `position: absolute; width: ${size}px; height: ${size}px; background: ${Math.random() > 0.5 ? 'var(--current-color)' : '#fff'}; box-shadow: 0 0 5px var(--current-color); left: ${startX}px; top: ${startY}px; z-index: 100; pointer-events: none; border-radius: 1px;`;
                 gameBox.appendChild(particle);
 
-                const angle = Math.random() * Math.PI * 2;
-                const velocity = Math.random() * 8 + 3;
+                const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 8 + 3;
                 const vx = Math.cos(angle) * velocity; const vy = Math.sin(angle) * velocity;
                 let currX = startX, currY = startY, op = 1, rot = 0;
-
-                function animateParticle() {
-                    if (op > 0) {
-                        currX += vx; currY += vy; op -= 0.03; rot += 15;
-                        particle.style.left = currX + 'px'; particle.style.top = currY + 'px';
-                        particle.style.opacity = op; particle.style.transform = `rotate(${rot}deg)`;
-                        requestAnimationFrame(animateParticle);
-                    } else particle.remove();
-                }
+                function animateParticle() { if (op > 0) { currX += vx; currY += vy; op -= 0.03; rot += 15; particle.style.left = currX + 'px'; particle.style.top = currY + 'px'; particle.style.opacity = op; particle.style.transform = `rotate(${rot}deg)`; requestAnimationFrame(animateParticle); } else particle.remove(); }
                 requestAnimationFrame(animateParticle);
             }
 
-            setTimeout(() => {
-                playerEl.style.display = "none";
-                gameBox.classList.remove('shake-screen');
-                document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">VİRÜS SİLİNDİ! 🛑</span>`;
-            }, 500);
-
+            setTimeout(() => { playerEl.style.display = "none"; gameBox.classList.remove('shake-screen'); document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">VİRÜS SİLİNDİ! 🛑</span>`; }, 500);
             setTimeout(() => { if(isTestMode) testDesign(); else resetLevel(); }, 1800);
         }
 
         function die() {
             if (currentLevelHasBoss) { triggerPlayerDeath(); return; } 
             if (!gameActive) return;
-
-            // REKLAM KONTROLÜ
-            deathCount++;
-            if (deathCount >= 10) {
-                if (tryShowInterstitial()) {
-                    deathCount = 0;
-                }
-            }
+            deathCount++; if (deathCount >= 10) { if (tryShowInterstitial()) deathCount = 0; }
             
             gameActive = false; moving = false;
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj);
             
-            const gameBox = document.getElementById('game-container'); 
-            gameBox.classList.add('shake-screen'); 
-            setTimeout(() => gameBox.classList.remove('shake-screen'), 300);
-            
-            document.getElementById('player-body').classList.add('dead-player'); 
-            document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">ÖLDÜN! 🩸</span>`;
-            
+            const gameBox = document.getElementById('game-container'); gameBox.classList.add('shake-screen'); setTimeout(() => gameBox.classList.remove('shake-screen'), 300);
+            document.getElementById('player-body').classList.add('dead-player'); document.getElementById('status-msg').innerHTML = `<span style="color:#e74c3c">ÖLDÜN! 🩸</span>`;
             setTimeout(() => { if(isTestMode) testDesign(); else resetLevel(); }, 1200);
         }
 
         function triggerBossDeath() {
-            bossDefeated = true;
-            gameActive = false; moving = false;
+            bossDefeated = true; gameActive = false; moving = false;
             clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); clearTimeout(bossAttackTimeout);
             
-            const gameBox = document.getElementById('game-container');
-            const bossEl = document.getElementById('boss-entity');
-            
-            gameBox.classList.add('fatal-shake');
-            document.body.style.background = "#1a0000"; 
+            const gameBox = document.getElementById('game-container'); const bossEl = document.getElementById('boss-entity');
+            gameBox.classList.add('fatal-shake'); document.body.style.background = "#1a0000"; 
             
             if(bossEl) {
                 const eyeEl = document.getElementById('boss-visor');
-                eyeEl.style.background = "#ff0000";
-                eyeEl.style.boxShadow = "0 0 50px red";
-                eyeEl.style.animation = "none";
-                
-                bossEl.style.animation = "none";
+                eyeEl.style.background = "#ff0000"; eyeEl.style.boxShadow = "0 0 50px red"; eyeEl.style.animation = "none"; bossEl.style.animation = "none";
             }
 
             setTimeout(() => {
                 if(bossEl) bossEl.classList.add('boss-meltdown');
-                
-                setTimeout(() => {
-                    const wave = document.createElement('div');
-                    wave.className = 'shockwave'; wave.style.width = "50px"; wave.style.height = "50px";
-                    if(bossEl) bossEl.appendChild(wave);
-                    setTimeout(() => wave.remove(), 1200);
-                }, 0);
-
-                setTimeout(() => {
-                    const wave = document.createElement('div');
-                    wave.className = 'shockwave'; wave.style.width = "50px"; wave.style.height = "50px";
-                    if(bossEl) bossEl.appendChild(wave);
-                    setTimeout(() => wave.remove(), 1200);
-                }, 300);
+                setTimeout(() => { const wave = document.createElement('div'); wave.className = 'shockwave'; wave.style.width = "50px"; wave.style.height = "50px"; if(bossEl) bossEl.appendChild(wave); setTimeout(() => wave.remove(), 1200); }, 0);
+                setTimeout(() => { const wave = document.createElement('div'); wave.className = 'shockwave'; wave.style.width = "50px"; wave.style.height = "50px"; if(bossEl) bossEl.appendChild(wave); setTimeout(() => wave.remove(), 1200); }, 300);
                 
                 setTimeout(() => {
                     const bossWidth = (currentCellSize * 3) + (2 * 2);
                     const startX = (bossAreaObj.minX * currentCellSize) + (bossAreaObj.minX * 2) + 2 + (bossWidth / 2);
                     const startY = (bossAreaObj.minY * currentCellSize) + (bossAreaObj.minY * 2) + 2 + (bossWidth / 2);
 
-                    for (let i = 0; i < 100; i++) {
-                        const ash = document.createElement('div');
-                        ash.className = 'boss-ash';
-                        const size = Math.random() * 6 + 2; 
-                        ash.style.width = `${size}px`; ash.style.height = `${size}px`;
-                        ash.style.left = `${startX}px`; ash.style.top = `${startY}px`;
-                        
-                        const colors = ['#bc13fe', '#ff00ff', '#ffffff'];
-                        ash.style.background = colors[Math.floor(Math.random() * colors.length)];
-                        gameBox.appendChild(ash);
+                    for (let i = 0; i < 40; i++) {
+                        const ash = document.createElement('div'); ash.className = 'boss-ash'; const size = Math.random() * 6 + 2; 
+                        ash.style.width = `${size}px`; ash.style.height = `${size}px`; ash.style.left = `${startX}px`; ash.style.top = `${startY}px`;
+                        const colors = ['#bc13fe', '#ff00ff', '#ffffff']; ash.style.background = colors[Math.floor(Math.random() * colors.length)]; gameBox.appendChild(ash);
 
-                        const angle = Math.random() * Math.PI * 2;
-                        const velocity = Math.random() * 12 + 2; 
+                        const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 12 + 2; 
                         const vx = Math.cos(angle) * velocity; let vy = Math.sin(angle) * velocity;
                         let currX = startX, currY = startY, op = 1;
 
-                        function animateAsh() {
-                            if (op > 0) {
-                                currX += vx; vy += 0.2; currY += vy; op -= (Math.random() * 0.015 + 0.005); 
-                                ash.style.left = currX + 'px'; ash.style.top = currY + 'px';
-                                ash.style.opacity = op; ash.style.transform = `scale(${op})`;
-                                requestAnimationFrame(animateAsh);
-                            } else ash.remove();
-                        }
+                        function animateAsh() { if (op > 0) { currX += vx; vy += 0.2; currY += vy; op -= (Math.random() * 0.015 + 0.005); ash.style.left = currX + 'px'; ash.style.top = currY + 'px'; ash.style.opacity = op; ash.style.transform = `scale(${op})`; requestAnimationFrame(animateAsh); } else ash.remove(); }
                         requestAnimationFrame(animateAsh);
                     }
                 }, 1200);
 
-                setTimeout(() => {
-                    gameBox.classList.remove('fatal-shake');
-                    gameBox.style.filter = "none"; 
-                    document.body.style.background = "var(--bg)"; 
-                    if(bossEl) bossEl.style.display = "none"; 
-                    document.getElementById('capsule-hud').classList.add('hidden');
-                    
-                    celebrate(); 
-                }, 1500); 
-
+                setTimeout(() => { gameBox.classList.remove('fatal-shake'); gameBox.style.filter = "none"; document.body.style.background = "var(--bg)"; if(bossEl) bossEl.style.display = "none"; document.getElementById('capsule-hud').classList.add('hidden'); celebrate(); }, 1500); 
             }, 1000); 
         }
 
@@ -2124,22 +1804,8 @@
             const unpaintedFloor = cells.filter(c => c && c.type === 'floor' && !c.painted).length;
             const breakablesCount = cells.filter(c => c && c.type === 'break').length;
 
-            if (currentLevelHasBoss) {
-                if (totalCapsules > 0 && collectedCapsules >= totalCapsules && !bossDefeated) {
-                    triggerBossDeath();
-                }
-            } else {
-                if (unpaintedFloor === 0 && breakablesCount === 0) {
-                    gameActive = false;
-                    moving = false;
-                    clearInterval(timerInterval);
-                    clearInterval(cycleInterval);
-                    clearInterval(enemyInterval);
-                    clearInterval(nemesisInterval);
-                    clearInterval(reverseIntervalObj);
-                    celebrate();
-                }
-            }
+            if (currentLevelHasBoss) { if (totalCapsules > 0 && collectedCapsules >= totalCapsules && !bossDefeated) triggerBossDeath(); } 
+            else { if (unpaintedFloor === 0 && breakablesCount === 0) { gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); celebrate(); } }
         }
 
         function celebrate(){ 
@@ -2150,158 +1816,77 @@
             if(currentLevelHasBoss) earned += 5000; 
 
             const fxId = user.activeEffect || 'fx0';
-            const gameBox = document.getElementById('game-container');
-            const pContainer = document.getElementById('player-container');
-            
-            const currentX = pos.x * (currentCellSize + 2) + 2;
-            const currentY = pos.y * (currentCellSize + 2) + 2;
-            const centerX = currentX + currentCellSize / 2;
-            const centerY = currentY + currentCellSize / 2;
-            
+            const gameBox = document.getElementById('game-container'); const pContainer = document.getElementById('player-container');
+            const currentX = pos.x * (currentCellSize + 2) + 2; const currentY = pos.y * (currentCellSize + 2) + 2;
+            const centerX = currentX + currentCellSize / 2; const centerY = currentY + currentCellSize / 2;
             pContainer.style.zIndex = "999";
 
-            if (fxId === 'fx0') { // 0. KLASİK GEÇİŞ
-                pContainer.style.transition = 'transform 0.5s, opacity 0.5s';
-                pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(1.5)`;
-                pContainer.style.opacity = '0';
-            }
-            else if (fxId === 'fx1' || fxId === 'fx5') { // 1. SİYAH PORTAL / 5. BOYUT YARIĞI
+            if (fxId === 'fx0') { pContainer.style.transition = 'transform 0.5s, opacity 0.5s'; pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(1.5)`; pContainer.style.opacity = '0'; }
+            else if (fxId === 'fx1' || fxId === 'fx5') { 
                 const portalWrapper = document.createElement('div');
                 portalWrapper.style.cssText = `position:absolute; width:120px; height:120px; left:${centerX - 60}px; top:${centerY - 60}px; display:flex; justify-content:center; align-items:center; opacity:0; transform:scale(0); transition:all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index:90;`;
-                
-                if (fxId === 'fx1') {
-                    portalWrapper.innerHTML = `
-                        <div style="position:absolute; width:100%; height:100%; border-radius:50%; border:3px dotted #ff00ff; filter:drop-shadow(0 0 8px #ff00ff); animation:spin-right 4s linear infinite;"></div>
-                        <div style="position:absolute; width:75%; height:75%; border-radius:50%; border:2px dashed #ffffff; filter:drop-shadow(0 0 10px #8a008a); animation:spin-left 2s linear infinite;"></div>
-                        <div style="width:50px; height:50px; background:#030303; border-radius:50%; box-shadow:inset 0 0 15px #8a008a, 0 0 20px #8a008a; animation:breathe 1.5s infinite alternate;"></div>
-                    `;
-                } else {
-                    portalWrapper.style.width = '8px'; portalWrapper.style.height = '120px';
-                    portalWrapper.style.left = (currentX + currentCellSize + 10) + 'px'; portalWrapper.style.top = (centerY - 60) + 'px';
-                    portalWrapper.style.background = 'cyan'; portalWrapper.style.borderRadius = '50%';
-                    portalWrapper.style.boxShadow = '0 0 20px cyan, 0 0 40px cyan, inset 0 0 10px #fff';
-                }
+                if (fxId === 'fx1') { portalWrapper.innerHTML = `<div style="position:absolute; width:100%; height:100%; border-radius:50%; border:3px dotted #ff00ff; filter:drop-shadow(0 0 8px #ff00ff); animation:spin-right 4s linear infinite;"></div><div style="position:absolute; width:75%; height:75%; border-radius:50%; border:2px dashed #ffffff; filter:drop-shadow(0 0 10px #8a008a); animation:spin-left 2s linear infinite;"></div><div style="width:50px; height:50px; background:#030303; border-radius:50%; box-shadow:inset 0 0 15px #8a008a, 0 0 20px #8a008a; animation:breathe 1.5s infinite alternate;"></div>`; } 
+                else { portalWrapper.style.width = '8px'; portalWrapper.style.height = '120px'; portalWrapper.style.left = (currentX + currentCellSize + 10) + 'px'; portalWrapper.style.top = (centerY - 60) + 'px'; portalWrapper.style.background = 'cyan'; portalWrapper.style.borderRadius = '50%'; portalWrapper.style.boxShadow = '0 0 20px cyan, 0 0 40px cyan, inset 0 0 10px #fff'; }
                 gameBox.appendChild(portalWrapper);
 
                 setTimeout(() => {
                     portalWrapper.style.opacity = '1'; portalWrapper.style.transform = fxId === 'fx1' ? 'scale(1) rotate(180deg)' : 'scaleY(1)';
                     setTimeout(() => {
                         pContainer.style.transition = 'all 0.8s cubic-bezier(0.5, -0.5, 0.5, 1.5)';
-                        if (fxId === 'fx1') pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(0) rotate(720deg)`;
-                        else pContainer.style.transform = `translate3d(${currentX + 30}px, ${currentY}px, 0) scaleX(0.1) scaleY(1.5) skewY(10deg)`;
+                        if (fxId === 'fx1') pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scale(0) rotate(720deg)`; else pContainer.style.transform = `translate3d(${currentX + 30}px, ${currentY}px, 0) scaleX(0.1) scaleY(1.5) skewY(10deg)`;
                         pContainer.style.opacity = '0';
-
-                        setTimeout(() => {
-                            portalWrapper.style.transition = 'all 0.4s ease-in';
-                            portalWrapper.style.transform = fxId === 'fx1' ? 'scale(0) rotate(-180deg)' : 'scaleX(0) scaleY(0)';
-                            portalWrapper.style.opacity = '0';
-                        }, 600);
+                        setTimeout(() => { portalWrapper.style.transition = 'all 0.4s ease-in'; portalWrapper.style.transform = fxId === 'fx1' ? 'scale(0) rotate(-180deg)' : 'scaleX(0) scaleY(0)'; portalWrapper.style.opacity = '0'; }, 600);
                     }, 500);
                 }, 200);
             }
-            else if (fxId === 'fx2') { // 2. AĞLA KAÇIŞ
-                const svgNS = "http://www.w3.org/2000/svg";
-                const svg = document.createElementNS(svgNS, "svg");
-                svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
-                const pathL = document.createElementNS(svgNS, "path");
-                const pathR = document.createElementNS(svgNS, "path");
-                [pathL, pathR].forEach(p => {
-                    p.style.cssText = "fill:none; stroke:rgba(255,255,255,0.9); stroke-width:3; stroke-linecap:round; filter:drop-shadow(0 0 5px cyan); stroke-dasharray:1000; stroke-dashoffset:1000; transition:stroke-dashoffset 0.3s ease-out;";
-                    svg.appendChild(p);
-                });
+            else if (fxId === 'fx2') { 
+                const svgNS = "http://www.w3.org/2000/svg"; const svg = document.createElementNS(svgNS, "svg"); svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
+                const pathL = document.createElementNS(svgNS, "path"); const pathR = document.createElementNS(svgNS, "path");
+                [pathL, pathR].forEach(p => { p.style.cssText = "fill:none; stroke:rgba(255,255,255,0.9); stroke-width:3; stroke-linecap:round; filter:drop-shadow(0 0 5px cyan); stroke-dasharray:1000; stroke-dashoffset:1000; transition:stroke-dashoffset 0.3s ease-out;"; svg.appendChild(p); });
                 gameBox.appendChild(svg);
-
-                const updatePaths = (bend) => {
-                    const px = currentX + currentCellSize / 2; const py = currentY + 5;
-                    pathL.setAttribute('d', `M ${px} ${py} Q ${px/2} ${py/2 + bend} 0 0`);
-                    pathR.setAttribute('d', `M ${px} ${py} Q ${(gameBox.offsetWidth+px)/2} ${py/2 + bend} ${gameBox.offsetWidth} 0`);
-                };
+                const updatePaths = (bend) => { const px = currentX + currentCellSize / 2; const py = currentY + 5; pathL.setAttribute('d', `M ${px} ${py} Q ${px/2} ${py/2 + bend} 0 0`); pathR.setAttribute('d', `M ${px} ${py} Q ${(gameBox.offsetWidth+px)/2} ${py/2 + bend} ${gameBox.offsetWidth} 0`); };
                 updatePaths(60);
-
                 setTimeout(() => {
                     pathL.style.strokeDashoffset = '0'; pathR.style.strokeDashoffset = '0';
                     setTimeout(() => {
-                        pContainer.style.transition = 'transform 0.2s ease-in';
-                        pContainer.style.transform = `translate3d(${currentX}px, ${currentY + 10}px, 0) scaleX(0.6) scaleY(1.5)`;
-                        
+                        pContainer.style.transition = 'transform 0.2s ease-in'; pContainer.style.transform = `translate3d(${currentX}px, ${currentY + 10}px, 0) scaleX(0.6) scaleY(1.5)`;
                         setTimeout(() => {
-                            pContainer.style.transition = 'top 0.7s cubic-bezier(0.32, 0, 0.67, 0), transform 0.3s ease-in';
-                            pContainer.style.transform = `translate3d(${currentX}px, -150px, 0) scaleX(0.8) scaleY(1.2)`;
-                            
-                            let animFrame;
-                            const animate = () => {
-                                updatePaths(-10);
-                                if(pContainer.getBoundingClientRect().top > -50) animFrame = requestAnimationFrame(animate);
-                                else { cancelAnimationFrame(animFrame); pathL.style.opacity = '0'; pathR.style.opacity = '0'; }
-                            };
+                            pContainer.style.transition = 'top 0.7s cubic-bezier(0.32, 0, 0.67, 0), transform 0.3s ease-in'; pContainer.style.transform = `translate3d(${currentX}px, -150px, 0) scaleX(0.8) scaleY(1.2)`;
+                            let animFrame; const animate = () => { updatePaths(-10); if(pContainer.getBoundingClientRect().top > -50) animFrame = requestAnimationFrame(animate); else { cancelAnimationFrame(animFrame); pathL.style.opacity = '0'; pathR.style.opacity = '0'; } };
                             animFrame = requestAnimationFrame(animate);
                         }, 200);
                     }, 300);
                 }, 100);
             }
-            else if (fxId === 'fx3') { // 3. GİZLİ GEÇİT
+            else if (fxId === 'fx3') { 
                 const trapdoor = document.createElement('div');
                 trapdoor.style.cssText = `position:absolute; width:${currentCellSize+20}px; height:${currentCellSize+20}px; background:#050505; box-shadow:inset 0 0 20px #000; z-index:10; top:${currentY-10}px; left:${currentX-10}px; perspective:1000px;`;
                 const wingL = document.createElement('div'); const wingR = document.createElement('div');
                 wingL.style.cssText = `position:absolute; left:0; width:50%; height:100%; background:#222; border:1px solid #444; transform-origin:left center; transition:transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);`;
                 wingR.style.cssText = `position:absolute; right:0; width:50%; height:100%; background:#222; border:1px solid #444; transform-origin:right center; transition:transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);`;
                 trapdoor.appendChild(wingL); trapdoor.appendChild(wingR); gameBox.appendChild(trapdoor);
-
-                setTimeout(() => {
-                    wingL.style.transform = 'rotateY(-110deg)'; wingR.style.transform = 'rotateY(110deg)';
-                    setTimeout(() => {
-                        pContainer.style.transition = 'transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.4s 0.2s';
-                        pContainer.style.transform = `translate3d(${currentX}px, ${currentY + 200}px, 0) scale(0.5)`;
-                        pContainer.style.opacity = '0';
-                    }, 300);
-                }, 200);
+                setTimeout(() => { wingL.style.transform = 'rotateY(-110deg)'; wingR.style.transform = 'rotateY(110deg)'; setTimeout(() => { pContainer.style.transition = 'transform 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19), opacity 0.4s 0.2s'; pContainer.style.transform = `translate3d(${currentX}px, ${currentY + 200}px, 0) scale(0.5)`; pContainer.style.opacity = '0'; }, 300); }, 200);
             }
-            else if (fxId === 'fx4') { // 4. DUVARDAN FIRLAMA
-                const svgNS = "http://www.w3.org/2000/svg";
-                const svg = document.createElementNS(svgNS, "svg");
-                svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
-                const line = document.createElementNS(svgNS, "path");
-                line.style.cssText = "stroke:#fff; stroke-width:3; fill:none; filter:drop-shadow(0 0 8px cyan); stroke-dasharray:1000; stroke-dashoffset:1000;";
-                svg.appendChild(line); gameBox.appendChild(svg);
-                
-                const burst = document.createElement('div');
-                burst.style.cssText = `position:absolute; width:50px; height:50px; border:2px solid #fff; border-radius:50%; opacity:0; pointer-events:none; z-index:95;`;
-                gameBox.appendChild(burst);
-
-                const anchorX = 0; const anchorY = 0;
-                const updateLine = (currX, currY) => { line.setAttribute('d', `M ${anchorX} ${anchorY} L ${currX + currentCellSize/2} ${currY + 5}`); };
-                updateLine(currentX, currentY);
+            else if (fxId === 'fx4') { 
+                const svgNS = "http://www.w3.org/2000/svg"; const svg = document.createElementNS(svgNS, "svg"); svg.style.cssText = "position:absolute; top:0; left:0; width:100%; height:100%; z-index:90; pointer-events:none;";
+                const line = document.createElementNS(svgNS, "path"); line.style.cssText = "stroke:#fff; stroke-width:3; fill:none; filter:drop-shadow(0 0 8px cyan); stroke-dasharray:1000; stroke-dashoffset:1000;"; svg.appendChild(line); gameBox.appendChild(svg);
+                const burst = document.createElement('div'); burst.style.cssText = `position:absolute; width:50px; height:50px; border:2px solid #fff; border-radius:50%; opacity:0; pointer-events:none; z-index:95;`; gameBox.appendChild(burst);
+                const anchorX = 0; const anchorY = 0; const updateLine = (currX, currY) => { line.setAttribute('d', `M ${anchorX} ${anchorY} L ${currX + currentCellSize/2} ${currY + 5}`); }; updateLine(currentX, currentY);
 
                 setTimeout(() => {
                     line.style.transition = 'stroke-dashoffset 0.2s ease-out'; line.style.strokeDashoffset = '0';
                     setTimeout(() => {
                         pContainer.style.transition = 'all 0.4s cubic-bezier(0.5, 0, 0.5, 1)';
-                        
-                        const wallX = 0; 
-                        const wallY = Math.max(0, currentY - 80); 
-                        pContainer.style.transform = `translate3d(${wallX}px, ${wallY}px, 0) rotate(-90deg) scaleY(0.7)`;
-                        
-                        let pullInt = setInterval(() => { 
-                            const rect = pContainer.getBoundingClientRect(); const boxRect = gameBox.getBoundingClientRect();
-                            updateLine(rect.left - boxRect.left, rect.top - boxRect.top); 
-                        }, 16);
-
+                        const wallX = 0; const wallY = Math.max(0, currentY - 80); pContainer.style.transform = `translate3d(${wallX}px, ${wallY}px, 0) rotate(-90deg) scaleY(0.7)`;
+                        let pullInt = setInterval(() => { const rect = pContainer.getBoundingClientRect(); const boxRect = gameBox.getBoundingClientRect(); updateLine(rect.left - boxRect.left, rect.top - boxRect.top); }, 16);
                         setTimeout(() => {
-                            clearInterval(pullInt);
-                            burst.style.left = (wallX - 5) + 'px'; burst.style.top = wallY + 'px';
-                            burst.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out';
-                            burst.style.transform = 'scale(2)'; burst.style.opacity = '0';
-
-                            let startTime = Date.now(); const duration = 700;
-                            pContainer.style.transition = 'none'; 
+                            clearInterval(pullInt); burst.style.left = (wallX - 5) + 'px'; burst.style.top = wallY + 'px'; burst.style.transition = 'transform 0.4s ease-out, opacity 0.4s ease-out'; burst.style.transform = 'scale(2)'; burst.style.opacity = '0';
+                            let startTime = Date.now(); const duration = 700; pContainer.style.transition = 'none'; 
                             function swing() {
                                 let t = (Date.now() - startTime) / duration;
                                 if (t <= 1) {
-                                    let angle = t * Math.PI * 0.8; let power = 1 + (t * 2.5);
-                                    let cX = wallX + (Math.sin(angle) * 350 * power);
-                                    let cY = wallY + (Math.cos(angle) * 150) - (t * 200);
-                                    pContainer.style.transform = `translate3d(${cX}px, ${cY}px, 0) rotate(${t * 180 - 90}deg) scaleY(1.2)`;
-                                    updateLine(cX, cY); requestAnimationFrame(swing);
+                                    let angle = t * Math.PI * 0.8; let power = 1 + (t * 2.5); let cX = wallX + (Math.sin(angle) * 350 * power); let cY = wallY + (Math.cos(angle) * 150) - (t * 200);
+                                    pContainer.style.transform = `translate3d(${cX}px, ${cY}px, 0) rotate(${t * 180 - 90}deg) scaleY(1.2)`; updateLine(cX, cY); requestAnimationFrame(swing);
                                 } else { pContainer.style.opacity = '0'; line.style.opacity = '0'; }
                             }
                             swing();
@@ -2309,128 +1894,69 @@
                     }, 300);
                 }, 100);
             }
-            else if (fxId === 'fx6') { // 6. SİBER DASH
+            else if (fxId === 'fx6') { 
                 pContainer.style.transition = 'transform 0.3s cubic-bezier(0.5, 0, 1, 1), opacity 0.3s';
-                const trail = document.createElement('div'); 
-                trail.style.cssText = 'position:absolute; top:10%; height:80%; width:200px; right:100%; background:linear-gradient(to right, transparent, var(--current-color)); opacity:0.7; z-index:-1;'; 
-                pContainer.appendChild(trail);
-                setTimeout(() => { 
-                    pContainer.style.transform = `translate3d(${currentX + 500}px, ${currentY}px, 0) skewX(-20deg)`; 
-                    pContainer.style.opacity = '0'; 
-                }, 50);
+                const trail = document.createElement('div'); trail.style.cssText = 'position:absolute; top:10%; height:80%; width:200px; right:100%; background:linear-gradient(to right, transparent, var(--current-color)); opacity:0.7; z-index:-1;'; pContainer.appendChild(trail);
+                setTimeout(() => { pContainer.style.transform = `translate3d(${currentX + 500}px, ${currentY}px, 0) skewX(-20deg)`; pContainer.style.opacity = '0'; }, 50);
             } 
-            else if (fxId === 'fx7') { // 7. EVRENSEL ÇÖKÜŞ
-                const hole = document.createElement('div');
-                hole.style.cssText = `position:absolute; width:120px; height:120px; background:#000; border-radius:50%; z-index:200; opacity:0; transform:scale(0); left:${centerX - 60}px; top:${centerY - 60}px; box-shadow:0 0 50px 20px #4b0082, inset 0 0 20px #fff; transition:all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
-                const aura = document.createElement('div');
-                aura.style.cssText = `position:absolute; width:150%; height:150%; border:3px dashed #4b0082; border-radius:45%; filter:blur(4px); top:-25%; left:-25%; animation:spin-right 1.5s linear infinite;`;
+            else if (fxId === 'fx7') { 
+                const hole = document.createElement('div'); hole.style.cssText = `position:absolute; width:120px; height:120px; background:#000; border-radius:50%; z-index:200; opacity:0; transform:scale(0); left:${centerX - 60}px; top:${centerY - 60}px; box-shadow:0 0 50px 20px #4b0082, inset 0 0 20px #fff; transition:all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);`;
+                const aura = document.createElement('div'); aura.style.cssText = `position:absolute; width:150%; height:150%; border:3px dashed #4b0082; border-radius:45%; filter:blur(4px); top:-25%; left:-25%; animation:spin-right 1.5s linear infinite;`;
                 hole.appendChild(aura); gameBox.appendChild(hole);
-
                 setTimeout(() => {
                     hole.style.opacity = '1'; hole.style.transform = 'scale(1)';
                     setTimeout(() => {
-                        pContainer.style.transition = 'all 0.6s ease-in';
-                        pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scaleX(0.01) scaleY(10) rotate(1080deg)`;
-                        pContainer.style.opacity = '0';
-                        setTimeout(() => {
-                            gameBox.style.transition = 'transform 0.8s cubic-bezier(0.5, 0, 0.5, 1.2), filter 0.8s, opacity 1s';
-                            gameBox.style.transform = 'scale(0) rotate(-45deg)';
-                            gameBox.style.filter = 'blur(20px) contrast(2)';
-                            gameBox.style.opacity = '0';
-                        }, 300);
+                        pContainer.style.transition = 'all 0.6s ease-in'; pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scaleX(0.01) scaleY(10) rotate(1080deg)`; pContainer.style.opacity = '0';
+                        setTimeout(() => { gameBox.style.transition = 'transform 0.8s cubic-bezier(0.5, 0, 0.5, 1.2), filter 0.8s, opacity 1s'; gameBox.style.transform = 'scale(0) rotate(-45deg)'; gameBox.style.filter = 'blur(20px) contrast(2)'; gameBox.style.opacity = '0'; }, 300);
                     }, 400);
                 }, 100);
             } 
-            else if (fxId === 'fx8') { // 8. KÜLLEŞME (The Snap)
-                pContainer.style.transition = 'opacity 1.5s ease-out, filter 1.5s ease-out';
-                pContainer.style.opacity = '0'; pContainer.style.filter = 'blur(2px)';
-                for (let i = 0; i < 60; i++) {
-                    const rX = currentX + Math.random() * currentCellSize;
-                    const rY = currentY + Math.random() * currentCellSize;
-                    const delay = (rY - currentY) * 10; 
-                    
+            else if (fxId === 'fx8') { 
+                pContainer.style.transition = 'opacity 1.5s ease-out, filter 1.5s ease-out'; pContainer.style.opacity = '0'; pContainer.style.filter = 'blur(2px)';
+                for (let i = 0; i < 25; i++) {
+                    const rX = currentX + Math.random() * currentCellSize; const rY = currentY + Math.random() * currentCellSize; const delay = (rY - currentY) * 10; 
                     setTimeout(() => {
-                        const ash = document.createElement('div');
-                        ash.style.cssText = `position:absolute; width:5px; height:5px; background:var(--current-color); z-index:101; pointer-events:none; border-radius:1px; left:${rX}px; top:${rY}px;`;
-                        gameBox.appendChild(ash);
-                        let posX = rX, posY = rY, op = 1, rot = 0;
-                        const vx = Math.random() * 2 + 1, vy = -(Math.random() * 2 + 0.5);
-                        function anim() { 
-                            posX += vx; posY += vy; op -= 0.01; rot += 5; 
-                            ash.style.left = posX + 'px'; ash.style.top = posY + 'px'; 
-                            ash.style.opacity = op; ash.style.transform = `rotate(${rot}deg)`; 
-                            if(op > 0) requestAnimationFrame(anim); else ash.remove(); 
-                        }
+                        const ash = document.createElement('div'); ash.style.cssText = `position:absolute; width:5px; height:5px; background:var(--current-color); z-index:101; pointer-events:none; border-radius:1px; left:${rX}px; top:${rY}px;`; gameBox.appendChild(ash);
+                        let posX = rX, posY = rY, op = 1, rot = 0; const vx = Math.random() * 2 + 1, vy = -(Math.random() * 2 + 0.5);
+                        function anim() { posX += vx; posY += vy; op -= 0.01; rot += 5; ash.style.left = posX + 'px'; ash.style.top = posY + 'px'; ash.style.opacity = op; ash.style.transform = `rotate(${rot}deg)`; if(op > 0) requestAnimationFrame(anim); else ash.remove(); }
                         anim();
                     }, delay);
                 }
             } 
-            else if (fxId === 'fx9') { // 9. KRİSTAL KIRILMA
-                pContainer.style.transition = 'all 0.4s ease';
-                pContainer.style.filter = 'brightness(3) saturate(2) drop-shadow(0 0 20px #fff)';
+            else if (fxId === 'fx9') { 
+                pContainer.style.transition = 'all 0.4s ease'; pContainer.style.filter = 'brightness(3) saturate(2) drop-shadow(0 0 20px #fff)';
                 setTimeout(() => {
                     pContainer.style.opacity = '0';
-                    for (let i = 0; i < 40; i++) {
-                        const shard = document.createElement('div');
-                        shard.style.cssText = `position:absolute; width:${Math.random()*8+4}px; height:${Math.random()*8+4}px; background:var(--current-color); clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); z-index:101; box-shadow:0 0 8px #fff; left:${centerX}px; top:${centerY}px;`;
-                        gameBox.appendChild(shard);
-                        const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 10 + 4;
-                        const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
+                    for (let i = 0; i < 15; i++) {
+                        const shard = document.createElement('div'); shard.style.cssText = `position:absolute; width:${Math.random()*8+4}px; height:${Math.random()*8+4}px; background:var(--current-color); clip-path:polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); z-index:101; box-shadow:0 0 8px #fff; left:${centerX}px; top:${centerY}px;`; gameBox.appendChild(shard);
+                        const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 10 + 4; const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
                         let posX = centerX, posY = centerY, op = 1, curVy = vy;
-                        function anim() { 
-                            posX += vx; curVy += 0.3; posY += curVy; op -= 0.02; 
-                            shard.style.left = posX + 'px'; shard.style.top = posY + 'px'; 
-                            shard.style.opacity = op; shard.style.transform = `rotate(${posX * 2}deg)`; 
-                            if(op > 0) requestAnimationFrame(anim); else shard.remove(); 
-                        }
+                        function anim() { posX += vx; curVy += 0.3; posY += curVy; op -= 0.02; shard.style.left = posX + 'px'; shard.style.top = posY + 'px'; shard.style.opacity = op; shard.style.transform = `rotate(${posX * 2}deg)`; if(op > 0) requestAnimationFrame(anim); else shard.remove(); }
                         anim();
                     }
                 }, 400);
             } 
-            else if (fxId === 'fx10') { // 10. HAVAİ FİŞEK
-                pContainer.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-                const burstY = currentY - 120; 
-                pContainer.style.transform = `translate3d(${currentX}px, ${burstY}px, 0) scaleX(0.7) scaleY(1.3)`;
+            else if (fxId === 'fx10') { 
+                pContainer.style.transition = 'all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275)'; const burstY = currentY - 120; pContainer.style.transform = `translate3d(${currentX}px, ${burstY}px, 0) scaleX(0.7) scaleY(1.3)`;
                 setTimeout(() => {
-                    pContainer.style.opacity = '0';
-                    const colors = ['#00ff88', '#ff0055', '#00d4ff', '#f1c40f', '#ffffff', '#ff00ff'];
-                    for (let i = 0; i < 60; i++) {
-                        const color = colors[Math.floor(Math.random() * colors.length)];
-                        const spark = document.createElement('div');
-                        spark.style.cssText = `position:absolute; width:6px; height:6px; border-radius:50%; background:${color}; box-shadow:0 0 15px ${color}; z-index:101; left:${centerX}px; top:${burstY + currentCellSize/2}px;`;
-                        gameBox.appendChild(spark);
-                        const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 12 + 2;
-                        const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
+                    pContainer.style.opacity = '0'; const colors = ['#00ff88', '#ff0055', '#00d4ff', '#f1c40f', '#ffffff', '#ff00ff'];
+                    for (let i = 0; i < 25; i++) {
+                        const color = colors[Math.floor(Math.random() * colors.length)]; const spark = document.createElement('div'); spark.style.cssText = `position:absolute; width:6px; height:6px; border-radius:50%; background:${color}; box-shadow:0 0 15px ${color}; z-index:101; left:${centerX}px; top:${burstY + currentCellSize/2}px;`; gameBox.appendChild(spark);
+                        const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 12 + 2; const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
                         let posX = centerX, posY = burstY + currentCellSize/2, op = 1, curVy = vy;
-                        function anim() { 
-                            posX += vx; curVy += 0.15; posY += curVy; op -= 0.015; 
-                            spark.style.left = posX + 'px'; spark.style.top = posY + 'px'; 
-                            spark.style.opacity = op; spark.style.transform = `scale(${op})`; 
-                            if(op > 0) requestAnimationFrame(anim); else spark.remove(); 
-                        }
+                        function anim() { posX += vx; curVy += 0.15; posY += curVy; op -= 0.015; spark.style.left = posX + 'px'; spark.style.top = posY + 'px'; spark.style.opacity = op; spark.style.transform = `scale(${op})`; if(op > 0) requestAnimationFrame(anim); else spark.remove(); }
                         anim();
                     }
                 }, 500);
             } 
-            else if (fxId === 'fx11') { // 11. BOYA ERİMESİ
-                pContainer.style.transformOrigin = 'bottom center';
-                const puddle = document.createElement('div');
-                puddle.style.cssText = `position:absolute; background:var(--current-color); width:10px; height:5px; border-radius:50%; opacity:0; z-index:90; transition:all 1s ease-out; filter:blur(2px); left:${centerX - 5}px; top:${currentY + currentCellSize - 2}px;`;
-                gameBox.appendChild(puddle);
-                
+            else if (fxId === 'fx11') { 
+                pContainer.style.transformOrigin = 'bottom center'; const puddle = document.createElement('div'); puddle.style.cssText = `position:absolute; background:var(--current-color); width:10px; height:5px; border-radius:50%; opacity:0; z-index:90; transition:all 1s ease-out; filter:blur(2px); left:${centerX - 5}px; top:${currentY + currentCellSize - 2}px;`; gameBox.appendChild(puddle);
                 setTimeout(() => {
-                    pContainer.style.transition = 'all 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95)';
-                    pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scaleY(0.1) scaleX(1.8)`;
-                    pContainer.style.borderRadius = '50% 50% 10% 10%';
-                    
-                    puddle.style.opacity = '1'; puddle.style.width = (currentCellSize * 2.5) + 'px'; puddle.style.height = (currentCellSize * 0.8) + 'px';
-                    puddle.style.left = (centerX - currentCellSize * 1.25) + 'px'; puddle.style.transform = 'scale(1.2)';
-                    
+                    pContainer.style.transition = 'all 1.2s cubic-bezier(0.45, 0.05, 0.55, 0.95)'; pContainer.style.transform = `translate3d(${currentX}px, ${currentY}px, 0) scaleY(0.1) scaleX(1.8)`; pContainer.style.borderRadius = '50% 50% 10% 10%';
+                    puddle.style.opacity = '1'; puddle.style.width = (currentCellSize * 2.5) + 'px'; puddle.style.height = (currentCellSize * 0.8) + 'px'; puddle.style.left = (centerX - currentCellSize * 1.25) + 'px'; puddle.style.transform = 'scale(1.2)';
                     for(let i=0; i<6; i++) {
                         setTimeout(() => {
-                            const b = document.createElement('div');
-                            b.style.cssText = `position:absolute; background:rgba(255,255,255,0.4); border-radius:50%; width:${Math.random()*6+4}px; height:${Math.random()*6+4}px; left:${currentX + Math.random()*currentCellSize}px; top:${currentY + currentCellSize}px; z-index:91; pointer-events:none;`;
-                            gameBox.appendChild(b);
+                            const b = document.createElement('div'); b.style.cssText = `position:absolute; background:rgba(255,255,255,0.4); border-radius:50%; width:${Math.random()*6+4}px; height:${Math.random()*6+4}px; left:${currentX + Math.random()*currentCellSize}px; top:${currentY + currentCellSize}px; z-index:91; pointer-events:none;`; gameBox.appendChild(b);
                             let pY = parseFloat(b.style.top), op = 1;
                             function anim() { pY -= 0.5; op -= 0.02; b.style.top = pY + 'px'; b.style.opacity = op; if(op > 0) requestAnimationFrame(anim); else b.remove(); }
                             anim();
@@ -2439,48 +1965,31 @@
                     setTimeout(() => { pContainer.style.transition = 'opacity 0.8s'; pContainer.style.opacity = '0'; puddle.style.opacity = '0'; puddle.style.transform = 'scale(1.5)'; }, 1200);
                 }, 50);
             } 
-            else if (fxId === 'fx12') { // 12. SİSTEM ÇÖKÜŞÜ (Glitch)
-                const style = document.createElement('style');
-                style.innerHTML = `@keyframes fx12-glitch { 0% { transform: translate3d(${currentX}px, ${currentY}px, 0); clip-path: inset(10% 0 30% 0); } 20% { transform: translate3d(${currentX-5}px, ${currentY+5}px, 0); clip-path: inset(40% 0 10% 0); } 40% { transform: translate3d(${currentX+5}px, ${currentY-2}px, 0); box-shadow: -5px 0 red, 5px 0 blue; } 60% { transform: translate3d(${currentX-2}px, ${currentY-5}px, 0); clip-path: inset(0% 0 50% 0); } 80% { transform: translate3d(${currentX+5}px, ${currentY+2}px, 0); } 100% { transform: translate3d(${currentX}px, ${currentY}px, 0); } }`;
-                document.head.appendChild(style);
-                
+            else if (fxId === 'fx12') { 
+                const style = document.createElement('style'); style.innerHTML = `@keyframes fx12-glitch { 0% { transform: translate3d(${currentX}px, ${currentY}px, 0); clip-path: inset(10% 0 30% 0); } 20% { transform: translate3d(${currentX-5}px, ${currentY+5}px, 0); clip-path: inset(40% 0 10% 0); } 40% { transform: translate3d(${currentX+5}px, ${currentY-2}px, 0); box-shadow: -5px 0 red, 5px 0 blue; } 60% { transform: translate3d(${currentX-2}px, ${currentY-5}px, 0); clip-path: inset(0% 0 50% 0); } 80% { transform: translate3d(${currentX+5}px, ${currentY+2}px, 0); } 100% { transform: translate3d(${currentX}px, ${currentY}px, 0); } }`; document.head.appendChild(style);
                 setTimeout(() => {
                     pContainer.style.animation = 'fx12-glitch 0.2s infinite'; pContainer.style.filter = 'hue-rotate(90deg)';
                     setTimeout(() => {
                         pContainer.style.display = 'none';
-                        for (let i = 0; i < 40; i++) {
-                            const dust = document.createElement('div');
-                            dust.style.cssText = `position:absolute; width:4px; height:4px; background:var(--current-color); border-radius:50%; pointer-events:none; z-index:99; left:${centerX}px; top:${centerY}px;`;
-                            gameBox.appendChild(dust);
-                            const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 4 + 2;
-                            const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
+                        for (let i = 0; i < 15; i++) {
+                            const dust = document.createElement('div'); dust.style.cssText = `position:absolute; width:4px; height:4px; background:var(--current-color); border-radius:50%; pointer-events:none; z-index:99; left:${centerX}px; top:${centerY}px;`; gameBox.appendChild(dust);
+                            const angle = Math.random() * Math.PI * 2, velocity = Math.random() * 4 + 2; const vx = Math.cos(angle) * velocity, vy = Math.sin(angle) * velocity;
                             let posX = centerX, posY = centerY, op = 1;
-                            function anim() { 
-                                posX += vx; posY += vy; op -= 0.02; 
-                                dust.style.left = posX + 'px'; dust.style.top = posY + 'px'; dust.style.opacity = op; 
-                                if(op > 0) requestAnimationFrame(anim); else dust.remove(); 
-                            }
+                            function anim() { posX += vx; posY += vy; op -= 0.02; dust.style.left = posX + 'px'; dust.style.top = posY + 'px'; dust.style.opacity = op; if(op > 0) requestAnimationFrame(anim); else dust.remove(); }
                             anim();
                         }
                     }, 600);
                 }, 100);
             }
 
-            if(currentLevelHasBoss) {
-                document.getElementById('status-msg').innerHTML=`SİSTEM İMHA EDİLDİ! 😎<br><span style="color:gold">+${earned} G Puan</span>`;
-            } else if(dur<10) { 
-                cells.forEach(c=>{ if(c && c.painted) c.el.classList.add('rgb-anim'); }); 
-                document.getElementById('status-msg').innerHTML=`HIZ REKORU! 🌈<br><span style="color:gold">+${earned} G Puan</span>`; 
-            }
+            if(currentLevelHasBoss) { document.getElementById('status-msg').innerHTML=`SİSTEM İMHA EDİLDİ! 😎<br><span style="color:gold">+${earned} G Puan</span>`; } 
+            else if(dur<10) { cells.forEach(c=>{ if(c && c.painted) c.el.classList.add('rgb-anim'); }); document.getElementById('status-msg').innerHTML=`HIZ REKORU! 🌈<br><span style="color:gold">+${earned} G Puan</span>`; }
             else document.getElementById('status-msg').innerHTML=`BİTTİ! 🤨<br><span style="color:gold">+${earned} G Puan</span>`; 
             
             if(isTestMode){ 
-                levelVerified = true; 
-                canPublish = true; 
-                document.getElementById('publish-btn').style.opacity = "1"; 
+                levelVerified = true; canPublish = true; document.getElementById('publish-btn').style.opacity = "1"; 
                 document.getElementById('status-msg').innerHTML = `<span style="color:#00ff88">HARİTA DOĞRULANDI!<br>ARTIK YAYINLAYABİLİRSİN.</span>`;
-                setTimeout(()=>returnToEditor(), 2500); 
-                return; 
+                setTimeout(()=>returnToEditor(), 2500); return; 
             }
             
             if (isPlayingOnline && currentOnlineLevel && currentOnlineLevel.docId && user.name && !user.name.startsWith("Misafir_")) {
@@ -2500,8 +2009,7 @@
             gameActive = false; moving = false; clearInterval(timerInterval); clearInterval(cycleInterval); clearInterval(enemyInterval); clearInterval(nemesisInterval); clearInterval(reverseIntervalObj); clearTimeout(bossAttackTimeout);
             introPlayedThisRun = false; stopAmbient();
             const gameBox = document.getElementById('game-container'); gameBox.style.transform = 'none'; gameBox.style.filter = 'none'; gameBox.style.opacity = '1'; gameBox.classList.remove('implode-all');
-            document.body.style.background = "var(--bg)";
-            document.getElementById('capsule-hud').classList.add('hidden');
+            document.body.style.background = "var(--bg)"; document.getElementById('capsule-hud').classList.add('hidden');
             if(isTestMode) { returnToEditor(); } else if(isPlayingOnline) { showScreen('online-screen'); } else { openArc(currentArc); }
         }
 
@@ -2515,17 +2023,7 @@
         
         function loadNextLevel(){ 
             currentIdx++; 
-            
-            // REKLAM KONTROLÜ
-            if (!isPlayingOnline) {
-                levelsCompleted++;
-                if (levelsCompleted >= 6) {
-                    if (tryShowInterstitial()) {
-                        levelsCompleted = 0; // Reklam gösterilirse sayacı sıfırla
-                    }
-                }
-            }
-            
+            if (!isPlayingOnline) { levelsCompleted++; if (levelsCompleted >= 6) { if (tryShowInterstitial()) { levelsCompleted = 0; } } }
             resetLevel(); 
         }
 
@@ -2535,13 +2033,8 @@
         
         async function deleteOnlineMap(mapId) {
             if(!confirm("Bu haritayı sonsuza dek imha etmek istediğine emin misin Baş Mimar? 🗑️")) return;
-            try {
-                await db.collection("levels").doc(mapId).delete();
-                alert("Harita sistemden silindi. 🧹");
-                fetchOnlineLevels(); 
-            } catch(e) {
-                alert("Silme başarısız: " + e.message);
-            }
+            try { await db.collection("levels").doc(mapId).delete(); alert("Harita sistemden silindi. 🧹"); fetchOnlineLevels(); } 
+            catch(e) { alert("Silme başarısız: " + e.message); }
         }
     </script>
 </body>
